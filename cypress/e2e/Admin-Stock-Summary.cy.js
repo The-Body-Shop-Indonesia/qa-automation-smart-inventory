@@ -133,3 +133,61 @@ describe("Pagination Test Group", () => {
     })
   })
 })
+
+describe("Filter Test Group", () => {
+  it("Should return the correct SKU", () => {
+    const sku = '112010666'
+    const urlFilter = url + `?sku=${sku}&page=1&limit=100`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers
+    })
+    .should(response => {
+      const data = response.body.data.docs
+      expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
+    })
+  })
+
+  it("Should return the correct Store Code", () => {
+    const storeCode = '14036'
+    const urlFilter = url + `?storeCode=${storeCode}&page=1&limit=100`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers
+    })
+    .should(response => {
+      const data = response.body.data.docs
+      expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
+    })
+  })
+
+  it("Should return the correct UBD", () => {
+    const ubd = '2024-10-01'
+    const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers
+    })
+    .should(response => {
+      const data = response.body.data.docs
+      const ubdTest = new Date(ubd)
+      const yearExpiredTest = ubdTest.getFullYear()
+      const monthExpiredTest = ubdTest.getMonth() + 1
+
+      const matchingFunction = check => {
+        const ubdResponse = new Date(check.ubd)
+        const yearExpiredResponse = ubdResponse.getFullYear()
+        const monthExpiredResponse = ubdResponse.getMonth() + 1
+
+        const yearIsMatch = yearExpiredResponse === yearExpiredTest
+        const monthIsMatch = monthExpiredResponse === monthExpiredTest
+        return yearIsMatch && monthIsMatch
+      }
+
+      expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
+    })
+  })
+})
