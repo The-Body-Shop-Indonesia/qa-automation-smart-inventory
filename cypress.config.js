@@ -1,5 +1,8 @@
 const { defineConfig } = require("cypress");
+const validateEnv = require("./utils/validate-env")
+require('dotenv').config()
 
+validateEnv()
 module.exports = defineConfig({
   e2e: {
     setupNodeEvents(on, config) {
@@ -7,6 +10,10 @@ module.exports = defineConfig({
     },
     baseUrl: 'https://sit-products.tbsgroup.co.id/api/v1'
   },
+  env: {
+    TOKEN_ADMIN: process.env.TOKEN_ADMIN,
+    TOKEN_POS: process.env.TOKEN_POS
+  }
 });
 
 
