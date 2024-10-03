@@ -1,6 +1,6 @@
 const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
-const baseUrl = Cypress.config("baseUrl")
+const baseUrl = Cypress.config("baseUrlProduct")
 
 const url = baseUrl + '/admin/stock-summary'
 const headers = { Authorization: tokenAdmin }
