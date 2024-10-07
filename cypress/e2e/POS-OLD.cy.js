@@ -2,6 +2,8 @@ const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
 const URL_USER = Cypress.config("baseUrlUser")
 const URL_PRODUCT = Cypress.config("baseUrlProduct")
+const URL_PAYMENT = Cypress.config("baseUrlPayment")
+
 
 describe('Staff Create Order for Public Customer', function() {
   it('Successfully login', () => {
@@ -280,40 +282,136 @@ describe('Staff Create Order for Public Customer', function() {
     })
   })
 
-  it("Sucessfully select GWP product (if any)", () => {
-    const cart = Cypress.env("CART")
-    const gwpOptions = cart.freeProductOptions
-    gwpOptions.forEach((gwp, idx) => {
-      expect(gwp).to.haveOwnProperty("ruleId")
-      expect(gwp).to.haveOwnProperty("displayName")
-      expect(gwp).to.haveOwnProperty("products")
+  describe("Sucessfully handle GWP products (if any)", function() {
+    let gwpOptions
+    before(() => {
+      this.gwpOptions = Cypress.env("CART")
+      cy.wrap(gwpOptions).as('gwpOptions');
+    })
 
-      const selectedProduct = gwp.products[0]
-      expect(selectedProduct).to.haveOwnProperty("sku")
+    it ("Sucessfully select GWP product", function() {
+      const gwpOptions = Cypress.env("CART").freeProductOptions
+      gwpOptions.forEach((gwp, idx ) => {
+        expect(gwp).to.haveOwnProperty("ruleId")
+        expect(gwp).to.haveOwnProperty("displayName")
+        expect(gwp).to.haveOwnProperty("products")
 
-      const url = URL_PRODUCT + `/employee/cart/${Cypress.env("CUSTOMER_ID")}/select-gwp`
-      const payload = {
-        sku: selectedProduct.sku,
-        ruleId: gwp.ruleId
-      }
+        const selectedProduct = gwp.products[0]
+        expect(selectedProduct).to.haveOwnProperty("sku")
+        
+        const url = URL_PRODUCT + `/employee/cart/${Cypress.env("CUSTOMER_ID")}/select-gwp`
+        const payload = {
+          sku: selectedProduct.sku,
+          ruleId: gwp.ruleId
+        }
+        cy.api({
+          method: "POST",
+          url,
+          headers: Cypress.env("REQUEST_HEADERS"),
+          body: payload
+        })
+        .should(response => {
+          expect(response.status).to.equal(201)
+          const data = response.body.data
+          expect(data).to.haveOwnProperty("freeProductOptionsSelected")
+        })
+        .then(response => {
+          const data = response.body.data
+          cy
+            .wrap(data.freeProductOptionsSelected)
+            .then((arr) => { expect(arr.some(obj => Cypress._.isEqual(obj, payload))).to.be.true });
+
+          Cypress.env("CART", response)
+        })
+      })
+    })
+  })
+
+  describe("Successfully select all typs of payments", function() {
+    let paymentMethodsResponse
+    let paymentMethods
+    let paymentAmount
+    let storeCode
+    before(() => {
+      const cart = Cypress.env("CART")
+      paymentAmount = cart.paymentAmount
+      storeCode = cart.store.storeCode 
+      const url = URL_PAYMENT + `/payment-method?amount=${paymentAmount}=${storeCode}`
       cy.api({
-        method: "POST",
         url,
+        method: "GET",
         headers: Cypress.env("REQUEST_HEADERS"),
-        body: payload
+      }).then(response => {
+        paymentMethodsResponse = response.body.data
+        paymentMethods = paymentMethodsResponse[0].paymentMethods
       })
-      .should(response => {
-        expect(response.status).to.equal(201)
-        const data = response.body.data
-        expect(data).to.haveOwnProperty("freeProductOptionsSelected")
+    })
+    
+    it("Shows all available payment methods", () => {
+      expect(paymentMethodsResponse).to.be.an('array');
+      expect(paymentMethodsResponse).to.be.greaterThan(0)
+
+      const payments = paymentMethodsResponse[0]
+      expect(payments).to.haveOwnProperty("paymentMethods")
+      expect(payments.paymentMethods).to.be.an('array');
+      expect(payments.paymentMethods.length).to.be.greaterThan(0)
+    })
+
+    it(`Successfully select "Tunai" as payment method`, () => {
+      const mockPayload = {
+        "method": "18",
+        "isInstallment": false,
+        "token": "",
+        "installmentTenor": 0,
+        "isOvo": false,
+        "ovoNumber": "",
+        "ovoRetryCount": 0,
+        "bin_number": "",
+        approvalCode: "AUT123",
+        "value": paymentAmount
+      }
+
+      const url = URL_PRODUCT + `/employee/cart/${Cypress.env("CUSTOMER_ID")}/update-payment-v2`
+      cy.api({
+        url,
+        method: "POST",
+        headers: Cypress.env("REQUEST_HEADERS"),
+        body: mockPayload
+      }).should(response => {
+        expect(response.status).to.equal(200)
+
+        const body = response.data
+        // validate payment field
+        const { info, name, changeDue, ...paymentObjResponse } = body.payments
+        expect(paymentObjResponse).to.deep.equal(mockPayload)
+
+        // validate multipayment
+        expect(body.multiPayments).to.be.an('array');
+        expect(body.multiPayments.length).to.be.greaterThan(0)
       })
-      .then(response => {
-        const data = response.body.data
-        cy
-          .wrap(data.freeProductOptionsSelected)
-          .then((arr) => { expect(arr.some(obj => Cypress._.isEqual(obj, payload))).to.be.true });
-      })
-    });
+    })
+
+    // it(`Successfully remove "${paymentMethod?.name}" as payment method`, () => {
+    //   const url = URL_PRODUCT + `/employee/cart/${Cypress.env("CUSTOMER_ID")}/remove-payment-v2?${paymentMethod.code}=18&approvalCode=${Cypress.env("APPROVAL_CODE")}`
+    //   cy.api({
+    //     url,
+    //     method: "GET",
+    //     headers: Cypress.env("REQUEST_HEADERS"),
+    //   }).then(response => {
+    //     expect(response.status).to.equal(200)
+        
+    //     const body = response.data
+    //     // validate payment field
+    //     cy.fixture('empty-payment').then(data => {
+    //       expect(body.payments).to.deep.equal(data)
+    //     })
+
+    //     // validate multipayment
+    //     expect(body.multiPayments).to.be.an('array');
+    //     expect(body.multiPayments.length).to.be(0)
+    //   })
+    // })
+
   })
 })
 

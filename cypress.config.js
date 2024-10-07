@@ -9,7 +9,8 @@ module.exports = defineConfig({
       // implement node event listeners here
     },
     baseUrlProduct: 'https://sit-products.tbsgroup.co.id/api/v1',
-    baseUrlUser: 'https://sit-users.tbsgroup.co.id/api/v1'
+    baseUrlUser: 'https://sit-users.tbsgroup.co.id/api/v1',
+    baseUrlPayment: 'https://sit-payments.tbsgroup.co.id/api/v1'
   },
   // env: {
   //   TOKEN_ADMIN: process.env.TOKEN_ADMIN,

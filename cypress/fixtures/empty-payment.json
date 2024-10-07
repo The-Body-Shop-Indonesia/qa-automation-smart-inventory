@@ -1,0 +1,11 @@
+{
+  "method": null,
+  "installmentTenor": null,
+  "isInstallment": null,
+  "token": null,
+  "isOvo": false,
+  "ovoNumber": "",
+  "ovoRetryCount": null,
+  "name": "",
+  "info": null
+}

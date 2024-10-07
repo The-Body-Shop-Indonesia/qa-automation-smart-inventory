@@ -90,184 +90,184 @@ describe('API Test - Stock Movement', () => {
             expect(data).to.haveOwnProperty("nextPage")
         })
         })
-        })
+})
 
-        describe("Pagination Test Group", () => {
-    it("Should be able to apply pagination", () => {
-                const [page, limit] = [1, 10]
-                const paginationUrl = url + `?page=${page}&limit=${limit}`
-                cy.api({
-                method: "GET",
-                url: paginationUrl,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-                    })
-                    .should(response => {
-                const data = response.body.data
-                expect(data).to.haveOwnProperty("totalDocs")
-                expect(data).to.haveOwnProperty("totalPages")
-                expect(data).to.haveOwnProperty("limit")
-                expect(data).to.haveOwnProperty("page")
-                expect(data).to.haveOwnProperty("hasPrevPage")
-                expect(data).to.haveOwnProperty("hasNextPage")
-                expect(data).to.haveOwnProperty("prevPage")
-                expect(data).to.haveOwnProperty("nextPage")
-                })
-                .should(response => {
-                const data = response.body.data
-                expect(data.page).to.equal(page)
-                expect(data.limit).to.eq(limit)
-                expect(data.hasPrevPage).to.equal(false)
-                expect(data.prevPage).to.equal(null)
-                })
-            })
-
-    it("The item returned should match the limit set", () => {
-            const page1 = 1
-            const limit1 = 1
-            cy.request({
-                method: "GET",
-                url: url + `?page=${page1}&limit=${limit1}`,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+describe("Pagination Test Group", () => {
+it("Should be able to apply pagination", () => {
+        const [page, limit] = [1, 10]
+        const paginationUrl = url + `?page=${page}&limit=${limit}`
+        cy.api({
+        method: "GET",
+        url: paginationUrl,
+        headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+        failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
             })
             .should(response => {
-                const data = response.body.data
-                expect(data.page).to.equal(page1)
-                expect(data.limit).to.eq(limit1)
-                expect(data.hasPrevPage).to.equal(false)
-                expect(data.prevPage).to.equal(null)
-                expect(data.docs.length).to.equal(limit1)
-            })
-        
-            const page2 = 1
-            const limit2 = 2
-            cy.api({
-                method: "GET",
-                url: url + `?page=${page2}&limit=${limit2}`,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-            })
-            .should(response => {
-                const data = response.body.data
-                expect(data.page).to.equal(page2)
-                expect(data.limit).to.eq(limit2)
-                expect(data.hasPrevPage).to.equal(false)
-                expect(data.prevPage).to.equal(null)
-                expect(data.docs.length).to.equal(limit2)
-            })
+        const data = response.body.data
+        expect(data).to.haveOwnProperty("totalDocs")
+        expect(data).to.haveOwnProperty("totalPages")
+        expect(data).to.haveOwnProperty("limit")
+        expect(data).to.haveOwnProperty("page")
+        expect(data).to.haveOwnProperty("hasPrevPage")
+        expect(data).to.haveOwnProperty("hasNextPage")
+        expect(data).to.haveOwnProperty("prevPage")
+        expect(data).to.haveOwnProperty("nextPage")
         })
+        .should(response => {
+        const data = response.body.data
+        expect(data.page).to.equal(page)
+        expect(data.limit).to.eq(limit)
+        expect(data.hasPrevPage).to.equal(false)
+        expect(data.prevPage).to.equal(null)
         })
-        
-        describe("Filter Test Group", () => {
-    it("Should return the correct SKU", () => {
-    const sku = '112010666'
-    const urlFilter = url + `?sku=${sku}&page=1&limit=100`
+    })
+
+it("The item returned should match the limit set", () => {
+    const page1 = 1
+    const limit1 = 1
     cy.request({
+        method: "GET",
+        url: url + `?page=${page1}&limit=${limit1}`,
+        headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+        failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+    })
+    .should(response => {
+        const data = response.body.data
+        expect(data.page).to.equal(page1)
+        expect(data.limit).to.eq(limit1)
+        expect(data.hasPrevPage).to.equal(false)
+        expect(data.prevPage).to.equal(null)
+        expect(data.docs.length).to.equal(limit1)
+    })
+
+    const page2 = 1
+    const limit2 = 2
+    cy.api({
+        method: "GET",
+        url: url + `?page=${page2}&limit=${limit2}`,
+        headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+        failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+    })
+    .should(response => {
+        const data = response.body.data
+        expect(data.page).to.equal(page2)
+        expect(data.limit).to.eq(limit2)
+        expect(data.hasPrevPage).to.equal(false)
+        expect(data.prevPage).to.equal(null)
+        expect(data.docs.length).to.equal(limit2)
+    })
+})
+})
+        
+describe("Filter Test Group", () => {
+it("Should return the correct SKU", () => {
+const sku = '112010666'
+const urlFilter = url + `?sku=${sku}&page=1&limit=100`
+cy.request({
+method: "GET",
+url: urlFilter,
+headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+})
+.should(response => {
+    const data = response.body.data.docs
+    expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
+    })
+})
+
+it("Should return the correct from store", () => {
+const fromstore = '14036'
+const urlFilter = url + `?from=${fromstore}&page=1&limit=100`
+cy.api({
+    method: "GET",
+    url: urlFilter,
+    headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+    failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+    })
+    .should(response => {
+    const data = response.body.data.docs
+    expect(Cypress._.every(data, ["from", fromstore])).to.deep.equal(true);
+    })
+})
+
+it("Should return the correct to store", () => {
+const to_store = 'PUBLIC'
+const urlFilter = url + `?to=${to_store}&page=1&limit=100`
+cy.api({
         method: "GET",
         url: urlFilter,
         headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
         failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-    })
-        .should(response => {
-            const data = response.body.data.docs
-            expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
-            })
-        })
-        
-    it("Should return the correct from store", () => {
-    const fromstore = '14036'
-    const urlFilter = url + `?from=${fromstore}&page=1&limit=100`
-    cy.api({
-            method: "GET",
-            url: urlFilter,
-            headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-            failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-            })
-            .should(response => {
-            const data = response.body.data.docs
-            expect(Cypress._.every(data, ["from", fromstore])).to.deep.equal(true);
-            })
-        })
-        
-    it("Should return the correct to store", () => {
-        const to_store = 'PUBLIC'
-        const urlFilter = url + `?to=${to_store}&page=1&limit=100`
-        cy.api({
-                method: "GET",
-                url: urlFilter,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-                })
-                .should(response => {
-                const data = response.body.data.docs
-                expect(Cypress._.every(data, ["to", to_store])).to.deep.equal(true);
-                })
-                })
-        
-    it("Should return the correct by", () => {
-        const by_store = '14036'
-        const urlFilter = url + `?by=${by_store}&page=1&limit=100`
-        cy.api({
-                method: "GET",
-                url: urlFilter,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-                })
-                .should(response => {
-                const data = response.body.data.docs
-                expect(Cypress._.every(data, ["by", by_store])).to.deep.equal(true);
-                })
-                })
-
-    it("Should return the correct event", () => {
-        const event = 'sales'
-        const urlFilter = url + `?event=${event}&page=1&limit=100`
-        cy.api({
-                method: "GET",
-                url: urlFilter,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-                })
-                .should(response => {
-                const data = response.body.data.docs
-                expect(Cypress._.every(data, ["event", event])).to.deep.equal(true);
-                })
-                })
-
-    it("Should return the correct orderNumber", () => {
-        const orderNumber = '140363120240213095'
-        const urlFilter = url + `?orderNumber=${orderNumber}&page=1&limit=100`
-        cy.api({
-                method: "GET",
-                url: urlFilter,
-                headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
-                failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
-                })
-                .should(response => {
-                const data = response.body.data.docs
-                expect(Cypress._.every(data, ["orderNumber", orderNumber])).to.deep.equal(true);
-                })
-            })
-            
-    it("Should return the correct ubd", () => {
-        const ubd = '2024-10';
-        const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`;
-        
-        cy.api({
-          method: "GET",
-          url: urlFilter,
-          headers: Cypress.env("REQUEST_HEADERS"),
-          failOnStatusCode: false
         })
         .should(response => {
-          const data = response.body.data.docs;
-          
-          // Pengecekan apakah bulan dan tahun dari setiap 'ubd' di data sesuai dengan yang diharapkan
-          expect(Cypress._.every(data, (doc) => {
-            const ubdValue = doc.ubd ? doc.ubd.slice(0, 7) : '';
-            return ubdValue === ubd;
-          })).to.deep.equal(true);
+        const data = response.body.data.docs
+        expect(Cypress._.every(data, ["to", to_store])).to.deep.equal(true);
+        })
+        })
+
+it("Should return the correct by", () => {
+const by_store = '14036'
+const urlFilter = url + `?by=${by_store}&page=1&limit=100`
+cy.api({
+        method: "GET",
+        url: urlFilter,
+        headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+        failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+        })
+        .should(response => {
+        const data = response.body.data.docs
+        expect(Cypress._.every(data, ["by", by_store])).to.deep.equal(true);
+        })
+        })
+
+it("Should return the correct event", () => {
+const event = 'sales'
+const urlFilter = url + `?event=${event}&page=1&limit=100`
+cy.api({
+        method: "GET",
+        url: urlFilter,
+        headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+        failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+        })
+        .should(response => {
+        const data = response.body.data.docs
+        expect(Cypress._.every(data, ["event", event])).to.deep.equal(true);
+        })
+        })
+
+it("Should return the correct orderNumber", () => {
+const orderNumber = '140363120240213095'
+const urlFilter = url + `?orderNumber=${orderNumber}&page=1&limit=100`
+cy.api({
+        method: "GET",
+        url: urlFilter,
+        headers: Cypress.env("REQUEST_HEADERS"), // Gunakan header yang diambil dari login
+        failOnStatusCode: false  // Jika Anda ingin request tetap dijalankan meski status bukan 2xx/3xx
+        })
+        .should(response => {
+        const data = response.body.data.docs
+        expect(Cypress._.every(data, ["orderNumber", orderNumber])).to.deep.equal(true);
         })
     })
-             })
+    
+it("Should return the correct ubd", () => {
+const ubd = '2024-10';
+const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`;
+
+cy.api({
+    method: "GET",
+    url: urlFilter,
+    headers: Cypress.env("REQUEST_HEADERS"),
+    failOnStatusCode: false
+})
+.should(response => {
+    const data = response.body.data.docs;
+    
+    // Pengecekan apakah bulan dan tahun dari setiap 'ubd' di data sesuai dengan yang diharapkan
+    expect(Cypress._.every(data, (doc) => {
+    const ubdValue = doc.ubd ? doc.ubd.slice(0, 7) : '';
+    return ubdValue === ubd;
+    })).to.deep.equal(true);
+})
+})
+})

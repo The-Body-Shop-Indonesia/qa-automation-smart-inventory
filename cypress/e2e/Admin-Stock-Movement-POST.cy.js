@@ -51,19 +51,19 @@ describe('API Test - Stock Movement', () => {
         })
         })
     
-        it('Should NOT be able to access the API without token', () => {
-        // const url = URL_USER + "/admin/login"
-        const invalidToken = ''
-        cy.request({
-            method: "GET",
-            url,
-            headers: { Authorization: invalidToken },
-            failOnStatusCode: false
-        })
-        .should(response => {
-            expect(response.status).to.equal(401)
-        })
-        })
+    it('Should NOT be able to access the API without token', () => {
+    // const url = URL_USER + "/admin/login"
+    const invalidToken = ''
+    cy.request({
+        method: "GET",
+        url,
+        headers: { Authorization: invalidToken },
+        failOnStatusCode: false
+    })
+    .should(response => {
+        expect(response.status).to.equal(401)
+    })
+    })
 
 
     it('Should return the correct API', () => {
@@ -104,4 +104,4 @@ describe('API Test - Stock Movement', () => {
     //   expect(data).to.have.property('event', 'transit');
             });
         });
-    });
+});
