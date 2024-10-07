@@ -3,7 +3,7 @@ const { faker } = require('@faker-js/faker');
 exports.createPublicCartPayload = () => {
   const genders = ["male", "female"]
   const randomGender = genders[Math.floor(Math.random() * genders.length)]; 
-  const firstname = faker.person.firstName(randomGender)
+  const firstname = faker.person.firstName(randomGender) + " Automation"
   const lastname = faker.person.lastName(randomGender) 
   return {
     request: {
