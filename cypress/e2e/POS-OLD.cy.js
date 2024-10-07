@@ -437,5 +437,6 @@ describe('Staff Create Order for Public Customer', function() {
  * 10. select payment (Cash)
  * 11. masuk ke halaman konfirmasi order
  * 12. create order
- *jamil_testing
- */ 
+ */
+
+/**komen doang */
