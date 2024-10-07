@@ -111,7 +111,7 @@ describe('Staff Create Order Redemption for Member Customer', function() {
       url,
       headers: Cypress.env("REQUEST_HEADERS"),
       body: {
-        isGuest: false,
+        isGuest: true,
         firstName: "Sandra",
         lastName: "Testtest",
         cardNumber: "10000115160820",

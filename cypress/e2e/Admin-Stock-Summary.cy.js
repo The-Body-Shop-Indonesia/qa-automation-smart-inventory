@@ -243,7 +243,7 @@ describe("Filter Test Group", () => {
 
   //sans
   it("Should return UBD null", () => {
-    const ubd = 'null'
+    const ubd = ''
     const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`
     cy.request({
       method: "GET",
