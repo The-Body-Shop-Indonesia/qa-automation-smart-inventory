@@ -106,7 +106,7 @@ describe('Staff add product to cart customer', function() {
         })
     })
 
-    it('Should able to add product to cart', () => {
+    it('Should able to add product to cart by scan QR', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
         const sku = "112780193"
         const qty = 1
@@ -199,6 +199,12 @@ describe('Staff add product to cart customer', function() {
             expect(item[0].ubdDetail[0].total).to.equal(qty)
             expect(yearExpiredResponse).to.equal(yearExpiredTest)
             expect(monthExpiredResponse).to.equal(monthExpiredTest)
+            const price_112780193 = item[0].product.price
+            Cypress.env("price_112780193", price_112780193)
+            //sub_total
+            expect(item[0].sub_total).to.equal(price_112780193)
+            expect(response.body.data.totalAmount).to.equal(price_112780193)
+            expect(response.body.data.paymentAmount).to.equal(price_112780193)
         })
     })
 
@@ -207,6 +213,7 @@ describe('Staff add product to cart customer', function() {
         const sku = "112780193"
         const qty = 1
         const ubd = "2025-05-25"
+
         cy.api({
             method: "POST",
             url,
@@ -222,12 +229,18 @@ describe('Staff add product to cart customer', function() {
         })
         .should(response => {
             const item = response.body.data.items
+            const price = Cypress.env('price_112780193')*2
+            Cypress.env("total_price", price)
             item.forEach((it) => {
                 if (it.sku === sku) {
                     expect(it.qty).to.equal(qty+1)
                     expect(it.ubdDetail[0].total).to.equal(qty+1)
+                    //sub_total
+                    expect(it.sub_total).to.equal(price)
                 }
             })
+            expect(response.body.data.totalAmount).to.equal(price)
+            expect(response.body.data.paymentAmount).to.equal(price)
         })
     })
 
@@ -250,6 +263,8 @@ describe('Staff add product to cart customer', function() {
             }
         })
         .should(response => {
+            const price = Cypress.env('price_112780193')*3
+            Cypress.env("total_price", price)
             const item = response.body.data.items
             item.forEach((it) => {
                 if (it.sku === sku) {
@@ -267,8 +282,12 @@ describe('Staff add product to cart customer', function() {
                     expect(yearExpiredResponse).to.equal(yearExpiredTest)
                     expect(monthExpiredResponse).to.equal(monthExpiredTest)
                     expect(it.ubdDetail[1].total).to.equal(qty)
+                    //sub_total
+                    expect(it.sub_total).to.equal(price)
                 }
             })
+            expect(response.body.data.totalAmount).to.equal(price)
+            expect(response.body.data.paymentAmount).to.equal(price)
         })
     })
 
@@ -304,8 +323,16 @@ describe('Staff add product to cart customer', function() {
                     expect(it.qty).to.equal(qty)
                     expect(it.ubdDetail[0].ubd).to.equal(null)
                     expect(it.ubdDetail[0].total).to.equal(qty)
+                    const price_101050283 = it.product.price
+                    Cypress.env("price_101050283", price_101050283)
+                    //sub_total
+                    expect(it.sub_total).to.equal(price_101050283)
                 }
             })
+            const total_price = Cypress.env("total_price") + Cypress.env("price_101050283")
+            Cypress.env("total_price", total_price)
+            expect(response.body.data.totalAmount).to.equal(total_price)
+            expect(response.body.data.paymentAmount).to.equal(total_price)
         })
     })
 
@@ -354,6 +381,17 @@ describe('Staff add product to cart customer', function() {
                     ubd: ubd
                 }
             })
+            .should(response => {
+                const item = response.body.data.items
+                item.forEach((it) => {
+                    if (it.sku === sku) {
+                        const price_155060173 = it.product.price
+                        Cypress.env("price_155060173", price_155060173)
+                        const total_price = Cypress.env("total_price") + price_155060173
+                        Cypress.env("total_price", total_price)
+                    }
+                })
+            })
         }
         const ubd2 = "2025-08-25"
         for (let index = 0; index < 5; index++) {
@@ -369,6 +407,19 @@ describe('Staff add product to cart customer', function() {
                     requiredUbd: true,
                     ubd: ubd2
                 }
+            })
+            .should(response => {
+                const item = response.body.data.items
+                item.forEach((it) => {
+                    if (it.sku === sku) {
+                        const price_155060173 = it.product.price
+                        Cypress.env("price_155060173", price_155060173)
+                        const total_price = Cypress.env("total_price") + price_155060173
+                        Cypress.env("total_price", total_price)
+                    }
+                })
+                expect(response.body.data.totalAmount).to.equal(Cypress.env("total_price"))
+                expect(response.body.data.paymentAmount).to.equal(Cypress.env("total_price"))
             })
         }
         //input ke 11
@@ -434,6 +485,8 @@ describe('Staff update product in cart customer', function() {
                     expect(it.notes).to.equal("Menambahkan note di produk 112780193 ubd 2025-05")
                 }
             })
+            expect(response.body.data.totalAmount).to.equal(Cypress.env("total_price"))
+            expect(response.body.data.paymentAmount).to.equal(Cypress.env("total_price"))
         })
     })
 
@@ -477,6 +530,8 @@ describe('Staff update product in cart customer', function() {
                     expect(it.notes).to.equal("Menambahkan note di produk 112780193 ubd 2025-05, pastikan qty tidak bertambah")
                 }
             })
+            expect(response.body.data.totalAmount).to.equal(Cypress.env("total_price"))
+            expect(response.body.data.paymentAmount).to.equal(Cypress.env("total_price"))
         })
     })
 
@@ -507,6 +562,8 @@ describe('Staff update product in cart customer', function() {
                     expect(it.customPrice).to.equal(0)
                 }
             })
+            expect(response.body.data.totalAmount).to.equal(Cypress.env("total_price"))
+            expect(response.body.data.paymentAmount).to.equal(Cypress.env("total_price"))
         })
     })
 })
@@ -539,8 +596,13 @@ describe('Staff remove product in cart customer', function() {
                 if (it.sku === sku) {
                     expect(it.qty).to.equal(2)
                     expect(it.ubdDetail[0].total).to.equal(1)
+                    expect(it.sub_total).to.equal(Cypress.env('price_112780193')*2)
                 }
             })
+            const total_price = Cypress.env('total_price') - Cypress.env('price_112780193')
+            Cypress.env("total_price", total_price)
+            expect(response.body.data.totalAmount).to.equal(total_price)
+            expect(response.body.data.paymentAmount).to.equal(total_price)
         })
 
         const ubd2 = "2025-07-25"
@@ -580,8 +642,13 @@ describe('Staff remove product in cart customer', function() {
                         }
                     })
                     expect(ubdData.length).to.equal(0)
+                    expect(it.sub_total).to.equal(Cypress.env('price_112780193'))
                 }
             })
+            const total_price = Cypress.env('total_price') - Cypress.env('price_112780193')
+            Cypress.env("total_price", total_price)
+            expect(response.body.data.totalAmount).to.equal(total_price)
+            expect(response.body.data.paymentAmount).to.equal(total_price)
         })
     })
 
@@ -608,13 +675,10 @@ describe('Staff remove product in cart customer', function() {
                 }
             })
             expect(jmlItem.length).to.equal(0)
-            // const cekNull = []
-            // item.forEach((it) => {
-            //     if (null) {
-            //         cekNull.push(null)
-            //     }
-            // })
-            // expect(cekNull.length).to.equal(0)
+            const total_price = Cypress.env('total_price') - Cypress.env('price_112780193')
+            Cypress.env("total_price", total_price)
+            expect(response.body.data.totalAmount).to.equal(total_price)
+            expect(response.body.data.paymentAmount).to.equal(total_price)
         })
     })
 
