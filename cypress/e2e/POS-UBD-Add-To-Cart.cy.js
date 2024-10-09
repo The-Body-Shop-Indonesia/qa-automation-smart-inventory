@@ -682,6 +682,31 @@ describe('Staff remove product in cart customer', function() {
         })
     })
 
+    it('Verify if add product with invalid UBD format', () => {
+        const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
+        const sku = "101050283"
+        const qty = 1
+        const ubd = "2025"
+        cy.api({
+            method: "POST",
+            url,
+            headers: Cypress.env("REQUEST_HEADERS"),
+            failOnStatusCode: false,
+            body: {
+                sku: sku,
+                qty: qty,
+                customPrice: 0,
+                notes: "",
+                requiredUbd: true,
+                ubd: ubd
+            }
+        })
+        .should(response => {
+            expect(response.status).to.equal(400)
+            expect(response.body.statusCode).to.equal(400)
+        })
+    })
+
     it('Delete cart', () => {
         const url = URL_PRODUCT + "/employee/cart/" +Cypress.env('customerId')
         cy.api({
