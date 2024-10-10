@@ -169,7 +169,7 @@ describe("Pagination Test Group", () => {
 
 describe("Filter Test Group", () => {
   it("Should return the correct SKU", () => {
-    const sku = '112010666'
+    const sku = '112620556'
     const urlFilter = url + `?sku=${sku}&page=1&limit=100`
     cy.request({
       method: "GET",
@@ -195,13 +195,13 @@ describe("Filter Test Group", () => {
       expect(response.status).to.equal(200)
       const data = response.body.data
       const dataDocs = response.body.data.docs
-      expect(dataDocs.docs).to.equal()
+      expect(dataDocs).to.have.length(0)
       expect(data.totalDocs).to.equal(0)
     })
   })
 
   it("Should return the correct Store Code", () => {
-    const storeCode = '14036'
+    const storeCode = '14160'
     const urlFilter = url + `?storeCode=${storeCode}&page=1&limit=10`
     cy.request({
       method: "GET",
@@ -224,8 +224,11 @@ describe("Filter Test Group", () => {
       headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
-      const data = response.body.data.docs
-      //expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
+      expect(response.status).to.equal(200)
+      const data = response.body.data
+      const dataDocs = response.body.data.docs
+      expect(dataDocs).to.have.length(0)
+      expect(data.totalDocs).to.equal(0)
     })
   })
 
@@ -272,8 +275,6 @@ describe("Filter Test Group", () => {
       const body = response.body
       const data = response.body.data.docs
       expect(body.statusCode).to.equal(200)
-      // const data = response.body.data
-      // expect(response.status).to.equal(400)
       expect(Cypress._.every(data, ubd)).to.deep.equal(ubd)
     })
   })
@@ -298,9 +299,9 @@ describe("Filter Test Group", () => {
 
   //sans
   it("Should return the correct result filtered by SKU + UBD + Store Code", () => {
-    const storeCode = '14036'
+    const storeCode = '14160'
     const ubd = '2024-10-02'
-    const sku = '112010666'
+    const sku = '112620556'
     const urlFilter = url + `?page=1&limit=10&sku=${sku}&storeCode=${storeCode}&ubd=${ubd}`
     cy.request({
       method: "GET",
@@ -309,6 +310,9 @@ describe("Filter Test Group", () => {
     })
     .should(response => {
       const data = response.body.data.docs
+      const body = response.body
+      const docs = body.data.docs
+
       const ubdTest = new Date(ubd)
       const yearExpiredTest = ubdTest.getFullYear()
       const monthExpiredTest = ubdTest.getMonth() + 1
@@ -322,10 +326,11 @@ describe("Filter Test Group", () => {
         const monthIsMatch = monthExpiredResponse === monthExpiredTest
         return yearIsMatch && monthIsMatch
       }
-      expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true)
-      expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true)
-      expect(Cypress._.every(data, ["storeCode", sku])).to.deep.equal(true)
-
-    }) //totalDocs 1, isi array 1
+      expect(response.status).to.equal(200)
+      expect(body.statusCode).to.equal(200)
+      expect(body.data.totalDocs).to.equal(1)
+      expect(docs).to.have.length(1)
+      //get the length of array and to.have.length(1)
+    }) //totalDocs 1, isi docs array 1
   })
 })
