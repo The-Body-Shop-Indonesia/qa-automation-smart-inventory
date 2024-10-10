@@ -10,7 +10,8 @@ module.exports = defineConfig({
     },
     baseUrlProduct: 'https://sit-products.tbsgroup.co.id/api/v1',
     baseUrlUser: 'https://sit-users.tbsgroup.co.id/api/v1',
-    baseUrlPayment: 'https://sit-payments.tbsgroup.co.id/api/v1'
+    baseUrlPayment: 'https://sit-payments.tbsgroup.co.id/api/v1',
+    //baseUrlMP: 'https://sit-marketplaces.tbsgroup.co.id/api/v1/callback/create'
   },
   // env: {
   //   TOKEN_ADMIN: process.env.TOKEN_ADMIN,
