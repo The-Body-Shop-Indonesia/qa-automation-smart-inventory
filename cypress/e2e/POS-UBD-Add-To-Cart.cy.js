@@ -110,7 +110,7 @@ describe('Staff add product to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "POST",
             url,
@@ -212,7 +212,7 @@ describe('Staff add product to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
 
         cy.api({
             method: "POST",
@@ -248,7 +248,7 @@ describe('Staff add product to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-07-25"
+        const ubd = "2025-07"
         cy.api({
             method: "POST",
             url,
@@ -366,7 +366,7 @@ describe('Staff add product to cart customer', function() {
         const sku = "155060173"
         const qty = 1
         const quantity = 0
-        const ubd = "2025-07-25"
+        const ubd = "2025-07"
         for (let index = 0; index < 5; index++) {
             cy.api({
                 method: "POST",
@@ -393,7 +393,7 @@ describe('Staff add product to cart customer', function() {
                 })
             })
         }
-        const ubd2 = "2025-08-25"
+        const ubd2 = "2025-08"
         for (let index = 0; index < 5; index++) {
             cy.api({
                 method: "POST",
@@ -449,7 +449,7 @@ describe('Staff update product in cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/edit"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "PATCH",
             url,
@@ -494,7 +494,7 @@ describe('Staff update product in cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/edit"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "PATCH",
             url,
@@ -539,7 +539,7 @@ describe('Staff update product in cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/edit"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "PATCH",
             url,
@@ -572,7 +572,7 @@ describe('Staff remove product in cart customer', function() {
     it('Decrease quantity product', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
         const sku = "112780193"
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "PATCH",
             url,
@@ -605,7 +605,7 @@ describe('Staff remove product in cart customer', function() {
             expect(response.body.data.paymentAmount).to.equal(total_price)
         })
 
-        const ubd2 = "2025-07-25"
+        const ubd2 = "2025-07"
         cy.api({
             method: "PATCH",
             url,
@@ -655,7 +655,7 @@ describe('Staff remove product in cart customer', function() {
     it('Remove product from cart', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
         const sku = "112780193"
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "PATCH",
             url,
