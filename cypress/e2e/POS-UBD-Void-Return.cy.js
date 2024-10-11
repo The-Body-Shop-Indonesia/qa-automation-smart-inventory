@@ -108,7 +108,7 @@ describe('Staff add void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
         const sku = "112780193"
         const qty = 1
-        const ubd = "2025-05-25"
+        const ubd = "2025-05"
         cy.api({
             method: "POST",
             url,
@@ -152,7 +152,7 @@ describe('Staff add void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void"
         const sku = "101080547"
         const qty = 1
-        const ubd = "2025-02-25"
+        const ubd = "2025-02"
         cy.api({
             method: "POST",
             url,
@@ -197,7 +197,7 @@ describe('Staff add void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void"
         const sku = "101080547"
         const qty = 1
-        const ubd = "2025-03-25"
+        const ubd = "2025-03"
         cy.api({
             method: "POST",
             url,
@@ -243,7 +243,7 @@ describe('Staff add void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void"
         const sku = "190252218"
         const qty = 1
-        const ubd = "2026-01-31"
+        const ubd = "2026-01"
         cy.api({
             method: "POST",
             url,
@@ -293,7 +293,7 @@ describe('Staff add void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void"
         const invalid_sku = "19025221"
         const qty = 1
-        const ubd = "2026-01-31"
+        const ubd = "2026-01"
         cy.api({
             method: "POST",
             url,
@@ -414,7 +414,7 @@ describe('Staff remove void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void/remove"
         const sku = "101080547"
         const qty = 1
-        const ubd = "2025-02-25"
+        const ubd = "2025-02"
         cy.api({
             method: "POST",
             url,
@@ -456,7 +456,7 @@ describe('Staff remove void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void/remove"
         const sku = "101080547"
         const qty = 1
-        const ubd = "2025-10-25"
+        const ubd = "2025-10"
         cy.api({
             method: "POST",
             url,
@@ -478,7 +478,7 @@ describe('Staff remove void item to cart customer', function() {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/void/remove"
         const invalid_sku = "10108054"
         const qty = 1
-        const ubd = "2025-10-25"
+        const ubd = "2025-10"
         cy.api({
             method: "POST",
             url,
