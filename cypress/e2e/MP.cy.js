@@ -1,5 +1,11 @@
-const urlMP = 'https://sit-marketplaces.tbsgroup.co.id/api/v1/callback/create'
+// import { addCommands } from 'cypress-mongodb/dist/index-browser';
+// addCommands();
+// import { ObjectId } from 'mongodb';
+const urlMP = Cypress.config("baseUrlMP")
 //const URL_USER = Cypress.config("baseUrlUser")
+
+const local_id = Math.floor(Math.random() * 10000000000).toString() //random id
+const localName = "999AutomationQAMP999"
 
 describe('Callback create order MP', () => {
     it("Callback create order MP", () => {
@@ -11,7 +17,6 @@ describe('Callback create order MP', () => {
         const localName = "999AutomationQAMP999"
         const storeName = "Shopee 1"
         const storeID = 1323
-        const local_id = Math.floor(Math.random() * 10000000000).toString() //random id
         const cur_date = new Date()
         const utcOffset = -7 * 60; // UTC offset in minutes (+07:00)
         const localOffset = cur_date.getTimezoneOffset();
@@ -146,8 +151,53 @@ describe('Callback create order MP', () => {
             expect(response.status).to.equal(200)
         })
     })
+
+    it("Cek Database Forstokorders", () => {
+        //const local_id = "8294943204" //tes yg udah jadi
+        //const local_id = ""
+        cy.wait(60000)
+        cy.task('mongodb:findOne', {
+            database: "tbs_db_marketplaces",
+            collection: "forstokorders",
+            query: {
+                localId: local_id
+            }
+        })
+        .should(result => {
+            expect(result).to.have.property('_id')
+            expect(result).to.have.property('note', null)
+            expect(result).to.have.property('status', 'Open')
+            expect(result).to.have.property('localId', local_id)
+            expect(result).to.have.property('localName', localName)
+            expect(result).to.have.property('orderNumber') //wait time nya belum, belum ketangkep abis jalanin langsung callback/create
+        })
+        // .then(response => {
+        //     const items = response.body.data.items
+      
+        //     Cypress.env("SKU_112620556_DATA", items[0])
+        //     Cypress.env("SKU_112780045_DATA", items[1])
+        // })
+    })
+
+    // it("Cek Database Order", () => {
+    //     const order_number = "359050020240213161" //tes yg udah jadi
+    //     //const local_id = ""
+    //     cy.task('mongodb:findOne', {
+    //         database: "tbs_be_products",
+    //         collection: "orders",
+    //         query: {
+    //             orderNumber: order_number
+    //         }
+    //     })
+    //     .should(result => {
+    //         expect(result).to.have.property('orderNumber',order_number)
+    //     })
+    // })
 })
-/*  1. Create order MP 
-    2. Cek Response
-    3. Cek API cart
-    4. Cek API order*/
+/*  1. callback / create order MP (done)
+    2. wait sblm cek db 20-30 detik (ada kemungkinan lbh dari itu jadi ada retry)
+    3. koneksi cypress mongo (done)
+    4. cek forstok order (done)
+    5. cek forstok error klo ada stock habis
+    6. cek cart
+    7. cek order*/

@@ -2,15 +2,17 @@ const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
 const URL_USER = Cypress.config("baseUrlUser")
 const URL_PRODUCT = Cypress.config("baseUrlProduct")
+const URL_PRODUCT_REDEMPTION = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
+const URL_REDEMPTION_ORDER = URL_PRODUCT + "/order-redemption"
 
-const skuQR = '112620556'
-const ubd = '2024-10'
-const sort = '-createdAt'
-const storeCode = '14160'
-const nik = '05593'
+const sku_112620556 = '112620556'
+const ubd_112620556 = '2024-10'
+const sort_desc = '-createdAt'
+const store_code = '14160'
+const nik_employee = '05593'
 
-const skuBarcode = '112780045'
-const ubdBarcode = '2024-11'
+const sku_112780045 = '112780045'
+const ubd_112780045 = '2024-11'
 
 describe('Get last product stock on Stock Summary and Stock Movement', function() {
   it('Successfully login Admin', () => {
@@ -45,7 +47,7 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
   it("Get product stock from Stock Summary 112620556", () => {
     const ubd = '2024-10-01'
     const url = URL_PRODUCT + '/admin/stock-summary'
-    const urlFilter = url + `?sku=${skuQR}&page=1&limit=100&ubd=${ubd}&storeCode=${storeCode}`
+    const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
     cy.request({
       method: "GET",
       url: urlFilter,
@@ -64,7 +66,7 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
   it("Get product stock from Stock Summary 112780045", () => {
     const ubd = '2024-11-01'
     const url = URL_PRODUCT + '/admin/stock-summary'
-    const urlFilter = url + `?sku=${skuBarcode}&page=1&limit=100&ubd=${ubd}&storeCode=${storeCode}`
+    const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
     cy.request({
       method: "GET",
       url: urlFilter,
@@ -82,7 +84,7 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
   
   it("Get product stock from Stock Movement 112620556", () => {
     const url = URL_PRODUCT + '/admin/stock-movement'
-    const urlFilter = url + `?sku=${skuQR}&page=1&limit=10&sort=${sort}&ubd=${ubd}&from=${storeCode}`
+    const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112620556}&from=${store_code}`
     cy.request({
       method: "GET",
       url: urlFilter,
@@ -101,7 +103,7 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
 
   it("Get product stock from Stock Movement 112780045", () => {
     const url = URL_PRODUCT + '/admin/stock-movement'
-    const urlFilter = url + `?sku=${skuBarcode}&page=1&limit=10&sort=${sort}&ubd=${ubdBarcode}&from=${storeCode}`
+    const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112780045}&from=${store_code}`
     cy.request({
       method: "GET",
       url: urlFilter,
@@ -119,15 +121,15 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
   })
 })
 
-describe('Staff Create Order Redemption for Member Customer', function() {
+describe('Staff Add Cart Redemption for Member Customer', function() {
   it('Successfully login', () => {
     const url = URL_USER + "/employee/login"
     cy.api({
       method: "POST",
       url,
       body: {
-        nik: nik,
-        storeCode: storeCode,
+        nik: nik_employee,
+        storeCode: store_code,
         pin: "1234"
       }
     })
@@ -261,6 +263,7 @@ describe('Staff Create Order Redemption for Member Customer', function() {
     })
     .then(response => {
       Cypress.env("CART_ID", response.body.data._id)
+      cy.log(Cypress.env("CART_ID"))
     })
   })
 
@@ -272,7 +275,7 @@ describe('Staff Create Order Redemption for Member Customer', function() {
       url: urlAssign,
       headers: Cypress.env("REQUEST_HEADERS"),
       body: {
-        nik: nik
+        nik: nik_employee
       },
       failOnStatusCode: false
     })
@@ -283,22 +286,23 @@ describe('Staff Create Order Redemption for Member Customer', function() {
       expect(body.statusCode).to.equal(201)
     })
   })
+})
 
+describe('Add product Redemption test group', function() {
   it("Add product Redemption by scan QR", () => {
     const cartId = Cypress.env("CART_ID")
     const qtyProduct = 1
-    const urlAddProduct = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
     cy.api({
       method: "PATCH",
-      url: urlAddProduct,
+      url: URL_PRODUCT_REDEMPTION,
       headers: Cypress.env("REQUEST_HEADERS"),
       body: {
         cart_id: cartId,
-        sku: skuQR,
+        sku: sku_112620556,
         qty: qtyProduct,
         notes: "",
         requiredUbd: true,
-        ubd: ubd
+        ubd: ubd_112620556
       }
     })
     .should(response => {
@@ -309,12 +313,13 @@ describe('Staff Create Order Redemption for Member Customer', function() {
       
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
-      expect(items[0].sku).to.equal(skuQR)
+      expect(items).to.have.length(1)
+      expect(items[0].sku).to.equal(sku_112620556)
       expect(items[0].qty).to.equal(qtyProduct)
       expect(items[0].ubdDetail).to.have.length(1)
       expect(items[0].ubdDetail[0].total).to.equal(qtyProduct)
 
-      const ubdTest = new Date(ubd)
+      const ubdTest = new Date(ubd_112620556)
       const yearExpiredTest = ubdTest.getFullYear()
       const monthExpiredTest = ubdTest.getMonth() + 1
 
@@ -328,29 +333,28 @@ describe('Staff Create Order Redemption for Member Customer', function() {
     .then(response => {
       const items = response.body.data.items
 
-      Cypress.env("PRODUCT_QTY_ITEMS", items[0].qty)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL", items[0].ubdDetail[0].total)
+      Cypress.env("SKU_112620556_DATA", items[0])
     })
   })
 
   it("Add product quantity with the same SKU and UBD", () => {
     const cartId = Cypress.env("CART_ID")
-    const productItemsQTY = Cypress.env("PRODUCT_QTY_ITEMS")
-    const productQTYUBDDetail = Cypress.env("PRODUCT_QTY_UBDDETAIL")
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112620556_data_qty = sku_112620556_data.qty
+    const sku_112620556_ubddetail_qty = sku_112620556_data.ubdDetail[0].total
     const qtyProduct = 1
-    const urlAddProduct = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
 
     cy.api({
       method: "PATCH",
-      url: urlAddProduct,
+      url: URL_PRODUCT_REDEMPTION,
       headers: Cypress.env("REQUEST_HEADERS"),
       body: {
         cart_id: cartId,
-        sku: skuQR,
+        sku: sku_112620556,
         qty: qtyProduct,
         notes: "",
         requiredUbd: true,
-        ubd: ubd
+        ubd: ubd_112620556
       }
     })
     .should(response => {
@@ -361,38 +365,38 @@ describe('Staff Create Order Redemption for Member Customer', function() {
       
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
-      expect(items[0].sku).to.equal(skuQR)
-      expect(items[0].qty).to.equal(productItemsQTY + qtyProduct)
+      expect(items).to.have.length(1)
+      expect(items[0].sku).to.equal(sku_112620556)
+      expect(items[0].qty).to.equal(sku_112620556_data_qty + qtyProduct)
       expect(items[0].ubdDetail).to.have.length(1)
-      expect(items[0].ubdDetail[0].total).to.equal(productQTYUBDDetail + qtyProduct)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_qty + qtyProduct)
     })
     .then(response => {
       const items = response.body.data.items
 
-      Cypress.env("PRODUCT_QTY_ITEMS", items[0].qty)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL", items[0].ubdDetail[0].total)
+      Cypress.env("SKU_112620556_DATA", items[0])
     })
   })
 
   it("Add same product with different UBD", () => {
     const cartId = Cypress.env("CART_ID")
-    const productItemsQTY = Cypress.env("PRODUCT_QTY_ITEMS")
-    const productQTYUBDDetail = Cypress.env("PRODUCT_QTY_UBDDETAIL")
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112620556_data_qty = sku_112620556_data.qty
+    const sku_112620556_ubddetail_qty = sku_112620556_data.ubdDetail[0].total
     const qtyProduct = 1
-    const difUBD = "2024-11"
-    const urlAddProduct = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
+    const different_UBD = "2024-11"
 
     cy.api({
       method: "PATCH",
-      url: urlAddProduct,
+      url: URL_PRODUCT_REDEMPTION,
       headers: Cypress.env("REQUEST_HEADERS"),
       body: {
         cart_id: cartId,
-        sku: skuQR,
+        sku: sku_112620556,
         qty: qtyProduct,
         notes: "",
         requiredUbd: true,
-        ubd: difUBD
+        ubd: different_UBD
       }
     })
     .should(response => {
@@ -403,154 +407,18 @@ describe('Staff Create Order Redemption for Member Customer', function() {
       
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
-      expect(items[0].sku).to.equal(skuQR)
-      expect(items[0].qty).to.equal(productItemsQTY + qtyProduct)
+      expect(items).to.have.length(1)
+      expect(items[0].sku).to.equal(sku_112620556)
+      expect(items[0].qty).to.equal(sku_112620556_data_qty + qtyProduct)
       expect(items[0].ubdDetail).to.have.length(2)
-      expect(items[0].ubdDetail[0].total).to.equal(productQTYUBDDetail)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_qty)
       expect(items[0].ubdDetail[1].total).to.equal(qtyProduct)
-    })
-    .then(response => {
-      const items = response.body.data.items
 
-      Cypress.env("PRODUCT_QTY_ITEMS", items[0].qty)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL_1", items[0].ubdDetail[0].total)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL_2", items[0].ubdDetail[1].total)
-    })
-  })
-
-  it("Delete product by scan QR", () => {
-    const cartId = Cypress.env("CART_ID")
-    const productItemsQTY = Cypress.env("PRODUCT_QTY_ITEMS")
-    const productQTYUBDDetail_1 = Cypress.env("PRODUCT_QTY_UBDDETAIL_1")
-    //const productQTYUBDDetail_2 = Cypress.env("PRODUCT_QTY_UBDDETAIL_2")
-    const qtyProduct = -1
-    const difUBD = "2024-11"
-    const urlAddProduct = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
-
-    cy.api({
-      method: "PATCH",
-      url: urlAddProduct,
-      headers: Cypress.env("REQUEST_HEADERS"),
-      body: {
-        cart_id: cartId,
-        sku: skuQR,
-        qty: qtyProduct,
-        notes: "",
-        requiredUbd: true,
-        ubd: difUBD,
-        failOnStatusCode: false
-      }
-    })
-    .should(response => {
-      expect(response.status).to.equal(200)
-      const body = response.body
-      const data = response.body.data
-      const items = response.body.data.items
-      
-      expect(body.statusCode).to.equal(200)
-      expect(data._id).to.equal(cartId)
-      expect(items[0].sku).to.equal(skuQR)
-      expect(items[0].qty).to.equal(productItemsQTY + qtyProduct)
-      expect(items[0].ubdDetail).to.have.length(1)
-      expect(items[0].ubdDetail[0].total).to.equal(productQTYUBDDetail_1)
-      //expect(items[0].ubdDetail[1].total).to.equal(qtyProduct)
-    })
-    .then(response => {
-      const items = response.body.data.items
-
-      Cypress.env("PRODUCT_QTY_ITEMS", items[0].qty)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL_1", items[0].ubdDetail[0].total)
-      //Cypress.env("PRODUCT_QTY_UBDDETAIL_2", items[1].ubdDetail[0].total)
-    })
-  })
-
-  it("Reduce product qty by scan QR", () => {
-    const cartId = Cypress.env("CART_ID")
-    const productItemsQTY = Cypress.env("PRODUCT_QTY_ITEMS")
-    const productQTYUBDDetail_1 = Cypress.env("PRODUCT_QTY_UBDDETAIL_1")
-    //const productQTYUBDDetail_2 = Cypress.env("PRODUCT_QTY_UBDDETAIL_2")
-    const qtyProduct = -1
-    //const difUBD = "2024-11"
-    const urlAddProduct = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
-
-    cy.api({
-      method: "PATCH",
-      url: urlAddProduct,
-      headers: Cypress.env("REQUEST_HEADERS"),
-      body: {
-        cart_id: cartId,
-        sku: skuQR,
-        qty: qtyProduct,
-        notes: "",
-        requiredUbd: true,
-        ubd: ubd,
-        failOnStatusCode: false
-      }
-    })
-    .should(response => {
-      expect(response.status).to.equal(200)
-      const body = response.body
-      const data = response.body.data
-      const items = response.body.data.items
-      
-      expect(body.statusCode).to.equal(200)
-      expect(data._id).to.equal(cartId)
-      expect(items[0].sku).to.equal(skuQR)
-      expect(items[0].qty).to.equal(productItemsQTY + qtyProduct)
-      expect(items[0].ubdDetail).to.have.length(1)
-      expect(items[0].ubdDetail[0].total).to.equal(productQTYUBDDetail_1 + qtyProduct)
-      //expect(items[0].ubdDetail[1].total).to.equal(qtyProduct)
-    })
-    .then(response => {
-      const items = response.body.data.items
-
-      Cypress.env("PRODUCT_QTY_ITEMS", items[0].qty)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL_1", items[0].ubdDetail[0].total)
-      //Cypress.env("PRODUCT_QTY_UBDDETAIL_2", items[1].ubdDetail[0].total)
-    })
-  })
-
-  it("Add product Redemption by barcode", () => {
-    const cartId = Cypress.env("CART_ID")
-    const qtyProduct = 1
-    const urlAddProduct = URL_PRODUCT + "/employee/cart-redemption-ubd/item"
-    cy.api({
-      method: "PATCH",
-      url: urlAddProduct,
-      headers: Cypress.env("REQUEST_HEADERS"),
-      body: {
-        cart_id: cartId,
-        sku: skuBarcode,
-        qty: qtyProduct,
-        notes: "",
-        requiredUbd: false,
-        ubd: ubdBarcode
-      }
-    })
-    .should(response => {
-      expect(response.status).to.equal(200)
-      const body = response.body
-      const data = response.body.data
-      const items = response.body.data.items
-      
-      expect(body.statusCode).to.equal(200)
-      expect(data._id).to.equal(cartId)
-      expect(items[0].sku).to.equal(skuQR) //perlu cek SKU 1 lagi nda?
-      expect(items[0].qty).to.equal(Cypress.env("PRODUCT_QTY_ITEMS"))
-      //expect(items[0].ubdDetail).to.have.length(1) //delete belum berhasil
-      expect(items[0].ubdDetail[0].total).to.equal(Cypress.env("PRODUCT_QTY_UBDDETAIL_1"))
-
-      expect(items[1].sku).to.equal(skuBarcode)
-      expect(items[1].qty).to.equal(qtyProduct)
-      expect(items[1].ubdDetail).to.have.length(1)
-      expect(items[1].ubdDetail[0].total).to.equal(qtyProduct)
-
-      //perlu cek ubd sku 1 lgi nda?
-      const ubdTest = new Date(ubdBarcode)
+      const ubdTest = new Date(different_UBD)
       const yearExpiredTest = ubdTest.getFullYear()
       const monthExpiredTest = ubdTest.getMonth() + 1
 
-      const ubdResponse = new Date(items[1].ubdDetail[0].ubd)
+      const ubdResponse = new Date(items[0].ubdDetail[1].ubd)
       const yearExpiredResponse = ubdResponse.getFullYear()
       const monthExpiredResponse = ubdResponse.getMonth() + 1
 
@@ -560,8 +428,320 @@ describe('Staff Create Order Redemption for Member Customer', function() {
     .then(response => {
       const items = response.body.data.items
 
-      Cypress.env("PRODUCT_QTY_ITEMS_BARCODE", items[1].qty)
-      Cypress.env("PRODUCT_QTY_UBDDETAIL_BARCODE", items[1].ubdDetail[0].total)
+      Cypress.env("SKU_112620556_DATA", items[0])
     })
   })
+
+    it("Add product redemption UBD null/barcode", () => {
+    const cartId = Cypress.env("CART_ID")
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112620556_data_qty = sku_112620556_data.qty
+    const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
+    const sku_112620556_ubddetail_1_qty = sku_112620556_data.ubdDetail[1].total
+    const qtyProduct = 1
+
+    cy.api({
+      method: "PATCH",
+      url: URL_PRODUCT_REDEMPTION,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      body: {
+        cart_id: cartId,
+        sku: sku_112780045,
+        qty: qtyProduct,
+        notes: "",
+        requiredUbd: false,
+        ubd: ""
+      }
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const data = response.body.data
+      const items = response.body.data.items
+      
+      expect(body.statusCode).to.equal(200)
+      expect(data._id).to.equal(cartId)
+      expect(items).to.have.length(2)
+      expect(items[0].sku).to.equal(sku_112620556)
+      expect(items[0].qty).to.equal(sku_112620556_data_qty)
+      expect(items[0].ubdDetail).to.have.length(2)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_0_qty)
+      expect(items[0].ubdDetail[1].total).to.equal(sku_112620556_ubddetail_1_qty)
+
+      expect(items[1].sku).to.equal(sku_112780045)
+      expect(items[1].qty).to.equal(qtyProduct)
+      expect(items[1].ubdDetail).to.have.length(1)
+      expect(items[1].ubdDetail[0].total).to.equal(qtyProduct)
+      expect(items[1].ubdDetail[0].ubd).to.equal(null)
+    })
+    .then(response => {
+      const items = response.body.data.items
+
+      Cypress.env("SKU_112620556_DATA", items[0])
+      Cypress.env("SKU_112780045_DATA", items[1])
+    })
+  })
+})
+
+describe('Reduce qty and remove product Redemption test group', function() {
+  it("Reduce product quantity", () => {
+    const cartId = Cypress.env("CART_ID")
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112620556_data_qty = sku_112620556_data.qty
+    const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
+    const sku_112620556_ubddetail_1_qty = sku_112620556_data.ubdDetail[1].total
+    const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+    const sku_112780045_data_qty = sku_112780045_data.qty
+    const sku_112780045_ubddetail_0_qty = sku_112780045_data.ubdDetail[0].total
+    const qtyProduct = -1
+
+    cy.api({
+      method: "PATCH",
+      url: URL_PRODUCT_REDEMPTION,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      body: {
+        cart_id: cartId,
+        sku: sku_112620556,
+        qty: qtyProduct,
+        notes: "",
+        requiredUbd: true,
+        ubd: ubd_112620556
+      }
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const data = response.body.data
+      const items = response.body.data.items
+      
+      expect(body.statusCode).to.equal(200)
+      expect(data._id).to.equal(cartId)
+      expect(items).to.have.length(2)
+      expect(items[0].sku).to.equal(sku_112620556)
+      expect(items[0].qty).to.equal(sku_112620556_data_qty + qtyProduct)
+      expect(items[0].ubdDetail).to.have.length(2)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_0_qty + qtyProduct)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_1_qty)
+
+      expect(items[1].sku).to.equal(sku_112780045)
+      expect(items[1].qty).to.equal(sku_112780045_data_qty)
+      expect(items[1].ubdDetail).to.have.length(1)
+      expect(items[1].ubdDetail[0].total).to.equal(sku_112780045_ubddetail_0_qty)
+    })
+    .then(response => {
+      const items = response.body.data.items
+
+      Cypress.env("SKU_112620556_DATA", items[0])
+      Cypress.env("SKU_112780045_DATA", items[1])
+    })
+  })
+
+  it("Remove product from cart", () => {
+    const cartId = Cypress.env("CART_ID")
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112620556_data_qty = sku_112620556_data.qty
+    const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
+    //const sku_112620556_ubddetail_1_qty = sku_112620556_data.ubdDetail[1].total
+    const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+    const sku_112780045_data_qty = sku_112780045_data.qty
+    const sku_112780045_ubddetail_0_qty = sku_112780045_data.ubdDetail[0].total
+    const qtyProduct = -1
+    const different_UBD = "2024-11"
+
+    cy.api({
+      method: "PATCH",
+      url: URL_PRODUCT_REDEMPTION,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      body: {
+        cart_id: cartId,
+        sku: sku_112620556,
+        qty: qtyProduct,
+        notes: "",
+        requiredUbd: true,
+        ubd: different_UBD
+      }
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const data = response.body.data
+      const items = response.body.data.items
+      
+      expect(body.statusCode).to.equal(200)
+      expect(data._id).to.equal(cartId)
+      expect(items).to.have.length(2)
+      expect(items[0].sku).to.equal(sku_112620556)
+      expect(items[0].qty).to.equal(sku_112620556_data_qty + qtyProduct)
+      expect(items[0].ubdDetail).to.have.length(1)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_0_qty)
+
+      expect(items[1].sku).to.equal(sku_112780045)
+      expect(items[1].qty).to.equal(sku_112780045_data_qty)
+      expect(items[1].ubdDetail).to.have.length(1)
+      expect(items[1].ubdDetail[0].total).to.equal(sku_112780045_ubddetail_0_qty)
+    })
+    .then(response => {
+      const items = response.body.data.items
+
+      Cypress.env("SKU_112620556_DATA", items[0])
+      Cypress.env("SKU_112780045_DATA", items[1])
+    })
+  })
+
+  //kena error 400 "sku 112780045 with Invalid Date ubd is not in cart"
+  it("Delete product UBD null", () => {
+    const cartId = Cypress.env("CART_ID")
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112620556_data_qty = sku_112620556_data.qty
+    const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
+    const qtyProduct = -1
+
+    cy.api({
+      method: "PATCH",
+      url: URL_PRODUCT_REDEMPTION,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      body: {
+        cart_id: cartId,
+        sku: sku_112780045,
+        qty: qtyProduct,
+        notes: "",
+        requiredUbd: false,
+        ubd: null
+      }
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const data = response.body.data
+      const items = response.body.data.items
+      
+      expect(body.statusCode).to.equal(200)
+      expect(data._id).to.equal(cartId)
+      expect(items).to.have.length(1)
+      expect(items[0].sku).to.equal(sku_112620556)
+      expect(items[0].qty).to.equal(sku_112620556_data_qty)
+      expect(items[0].ubdDetail).to.have.length(1)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_ubddetail_0_qty)
+    })
+    .then(response => {
+      const items = response.body.data.items
+
+      Cypress.env("SKU_112620556_DATA", items[0])
+      Cypress.env("SKU_112780045_DATA", items[1])
+    })
+  })
+
+})
+
+describe('Staff checkout Redemption Order', function() {
+  it("Checkout Redemption order", () => {
+    const cartId = Cypress.env("CART_ID")
+
+    cy.api({
+      method: "POST",
+      url: URL_REDEMPTION_ORDER,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      body: {
+        cart: cartId,
+        orderBy: nik_employee,
+        notes: ""
+      }
+    })
+    .should(response => {
+      expect(response.status).to.equal(201)
+      const body = response.body
+      const data = response.body.data
+      //const items = response.body.data.items
+      
+      expect(body.statusCode).to.equal(201)
+      expect(data.cartId).to.equal(cartId)
+    })
+  })
+
+  it("Get product stock from Stock Summary 112620556", () => {
+    const ubd = '2024-10-01'
+    const url = URL_PRODUCT + '/admin/stock-summary'
+    const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const qty_checkout_112620556 = sku_112620556_data.qty
+    const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112620556")
+    //const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
+    
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+
+      const qty_summary_112620556 = stock_qty_summary_awal - qty_checkout_112620556
+      expect(qty_summary_112620556)
+      //dapetin qty di cart dikurangin sama summary
+    })
+  })
+
+  it("Get product stock from Stock Summary 112780045", () => {
+    const ubd = '2024-11-01'
+    const url = URL_PRODUCT + '/admin/stock-summary'
+    const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+    const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+    const qty_checkout_112780045 = sku_112780045_data.qty
+    const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112780045")
+
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+
+      const qty_summary_112780045 = stock_qty_summary_awal - qty_checkout_112780045
+      cy.log(qty_summary_112780045)
+      //dapetin quantity dikrang yg di cart
+    })
+  })
+  
+  // it("Get product stock from Stock Movement 112620556", () => {
+  //   const url = URL_PRODUCT + '/admin/stock-movement'
+  //   const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112620556}&from=${store_code}`
+  //   cy.request({
+  //     method: "GET",
+  //     url: urlFilter,
+  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+  //   })
+  //   .should(response => {
+  //     expect(response.status).to.equal(200)
+  //     //qty yg keluar get dari cart redmeption
+  //     //ambil total stock ambil stock awal
+  //   })
+  //   .then(response => {
+  //     const totalStock = response.body.data.docs[0].totalStock
+  //     cy.log('Stock movement Qty 112620556:', totalStock)
+  //     cy.log('Stock movement Qty 112620556:', response.body.data.docs[0].orderNumber)
+  //     Cypress.env("stock_movement_qty_112620556", totalStock)
+  //   })
+  // })
+
+  // it("Get product stock from Stock Movement 112780045", () => {
+  //   const url = URL_PRODUCT + '/admin/stock-movement'
+  //   const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112780045}&from=${store_code}`
+  //   cy.request({
+  //     method: "GET",
+  //     url: urlFilter,
+  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+  //   })
+  //   .should(response => {
+  //     expect(response.status).to.equal(200)
+  //     //qty yg keluar get dari cart redmeption
+  //     //ambil total stock ambil stock awal
+  //   })
+  //   .then(response => {
+  //     const totalStock = response.body.data.docs[0].totalStock
+  //     cy.log('Stock movement Qty 112780045:', totalStock)
+  //     cy.log('Stock movement Qty 112780045:', response.body.data.docs[0].orderNumber)
+  //     Cypress.env("stock_movement_qty_112780045", totalStock)
+  //   })
+  // })
 })
