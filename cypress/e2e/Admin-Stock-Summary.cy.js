@@ -1,16 +1,46 @@
 const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
 const baseUrl = Cypress.config("baseUrlProduct")
+const URL_USER = Cypress.config("baseUrlUser")
 
 const url = baseUrl + '/admin/stock-summary'
 const headers = { Authorization: tokenAdmin }
 
 describe('General API Test Group', () => {
+  it('Successfully login', () => {
+    const url = URL_USER + "/admin/login"
+    cy.api({
+      method: "POST",
+      url,
+      body: {
+        username: "admin-tbs",
+        password: "TBSIcms@Desember2022"
+      }
+    })
+    .should(response => {
+      expect(response.status).to.equal(201)
+      const body = response.body
+      expect(body).to.haveOwnProperty("statusCode")
+      expect(body).to.haveOwnProperty("message")
+      expect(body).to.haveOwnProperty("data")
+      expect(body.statusCode).to.equal(201)
+      expect(body.message).to.equal("Success")
+      const data = body.data
+      expect(data).to.haveOwnProperty("accessToken")
+    })
+    .then(response => {
+      const adminToken = response.body.data.accessToken
+      Cypress.env("REQUEST_HEADERS", {
+        Authorization: "Bearer " + adminToken,
+      })
+    })
+  })
+
   it('Should be able to access the API with valid token', () => {
     cy.request({
       method: "GET",
       url,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       expect(response.status).to.equal(200)
@@ -48,7 +78,7 @@ describe('General API Test Group', () => {
     cy.request({
       method: "GET",
       url,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       expect(response.status).to.equal(200)
@@ -60,6 +90,7 @@ describe('General API Test Group', () => {
     .should(response => {
       const data = response.body.data
       expect(data).to.haveOwnProperty("totalDocs")
+      expect(data).to.haveOwnProperty("docs")
       expect(data).to.haveOwnProperty("totalPages")
       expect(data).to.haveOwnProperty("limit")
       expect(data).to.haveOwnProperty("page")
@@ -67,6 +98,7 @@ describe('General API Test Group', () => {
       expect(data).to.haveOwnProperty("hasNextPage")
       expect(data).to.haveOwnProperty("prevPage")
       expect(data).to.haveOwnProperty("nextPage")
+      expect(data).to.haveOwnProperty("pagingCounter")
     })
   })
 })
@@ -78,7 +110,7 @@ describe("Pagination Test Group", () => {
     cy.request({
       method: "GET",
       url: paginationUrl,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       const data = response.body.data
@@ -106,7 +138,7 @@ describe("Pagination Test Group", () => {
     cy.request({
       method: "GET",
       url: url + `?page=${page1}&limit=${limit1}`,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       const data = response.body.data
@@ -122,7 +154,7 @@ describe("Pagination Test Group", () => {
     cy.request({
       method: "GET",
       url: url + `?page=${page2}&limit=${limit2}`,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       const data = response.body.data
@@ -137,12 +169,12 @@ describe("Pagination Test Group", () => {
 
 describe("Filter Test Group", () => {
   it("Should return the correct SKU", () => {
-    const sku = '112010666'
+    const sku = '112620556'
     const urlFilter = url + `?sku=${sku}&page=1&limit=100`
     cy.request({
       method: "GET",
       url: urlFilter,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       const data = response.body.data.docs
@@ -150,17 +182,53 @@ describe("Filter Test Group", () => {
     })
   })
 
-  it("Should return the correct Store Code", () => {
-    const storeCode = '14036'
-    const urlFilter = url + `?storeCode=${storeCode}&page=1&limit=100`
+  //sans
+  it("Should NOT return non exist SKU", () => {
+    const sku = '222010773'
+    const urlFilter = url + `?sku=${sku}&page=1&limit=100`
     cy.request({
       method: "GET",
       url: urlFilter,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const data = response.body.data
+      const dataDocs = response.body.data.docs
+      expect(dataDocs).to.have.length(0)
+      expect(data.totalDocs).to.equal(0)
+    })
+  })
+
+  it("Should return the correct Store Code", () => {
+    const storeCode = '14160'
+    const urlFilter = url + `?storeCode=${storeCode}&page=1&limit=10`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       const data = response.body.data.docs
       expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
+    })
+  })
+
+  //sans
+  it("Should NOT return non exist Store Code", () => {
+    const storeCode = '11444'
+    const urlFilter = url + `?storeCode=${storeCode}&page=1&limit=10`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS")
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const data = response.body.data
+      const dataDocs = response.body.data.docs
+      expect(dataDocs).to.have.length(0)
+      expect(data.totalDocs).to.equal(0)
     })
   })
 
@@ -170,7 +238,7 @@ describe("Filter Test Group", () => {
     cy.request({
       method: "GET",
       url: urlFilter,
-      headers
+      headers: Cypress.env("REQUEST_HEADERS")
     })
     .should(response => {
       const data = response.body.data.docs
@@ -190,5 +258,79 @@ describe("Filter Test Group", () => {
 
       expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
     })
+  })
+
+  //sans
+  it("Should return UBD null", () => {
+    const ubd = null
+    const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      failOnStatusCode: false
+    })
+    .should(response => {
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const data = response.body.data.docs
+      expect(body.statusCode).to.equal(200)
+      expect(Cypress._.every(data, ubd)).to.deep.equal(ubd)
+    })
+  })
+
+  //sans
+  it("Should NOT return the incorrect UBD format", () => {
+    const ubd = '20230901'
+    const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      failOnStatusCode: false
+    })
+    .should(response => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body.statusCode).to.equal(400)
+      expect(body.message[0]).to.equal("ubd must match /^(1[0-9]{3}|2[0-9]{3})-(0[0-9]|1[0-2])-([0-2][0-9]|3[0-1])$/ regular expression")
+    })
+  })
+
+  //sans
+  it("Should return the correct result filtered by SKU + UBD + Store Code", () => {
+    const storeCode = '14160'
+    const ubd = '2024-10-02'
+    const sku = '112620556'
+    const urlFilter = url + `?page=1&limit=10&sku=${sku}&storeCode=${storeCode}&ubd=${ubd}`
+    cy.request({
+      method: "GET",
+      url: urlFilter,
+      headers: Cypress.env("REQUEST_HEADERS")
+    })
+    .should(response => {
+      const data = response.body.data.docs
+      const body = response.body
+      const docs = body.data.docs
+
+      const ubdTest = new Date(ubd)
+      const yearExpiredTest = ubdTest.getFullYear()
+      const monthExpiredTest = ubdTest.getMonth() + 1
+
+      const matchingFunction = check => {
+        const ubdResponse = new Date(check.ubd)
+        const yearExpiredResponse = ubdResponse.getFullYear()
+        const monthExpiredResponse = ubdResponse.getMonth() + 1
+
+        const yearIsMatch = yearExpiredResponse === yearExpiredTest
+        const monthIsMatch = monthExpiredResponse === monthExpiredTest
+        return yearIsMatch && monthIsMatch
+      }
+      expect(response.status).to.equal(200)
+      expect(body.statusCode).to.equal(200)
+      expect(body.data.totalDocs).to.equal(1)
+      expect(docs).to.have.length(1)
+      //get the length of array and to.have.length(1)
+    }) //totalDocs 1, isi docs array 1
   })
 })
