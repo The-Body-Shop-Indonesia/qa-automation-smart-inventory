@@ -695,7 +695,7 @@ describe('Admin check stock product after transaction', function() {
             expect(data.length).to.equal(1);
             expect(data).to.be.an('array');
             const movement = data[0]
-            expect(movement.sku).to.equal(sku)
+            expect(movement.sku).to.equal(sku3)
             expect(movement.from).to.equal(Cypress.env("storeCode"))
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
             expect(movement.qty).to.equal(1)

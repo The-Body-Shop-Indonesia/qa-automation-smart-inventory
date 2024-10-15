@@ -1,7 +1,7 @@
 const { defineConfig } = require("cypress");
-const validateEnv = require("./utils/validate-env")
+const validateEnv = require("./utils/validate-env");
 const { MongoClient } = require('mongodb');
-require('dotenv').config()
+require('dotenv').config();
 
 // validateEnv()
 module.exports = defineConfig({

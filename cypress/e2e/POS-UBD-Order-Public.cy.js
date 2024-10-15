@@ -64,9 +64,11 @@ describe('Admin check stock product before transaction', function() {
             if (data.length === 0) {
                 const qty_awal = 0
                 Cypress.env("qty_awal_112780193", qty_awal)
-            } else {
+                // cy.log('Quantity 112780193 before trx: ', qty_awal)
+            } else if (data.length === 1) {
                 const qty_awal = data[0].qty
                 Cypress.env("qty_awal_112780193", qty_awal)
+                // cy.log('Quantity 112780193 before trx: ', qty_awal)
             }
             // Cypress.env("qty_awal_112780193", qty_awal)
         })
@@ -104,9 +106,11 @@ describe('Admin check stock product before transaction', function() {
             if (data.length === 0) {
                 const qty_awal = 0
                 Cypress.env("qty_awal_101080547", qty_awal)
+                // cy.log('Quantity 101080547 before trx: ', qty_awal)
             } else {
                 const qty_awal = data[0].qty
                 Cypress.env("qty_awal_101080547", qty_awal)
+                // cy.log('Quantity 101080547 before trx: ', qty_awal)
             }
             // Cypress.env("qty_awal_101080547", qty_awal)
         })
@@ -144,9 +148,11 @@ describe('Admin check stock product before transaction', function() {
             if (data.length === 0) {
                 const qty_awal = 0
                 Cypress.env("qty_awal_190252242", qty_awal)
+                // cy.log('Quantity 190252242 before trx: ', qty_awal)
             } else {
                 const qty_awal = data[0].qty
                 Cypress.env("qty_awal_190252242", qty_awal)
+                // cy.log('Quantity 190252242 before trx: ', qty_awal)
             }
             // Cypress.env("qty_awal_101080547", qty_awal)
         })
@@ -655,6 +661,7 @@ describe('Admin check stock product after transaction', function() {
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
             expect(movement.qty).to.equal(1)
             Cypress.env("qty_movement_112780193", movement.qty)
+            // cy.log('Quantity movement 112780193 after trx: ', movement.qty)
         })
 
         // check stock movement sku 101080547 void
@@ -677,7 +684,7 @@ describe('Admin check stock product after transaction', function() {
             expect(movement.from).to.equal(Cypress.env("storeCode"))
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
             expect(movement.qty).to.equal(-1)
-            
+            // cy.log('Quantity movement 101080547 after trx: ', movement.qty)
         })
 
         // check stock movement sku 190252242
@@ -695,11 +702,12 @@ describe('Admin check stock product after transaction', function() {
             expect(data.length).to.equal(1);
             expect(data).to.be.an('array');
             const movement = data[0]
-            expect(movement.sku).to.equal(sku)
+            expect(movement.sku).to.equal(sku3)
             expect(movement.from).to.equal(Cypress.env("storeCode"))
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
             expect(movement.qty).to.equal(1)
             Cypress.env("qty_movement_190252242", movement.qty)
+            // cy.log('Quantity movement 190252242 after trx: ', movement.qty)
         })
     })
     
@@ -738,7 +746,8 @@ describe('Admin check stock product after transaction', function() {
             // expect(data.length).to.equal(1);
             const qty_awal = Cypress.env("qty_awal_112780193")
             const qty_after = qty_awal - Cypress.env("qty_movement_112780193")
-            expect(data[0].qty).to.equal(qty_after);
+            expect(data[0].qty).to.equal(qty_after)
+            // cy.log('Quantity stock 112780193 after trx: ', data[0].qty)
         })
 
         // check stock untuk sku 101080547
@@ -775,7 +784,8 @@ describe('Admin check stock product after transaction', function() {
 
             const qty_awal = Cypress.env("qty_awal_101080547")
             const qty_after = qty_awal - Cypress.env("qty_movement_101080547")
-            expect(data[0].qty).to.equal(qty_after);
+            expect(data[0].qty).to.equal(qty_after)
+            // cy.log('Quantity stock 101080547 after trx: ', data[0].qty)
         })
 
         // check stock untuk sku 190252242
@@ -812,7 +822,8 @@ describe('Admin check stock product after transaction', function() {
 
             const qty_awal = Cypress.env("qty_awal_190252242")
             const qty_after = qty_awal - Cypress.env("qty_movement_190252242")
-            expect(data[0].qty).to.equal(qty_after);
+            expect(data[0].qty).to.equal(qty_after)
+            // cy.log('Quantity stock 190252242 after trx: ', data[0].qty)
         })
     })
 
