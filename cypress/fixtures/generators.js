@@ -207,6 +207,211 @@ exports.createPublicCartPayload = () => {
   }
 }
 
+exports.createPublicCartPayload_14216 = () => {
+  const genders = ["male", "female"]
+  const randomGender = genders[Math.floor(Math.random() * genders.length)]; 
+  const firstname = faker.person.firstName(randomGender) + " Automation"
+  const lastname = faker.person.lastName(randomGender) 
+  return {
+    request: {
+      "isGuest": true,
+      firstName: firstname,
+      lastName: lastname,
+      "cardNumber": "",
+      "nik": "",
+      "familyNumber": "",
+      "isFamily": false,
+      "customerGroup": "",
+      "image": "",
+      "isScanner": false,
+      "isLapsed": true,
+      "isReactivated": true,
+      "isIcarusAppUser": true,
+      "autoEnroll": true,
+      "autoEnrollFrom": "string"
+    },
+    response: {
+      "omni_trx_type": "WALK_IN",
+      "is_omni": false,
+      "assignToStoreDispatcher": null,
+      // "user": "6368861f7848849156b9b182",
+      "items": [],
+      "void_items": [],
+      "totalAmount": 0,
+      "totalWeight": 0,
+      "payments": {
+        "method": null,
+        "installmentTenor": null,
+        "isInstallment": null,
+        "token": null,
+        "isOvo": false,
+        "ovoNumber": "",
+        "ovoRetryCount": null,
+        "name": "",
+        "info": null
+      },
+      "multiPayments": [],
+      "billingAddress": null,
+      "shippingMethod": null,
+      "shippingAddress": null,
+      "shippingDetails": null,
+      "vouchers": [],
+      "paymentDetails": [],
+      "paymentAmount": 0,
+      "currentPayment": 0,
+      "isActive": true,
+      "isSendAsGift": false,
+      "greetingCartType": null,
+      "sendAsGiftDetail": null,
+      "storeCredit": {
+        "amount": null,
+        "status": false
+      },
+      "store": {
+        "location": {
+          "type": "Point",
+          "coordinates": [
+            110.224554,
+            -7.502429
+          ]
+        },
+        "edc": [],
+        "_id": "63e08401c861f4c9ee5d5573",
+        "storeCode": "14216",
+        "__v": 0,
+        "address": "Jl Mayjen Bambang Soegeng No. 1",
+        "city": "MAGELANG",
+        "closingDate": "2049-12-30T17:00:00.000Z",
+        "countryId": "ID",
+        "createdAt": "2023-02-06T04:37:21.965Z",
+        "email": "armadatownsquare@thebodyshop.co.id",
+        "lat": -7.502429,
+        "lng": 110.224554,
+        "name": "TBS ARMADA TOWN SQUARE MAGELANG",
+        "phone": "0293-3218949",
+        "pkpDate": "01/07/2006",
+        "pkpNo": "01.691.344.4-415.000",
+        "ptkpAddress": "Jl. Prof Dr Satrio Blok A3/5\\r\\nBintaro Jaya Tangerang",
+        "ptkpName": "PT. Monica HijauLestari",
+        "status": 1,
+        "storeClass": "C",
+        "updatedAt": "2024-07-31T21:50:24.636Z",
+        "vat": true,
+        "pricing_type": "price",
+        "ppn": 11,
+        "dgm": "04280",
+        "gm": "00039",
+        "image": "https://assets.thebodyshop.co.id/stores/14127.png",
+        "id": "63e08401c861f4c9ee5d5573"
+      },
+      "store_dispatcher": {
+        "location": {
+          "type": "Point",
+          "coordinates": [
+            110.224554,
+            -7.502429
+          ]
+        },
+        "edc": [],
+        "_id": "63e08401c861f4c9ee5d5573",
+        "storeCode": "14216",
+        "__v": 0,
+        "address": "Jl Mayjen Bambang Soegeng No. 1",
+        "city": "MAGELANG",
+        "closingDate": "2049-12-30T17:00:00.000Z",
+        "countryId": "ID",
+        "createdAt": "2023-02-06T04:37:21.965Z",
+        "email": "armadatownsquare@thebodyshop.co.id",
+        "lat": -7.502429,
+        "lng": 110.224554,
+        "name": "TBS ARMADA TOWN SQUARE MAGELANG",
+        "phone": "0293-3218949",
+        "pkpDate": "01/07/2006",
+        "pkpNo": "01.691.344.4-415.000",
+        "ptkpAddress": "Jl. Prof Dr Satrio Blok A3/5\\r\\nBintaro Jaya Tangerang",
+        "ptkpName": "PT. Monica HijauLestari",
+        "status": 1,
+        "storeClass": "C",
+        "updatedAt": "2024-07-31T21:50:24.636Z",
+        "vat": true,
+        "pricing_type": "price",
+        "ppn": 11,
+        "dgm": "04280",
+        "gm": "00039",
+        "image": "https://assets.thebodyshop.co.id/stores/14127.png",
+        "id": "63e08401c861f4c9ee5d5573"
+      },
+      "point": {
+        "pay": 0,
+        "redeem": 0,
+        "payAmount": 0
+      },
+      "cartRuleApplied": [],
+      "customer": {
+        // "_id": "66fd731b9ca6c2656bcc14a4",
+        "isGuest": true,
+        "firstName": firstname,
+        "lastName": lastname,
+        "cardNumber": "",
+        "phoneNumber": "",
+        "email": "",
+        "customerGroup": "PUBLIC",
+        "image": "",
+        "nik": "",
+        "familyNumber": "",
+        "isFamily": false,
+        "isLapsed": true,
+        "isReactivated": true,
+        "isIcarusAppUser": true,
+        "autoEnroll": true,
+        "autoEnrollFrom": "string",
+        "__v": 0,
+        // "id": "66fd731b9ca6c2656bcc14a4"
+      },
+      "createdBy": {
+        "_id": "63e1eabec861f4c9ee6217ff",
+        "nik": "13152",
+        "__v": 0,
+        "createdAt": "2023-02-07T06:07:58.582Z",
+        "endDate": "2154-12-31T16:59:59.000Z",
+        "isKeyCloakUser": true,
+        "isShiftAttended": true,
+        "isUpdatePin": false,
+        "name": "Dedy Prasetya",
+        "role": "manager",
+        "startDate": "2013-09-29T17:00:00.000Z",
+        "status": "active",
+        "storeCode": "14216",
+        "storeName": "TBS ARMADA TOWN SQUARE MAGELANG",
+        // "updatedAt": "2024-10-14T02:55:48.700Z",
+        "LYB": "19017800000450",
+        "ho_level": null,
+        "keycloakUserId": "a15c4710-376c-4f9d-8956-3bd7d66de863",
+        // "lastLogin": "2024-10-14T02:55:48.699Z",
+        // "shiftAttendanceId": "670c80d2726934781d774aa8",
+        // "shiftCode": "14216b2a80"   
+      },
+      "channel": "pos",
+      "freeProducts": [],
+      "freeProductOptions": [],
+      "vatAmount": 0,
+      "discountDetail": [],
+      "assignTo": null,
+      "totalAmountVoid": 0,
+      "type": "normal",
+      "isScanner": false,
+      "cartRuleOnSubtotal": [],
+      "freeProductOptionsSelected": [],
+      "dealsId": "",
+      "itemOrders": [],
+      // "_id": "66fd731b9ca6c2656bcc14a7",
+      // "createdAt": "2024-10-02T16:21:47.619Z",
+      // "updatedAt": "2024-10-02T16:21:47.619Z",
+      "__v": 0
+    }
+  }
+}
+
 exports.newlyCreatedPublicCart = (customerName) => {
   return {
     "items_count": 0,
