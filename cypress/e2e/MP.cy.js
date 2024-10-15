@@ -1,20 +1,16 @@
-// import { addCommands } from 'cypress-mongodb/dist/index-browser';
-// addCommands();
-// import { ObjectId } from 'mongodb';
 const urlMP = Cypress.config("baseUrlMP")
-//const URL_USER = Cypress.config("baseUrlUser")
+
 
 const local_id = Math.floor(Math.random() * 10000000000).toString() //random id
 const localName = "999AutomationQAMP999"
 
 describe('Callback create order MP', () => {
     it("Callback create order MP", () => {
-        const key = "Dk9fRxp-ng.La-P9Y.eBPvpFhaAs%YVNger"
+        const key = Cypress.env('MP_KEY')
         const channel = "Shopee"
         const skus = "112250061" //dibuat SKU array?
         const price = "159000"
         const id =  BigInt(Math.floor(Math.random() * 10000000000000000000000000000)).toString() //musti dibuat random angka
-        const localName = "999AutomationQAMP999"
         const storeName = "Shopee 1"
         const storeID = 1323
         const cur_date = new Date()
@@ -154,11 +150,13 @@ describe('Callback create order MP', () => {
 
     it("Cek Database Forstokorders", () => {
         //const local_id = "8294943204" //tes yg udah jadi
-        //const local_id = ""
-        cy.wait(60000)
+        const db_MP = Cypress.env('DB_MP')
+        const db_Collection = Cypress.env('DB_COLLECTION_FORSTOKORDER')
+        cy.wait(30000)
+
         cy.task('mongodb:findOne', {
-            database: "tbs_db_marketplaces",
-            collection: "forstokorders",
+            database: db_MP,
+            collection: db_Collection,
             query: {
                 localId: local_id
             }
@@ -169,30 +167,34 @@ describe('Callback create order MP', () => {
             expect(result).to.have.property('status', 'Open')
             expect(result).to.have.property('localId', local_id)
             expect(result).to.have.property('localName', localName)
-            expect(result).to.have.property('orderNumber') //wait time nya belum, belum ketangkep abis jalanin langsung callback/create
+            expect(result).to.have.property('orderNumber') 
         })
-        // .then(response => {
-        //     const items = response.body.data.items
-      
-        //     Cypress.env("SKU_112620556_DATA", items[0])
-        //     Cypress.env("SKU_112780045_DATA", items[1])
-        // })
+        .then(result => {
+            //get ordernumber dari query
+            Cypress.env("MP_ORDERNUMBER", result.orderNumber)
+            cy.log("Order Number: ", Cypress.env("MP_ORDERNUMBER"))
+        })
     })
 
-    // it("Cek Database Order", () => {
-    //     const order_number = "359050020240213161" //tes yg udah jadi
-    //     //const local_id = ""
-    //     cy.task('mongodb:findOne', {
-    //         database: "tbs_be_products",
-    //         collection: "orders",
-    //         query: {
-    //             orderNumber: order_number
-    //         }
-    //     })
-    //     .should(result => {
-    //         expect(result).to.have.property('orderNumber',order_number)
-    //     })
-    // })
+    it("Cek Database Order", () => {
+        //const order_number = "359050020240213161" //tes yg udah jadi
+        const order_number = Cypress.env("MP_ORDERNUMBER")
+        const db_Order = Cypress.env('DB_PRODUCTS')
+        const db_Collection = Cypress.env('DB_COLLECTION_ORDERS')
+        cy.log(db_Order)
+        cy.log(db_Collection)
+        //const local_id = ""
+        cy.task('mongodb:findOne', {
+            database: db_Order,
+            collection: db_Collection,
+            query: {
+                orderNumber: order_number
+            }
+        })
+        .should(result => {
+            expect(result).to.have.property('orderNumber',order_number)
+        })
+    })
 })
 /*  1. callback / create order MP (done)
     2. wait sblm cek db 20-30 detik (ada kemungkinan lbh dari itu jadi ada retry)
