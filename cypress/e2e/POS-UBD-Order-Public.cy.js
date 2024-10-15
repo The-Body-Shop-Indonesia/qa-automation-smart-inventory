@@ -154,7 +154,7 @@ describe('Admin check stock product before transaction', function() {
 
 })
 
-describe('Staff create order with void item', function() {
+describe('Staff create order public customer with void item', function() {
     it('Successfully login', () => {
         const url = URL_USER + "/employee/login"
         cy.api({
@@ -260,38 +260,82 @@ describe('Staff create order with void item', function() {
         }
     })
 
-    it('Should able to create cart', () => {
+    it("Shows all cart list", () => {
+        const url = URL_PRODUCT + "/employee/cart/list/all-v2?page=1&size=10&skipCart=0&skipRedemption=0"
+        cy.api({
+            method: "GET",
+            url,
+            headers: Cypress.env("REQUEST_HEADERS")
+        })
+        .should(response => {
+            expect(response.status).to.equal(200)
+        })
+    })
+    
+    it("Creates a public cart", () => {
+        const { request: mockRequest, response: mockResponse } = require("../fixtures/generators").createPublicCartPayload_14216()
         const url = URL_PRODUCT + "/employee/cart/create"
         cy.api({
             method: "POST",
             url,
-            headers: Cypress.env("REQUEST_HEADERS"),
-            body: {
-                isGuest: false,
-                firstName: "BE Automation",
-                lastName: "User",
-                cardNumber: "51727230398000325",
-                nik: "",
-                FamilyNumber: "",
-                isFamily: false,
-                customerGroup: "STARTER",
-                image: "https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/d4f31a39-5dab-4c50-a307-5d24282453ec.jpg",
-                isScanner: true,
-                isLapsed: false,
-                isReactivated: false,
-                isIcarusAppUser: false,
-                autoEnroll: false,
-                autoEnrollFrom: ""
-            }
+            body: mockRequest,
+            headers: Cypress.env("REQUEST_HEADERS")
         })
         .should(response => {
             expect(response.status).to.equal(201)
-            expect(response.body.data).to.haveOwnProperty("_id")
-            expect(response.body.data.customer).to.haveOwnProperty("_id")
-            const cartId = response.body.data._id
-            Cypress.env("cartId", cartId)
-            const customerId = response.body.data.customer._id
-            Cypress.env("customerId", customerId)
+            const data = response.body.data
+            delete data.user
+            delete data.customer.id
+            delete data.customer._id
+            delete data.createdBy.updatedAt
+            delete data.createdBy.lastLogin
+            delete data.createdBy.shiftAttendanceId
+            delete data.createdBy.shiftCode
+            delete data._id
+            delete data.updatedAt
+            delete data.createdAt
+            expect(data).to.deep.equal(mockResponse)
+            console.log(mockResponse)
+            Cypress.env('PUBLIC_CUSTOMER_FIRSTNAME', mockRequest.firstName);
+        })
+    })
+    
+    it("Shows recently created public cart on the first list", () => {
+        const url = URL_PRODUCT + "/employee/cart/list/all-v2?page=1&size=10&skipCart=0&skipRedemption=0"
+        cy.api({
+            method: "GET",
+            url,
+            headers: Cypress.env("REQUEST_HEADERS")
+        })
+        .should(response => {
+            expect(response.status).to.equal(200)
+            const data = response.body.data
+            const firstItem = data.docs[0]
+            Cypress.env("customerId", firstItem.customer_id)
+            delete firstItem._id
+            delete firstItem.customer_id
+        
+            const firstname = Cypress.env("PUBLIC_CUSTOMER_FIRSTNAME")
+            const expected = require("../fixtures/generators").newlyCreatedPublicCart(firstname)
+            expect(firstItem).to.deep.equal(expected)
+        })
+    })
+    
+    it("Shows empty cart details", () => {
+        const url = URL_PRODUCT + `/employee/cart/${Cypress.env("customerId")}`
+        cy.api({
+            method: "GET",
+            url,
+            headers: Cypress.env("REQUEST_HEADERS")
+        })
+        .should(response => {
+            expect(response.status).to.equal(200)
+            expect(response.body.data.items.length).to.equal(0)
+            expect(response.body.data.totalAmount).to.equal(0)
+            expect(response.body.data.totalWeight).to.equal(0)
+            expect(response.body.data.paymentAmount).to.equal(0)
+            expect(response.body.data.currentPayment).to.equal(0)
+            Cypress.env("CART", response.body.data)
         })
     })
 
@@ -310,10 +354,11 @@ describe('Staff create order with void item', function() {
             expect(response.status).to.equal(201)
             const data = response.body.data
             expect(data.assignTo.nik).to.equal(nik)
+            Cypress.env("CART", response.body.data)
         })
     })
 
-    it('Should able to add product to cart by scan QR', () => {
+    it('Should able to add 1 product to cart by scan QR', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
         const sku = "112780193"
         const qty = 1
@@ -332,64 +377,10 @@ describe('Staff create order with void item', function() {
             }
         })
         .should(response => {
-            expect(response.status).to.equal(201)
             const data = response.body.data
-            expect(data).to.haveOwnProperty("_id")
-            expect(data).to.haveOwnProperty("omni_trx_type")
-            expect(data).to.haveOwnProperty("is_omni")
-            expect(data).to.haveOwnProperty("assignToStoreDispatcher")
-            expect(data).to.haveOwnProperty("user")
-            expect(data).to.haveOwnProperty("items")
-            expect(data).to.haveOwnProperty("void_items")
-            expect(data).to.haveOwnProperty("totalAmount")
-            expect(data).to.haveOwnProperty("totalWeight")
-            expect(data).to.haveOwnProperty("payments")
-            expect(data).to.haveOwnProperty("multiPayments")
-            expect(data).to.haveOwnProperty("billingAddress")
-            expect(data).to.haveOwnProperty("shippingMethod")
-            expect(data).to.haveOwnProperty("shippingAddress")
-            expect(data).to.haveOwnProperty("shippingDetails")
-            expect(data).to.haveOwnProperty("vouchers")
-            expect(data).to.haveOwnProperty("paymentDetails")
-            expect(data).to.haveOwnProperty("paymentAmount")
-            expect(data).to.haveOwnProperty("currentPayment")
-            expect(data).to.haveOwnProperty("isActive")
-            expect(data).to.haveOwnProperty("isSendAsGift")
-            expect(data).to.haveOwnProperty("greetingCartType")
-            expect(data).to.haveOwnProperty("sendAsGiftDetail")
-            expect(data).to.haveOwnProperty("storeCredit")
-            expect(data).to.haveOwnProperty("store")
-            expect(data).to.haveOwnProperty("store_dispatcher")
-            expect(data).to.haveOwnProperty("point")
-            expect(data).to.haveOwnProperty("cartRuleApplied")
-            expect(data).to.haveOwnProperty("customer")
-            expect(data).to.haveOwnProperty("createdBy")
-            expect(data).to.haveOwnProperty("channel")
-            expect(data).to.haveOwnProperty("freeProducts")
-            expect(data).to.haveOwnProperty("freeProductOptions")
-            expect(data).to.haveOwnProperty("vatAmount")
-            expect(data).to.haveOwnProperty("discountDetail")
-            expect(data).to.haveOwnProperty("assignTo")
-            expect(data).to.haveOwnProperty("totalAmountVoid")
-            expect(data).to.haveOwnProperty("type")
-            expect(data).to.haveOwnProperty("isScanner")
-            expect(data).to.haveOwnProperty("cartRuleOnSubtotal")
-            expect(data).to.haveOwnProperty("freeProductOptionsSelected")
-            expect(data).to.haveOwnProperty("dealsId")
-            expect(data).to.haveOwnProperty("itemOrders")
-            expect(data).to.haveOwnProperty("createdAt")
-            expect(data).to.haveOwnProperty("updatedAt")
-            expect(data).to.haveOwnProperty("__v")
-            expect(data).to.haveOwnProperty("productCategoriesInternal")
-            expect(data).to.haveOwnProperty("cashVoucher")
-            data.items.forEach(function(item){
-                expect(item).to.haveOwnProperty("product")
-                expect(item).to.haveOwnProperty("qty")
-                expect(item).to.haveOwnProperty("sub_total")
-                expect(item).to.haveOwnProperty("sku")
-                expect(item).to.haveOwnProperty("grandTotal")
-                expect(item).to.haveOwnProperty("ubdDetail")
-            })
+            expect(data.items.length).to.equal(1)
+            expect(data.void_items.length).to.equal(0)
+            Cypress.env("CART", data)
         })
         .should(response => {
             const item = response.body.data.items
@@ -437,7 +428,10 @@ describe('Staff create order with void item', function() {
             }
         })
         .should(response => {
-            expect(response.status).to.equal(201)
+            const data = response.body.data
+            expect(data.items.length).to.equal(2)
+            expect(data.void_items.length).to.equal(0)
+            Cypress.env("CART", data)
         })
         .should(response => {
             const item = response.body.data.items
@@ -484,6 +478,12 @@ describe('Staff create order with void item', function() {
                 requiredUbd: true,
                 ubd: ubd
             }
+        })
+        .should(response => {
+            const data = response.body.data
+            expect(data.items.length).to.equal(2)
+            expect(data.void_items.length).to.equal(1)
+            Cypress.env("CART", data)
         })
         .should(response => {
             expect(response.status).to.equal(201)
@@ -657,7 +657,7 @@ describe('Admin check stock product after transaction', function() {
             Cypress.env("qty_movement_112780193", movement.qty)
         })
 
-        // check stock untuk sku 101080547 void
+        // check stock movement sku 101080547 void
         const sku2 = '101080547'
         const ubd2 = '2025-02-25'
         const urlFilter2 = url + `?sku=${sku2}&from=${Cypress.env("storeCode")}&event=sales&orderNumber=${Cypress.env("orderNumber")}&ubd=${ubd2}&page=1&limit=100`

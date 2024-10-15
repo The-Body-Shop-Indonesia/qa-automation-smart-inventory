@@ -13,8 +13,8 @@ describe('General API Test Group', () => {
             url: urlUser,
             // headers,
             body: {
-                username: "admin-tbs",
-                password: "TBSIcms@Desember2022"
+                username: Cypress.env("ADMIN_USERNAME"),
+                password: Cypress.env("ADMIN_PASSWORD")
             }
         })
         .then(response => {
@@ -386,6 +386,22 @@ describe("Filter Test Group", () => {
             expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
             expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
             expect(data.length).to.equal(1);
+        })
+    })
+
+    it("Should return the correct SKU and UBD null", () => {
+        const sku = '112010666'
+        const ubd = null
+        const urlFilter = url + `?sku=${sku}&ubd=${ubd}&page=1&limit=100`
+        cy.api({
+            method: "GET",
+            url: urlFilter,
+            headers: Cypress.env("REQUEST_HEADERS")
+        })
+        .should(response => {
+            const data = response.body.data.docs
+            expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
+            expect(Cypress._.every(data, ["ubd", ubd])).to.deep.equal(true);
         })
     })
 })

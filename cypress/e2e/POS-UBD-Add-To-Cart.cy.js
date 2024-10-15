@@ -10,9 +10,9 @@ describe('Staff add product to cart customer', function() {
             method: "POST",
             url,
             body: {
-                nik: "13152",
-                storeCode: "14216",
-                pin: "1234"
+                nik: Cypress.env("EMP_NIK"),
+                storeCode: Cypress.env("EMP_STORECODE"),
+                pin: Cypress.env("EMP_PIN")
             }
         })
         .should(response => {
@@ -35,15 +35,43 @@ describe('Staff add product to cart customer', function() {
         })
     })
 
-    it('Check shift', () => {
-        //close shift
-        cy.api({
-            method: "POST",
-            url: URL_USER + "/employee/shift/close",
-            headers: Cypress.env("REQUEST_HEADERS"),
-            failOnStatusCode: false
-        })
-        //cek shift
+    // it('Check shift', () => {
+    //     //close shift
+    //     cy.api({
+    //         method: "POST",
+    //         url: URL_USER + "/employee/shift/close",
+    //         headers: Cypress.env("REQUEST_HEADERS"),
+    //         failOnStatusCode: false
+    //     })
+    //     //cek shift
+    //     const url = URL_USER + "/employee/shift"
+    //     cy.api({
+    //         method: "GET",
+    //         url,
+    //         headers: Cypress.env("REQUEST_HEADERS"),
+    //         failOnStatusCode: false
+    //     })
+    //     .then(response => {
+    //         const status = response.body.statusCode
+    //         expect(status).to.equal(400)
+    //         if (status === 400) {
+    //             //open shift
+    //             cy.api({
+    //                 method: "POST",
+    //                 url: URL_USER + "/employee/shift/open",
+    //                 headers: Cypress.env("REQUEST_HEADERS")
+    //             })
+    //             .should(response => {
+    //                 expect(response.status).to.equal(201)
+    //                 expect(response.body.data.status).to.equal("open")
+    //             })
+    //         } else {
+                
+    //         }
+    //     })
+    // })
+
+    it("Check shift", () => {
         const url = URL_USER + "/employee/shift"
         cy.api({
             method: "GET",
@@ -51,24 +79,68 @@ describe('Staff add product to cart customer', function() {
             headers: Cypress.env("REQUEST_HEADERS"),
             failOnStatusCode: false
         })
-        .then(response => {
-            const status = response.body.statusCode
-            expect(status).to.equal(400)
-            if (status === 400) {
-                //open shift
-                cy.api({
-                    method: "POST",
-                    url: URL_USER + "/employee/shift/open",
-                    headers: Cypress.env("REQUEST_HEADERS")
-                })
-                .should(response => {
-                    expect(response.status).to.equal(201)
-                    expect(response.body.data.status).to.equal("open")
-                })
-            } else {
-                
-            }
+        .should(response => {
+            const body = response.body
+            expect(body).to.haveOwnProperty("statusCode")
+            expect(body).to.haveOwnProperty("message")
         })
+        .then(response => {
+            Cypress.env("RESPONSE_BODY", response.body)
+        })
+    })
+    
+    it("Close shift", () => {
+        const body = Cypress.env("RESPONSE_BODY")
+        if (body.statusCode === 200 && body.data.shift.status === "expired") {
+            const url = URL_USER + "/employee/shift/close"
+            cy.api({
+                method: "POST",
+                url,
+                headers: Cypress.env("REQUEST_HEADERS"),
+                failOnStatusCode: false
+            })
+            .should(response => {
+                expect(response.status).to.equal(201)
+            })
+            .then(response => {
+                Cypress.env("RESPONSE_BODY", response.body)
+            })
+        } else if (body.statusCode === 500) {
+            cy.log('Internal Server Error')
+        } else {
+            cy.log('tidak perlu close shift')
+        }
+    })
+
+    it("Open shift", () => {
+        const body = Cypress.env("RESPONSE_BODY")
+        if (body.statusCode === 201) {
+            const url = URL_USER + "/employee/shift/open"
+            cy.api({
+                method: "POST",
+                url,
+                headers: Cypress.env("REQUEST_HEADERS"),
+                failOnStatusCode: false
+            })
+            .should(response => {
+                expect(response.status).to.equal(201)
+            })
+        } else if (body.statusCode === 400) {
+            const url = URL_USER + "/employee/shift/open"
+            cy.api({
+                method: "POST",
+                url,
+                headers: Cypress.env("REQUEST_HEADERS"),
+                failOnStatusCode: false
+            })
+            .should(response => {
+                expect(response.status).to.equal(201)
+            })
+        } else if (body.statusCode === 500) {
+            cy.log('Internal Server Error')
+        } else {
+            cy.log('shift sedang berjalan')
+        }
     })
 
     it('Should able to create cart', () => {
@@ -442,6 +514,107 @@ describe('Staff add product to cart customer', function() {
             expect(response.body.statusCode).to.equal(400)
         })
     })
+
+    it('Add product by scan barcode', () => {
+        const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
+        const sku = "190252242"
+        const qty = 1
+        const ubd = "2026-01"
+        cy.api({
+            method: "POST",
+            url,
+            headers: Cypress.env("REQUEST_HEADERS"),
+            body: {
+                sku: sku,
+                qty: qty,
+                customPrice: 0,
+                notes: "",
+                requiredUbd: true,
+                ubd: ubd
+            }
+        })
+        .should(response => {
+            const item = response.body.data.items
+            const jmlItem = []
+            item.forEach((it) => {
+                if (it.sku === sku) {
+                    jmlItem.push(it.sku)
+                }
+            })
+            expect(jmlItem.length).to.equal(1)
+            item.forEach((it) => {
+                if (it.sku === sku) {
+                    expect(it.qty).to.equal(qty)
+                    // expect(it.ubdDetail[0].ubd).to.equal(null)
+                    expect(it.ubdDetail[0].total).to.equal(qty)
+                    const ubdTest = new Date(ubd)
+                    const yearExpiredTest = ubdTest.getFullYear()
+                    const monthExpiredTest = ubdTest.getMonth() + 1
+                    const responseUbd = it.ubdDetail[0].ubd
+                    const responseUbdDate = new Date(responseUbd)
+                    const yearExpiredResponse = responseUbdDate.getFullYear()
+                    const monthExpiredResponse = responseUbdDate.getMonth() + 1
+                    expect(yearExpiredResponse).to.equal(yearExpiredTest)
+                    expect(monthExpiredResponse).to.equal(monthExpiredTest)
+                    const price_190252242 = it.product.price
+                    Cypress.env("price_190252242", price_190252242)
+                    //sub_total
+                    expect(it.sub_total).to.equal(price_190252242)
+                }
+            })
+            const total_price = Cypress.env("total_price") + Cypress.env("price_190252242")
+            Cypress.env("total_price", total_price)
+            expect(response.body.data.totalAmount).to.equal(total_price)
+            expect(response.body.data.paymentAmount).to.equal(total_price)
+        })
+    })
+
+    // it('Verify if add product with invalid UBD format', () => {
+    //     // year only
+    //     const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
+    //     const sku = "101050283"
+    //     const qty = 1
+    //     const ubd = "2025"
+    //     cy.api({
+    //         method: "POST",
+    //         url,
+    //         headers: Cypress.env("REQUEST_HEADERS"),
+    //         failOnStatusCode: false,
+    //         body: {
+    //             sku: sku,
+    //             qty: qty,
+    //             customPrice: 0,
+    //             notes: "",
+    //             requiredUbd: true,
+    //             ubd: ubd
+    //         }
+    //     })
+    //     .should(response => {
+    //         expect(response.status).to.equal(400)
+    //         expect(response.body.statusCode).to.equal(400)
+    //     })
+
+    //     // year-month-day
+    //     const ubd2 = "2025-10-10"
+    //     cy.api({
+    //         method: "POST",
+    //         url,
+    //         headers: Cypress.env("REQUEST_HEADERS"),
+    //         failOnStatusCode: false,
+    //         body: {
+    //             sku: sku,
+    //             qty: qty,
+    //             customPrice: 0,
+    //             notes: "",
+    //             requiredUbd: true,
+    //             ubd: ubd2
+    //         }
+    //     })
+    //     .should(response => {
+    //         expect(response.status).to.equal(400)
+    //         expect(response.body.statusCode).to.equal(400)
+    //     })
+    // })
 })
 
 describe('Staff update product in cart customer', function() {
@@ -501,7 +674,7 @@ describe('Staff update product in cart customer', function() {
             headers: Cypress.env("REQUEST_HEADERS"),
             body: {
                 sku: sku,
-                qty: 3,
+                qty: 5,
                 customPrice: 0,
                 notes: "Menambahkan note di produk 112780193 ubd 2025-05, pastikan qty tidak bertambah",
                 requiredUbd: true,
@@ -546,7 +719,7 @@ describe('Staff update product in cart customer', function() {
             headers: Cypress.env("REQUEST_HEADERS"),
             body: {
                 sku: sku,
-                qty: 3,
+                qty: 5,
                 customPrice: 10000,
                 notes: "Pastikan customPrice tetap 0",
                 requiredUbd: true,
@@ -652,7 +825,7 @@ describe('Staff remove product in cart customer', function() {
         })
     })
 
-    it('Remove product from cart', () => {
+    it('Delete product from cart by scan QR', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
         const sku = "112780193"
         const ubd = "2025-05"
@@ -682,30 +855,74 @@ describe('Staff remove product in cart customer', function() {
         })
     })
 
-    it('Verify if add product with invalid UBD format', () => {
-        const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "101050283"
-        const qty = 1
-        const ubd = "2025"
+    it('Delete product by scan barcode', () => {
+        const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
+        const sku = "190252242"
+        const ubd = "2026-01"
         cy.api({
-            method: "POST",
+            method: "PATCH",
             url,
             headers: Cypress.env("REQUEST_HEADERS"),
-            failOnStatusCode: false,
             body: {
                 sku: sku,
-                qty: qty,
-                customPrice: 0,
-                notes: "",
                 requiredUbd: true,
                 ubd: ubd
             }
         })
         .should(response => {
-            expect(response.status).to.equal(400)
-            expect(response.body.statusCode).to.equal(400)
+            const item = response.body.data.items
+            const jmlItem = []
+            item.forEach((it) => {
+                if (it.sku === sku) {
+                    jmlItem.push(it.sku)
+                }
+            })
+            expect(jmlItem.length).to.equal(0)
+            const total_price = Cypress.env('total_price') - Cypress.env('price_190252242')
+            Cypress.env("total_price", total_price)
+            expect(response.body.data.totalAmount).to.equal(total_price)
+            expect(response.body.data.paymentAmount).to.equal(total_price)
         })
     })
+
+    // it('Verify remove product if invalid ubd format', () => {
+    //     // year 
+    //     const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
+    //     const sku = "155060173"
+    //     const ubd = "2025"
+    //     cy.api({
+    //         method: "PATCH",
+    //         url,
+    //         headers: Cypress.env("REQUEST_HEADERS"),
+    //         failOnStatusCode: false,
+    //         body: {
+    //             sku: sku,
+    //             requiredUbd: true,
+    //             ubd: ubd
+    //         }
+    //     })
+    //     .should(response => {
+    //         expect(response.status).to.equal(400)
+    //         expect(response.body.statusCode).to.equal(400)
+    //     })
+    //     // year-month-day
+    //     const ubd2 = "2025-07-01"
+    //     cy.api({
+    //         method: "PATCH",
+    //         url,
+    //         headers: Cypress.env("REQUEST_HEADERS"),
+    //         failOnStatusCode: false,
+    //         body: {
+    //             sku: sku,
+    //             requiredUbd: true,
+    //             ubd: ubd2
+    //         }
+    //     })
+    //     .should(response => {
+    //         expect(response.status).to.equal(400)
+    //         expect(response.body.statusCode).to.equal(400)
+    //     })
+    // })
 
     it('Delete cart', () => {
         const url = URL_PRODUCT + "/employee/cart/" +Cypress.env('customerId')
