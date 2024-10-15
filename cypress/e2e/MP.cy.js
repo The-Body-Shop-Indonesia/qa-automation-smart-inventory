@@ -6,7 +6,7 @@ const localName = "999AutomationQAMP999"
 
 describe('Callback create order MP', () => {
     it("Callback create order MP", () => {
-        const key = Cypress.env('MP_KEY')
+        const key = Cypress.env("MP_KEY")
         const channel = "Shopee"
         const skus = "112250061" //dibuat SKU array?
         const price = "159000"
@@ -14,7 +14,7 @@ describe('Callback create order MP', () => {
         const storeName = "Shopee 1"
         const storeID = 1323
         const cur_date = new Date()
-        const utcOffset = -7 * 60; // UTC offset in minutes (+07:00)
+        const utcOffset = - 7 * 60; // UTC offset in minutes (+07:00)
         const localOffset = cur_date.getTimezoneOffset();
         cur_date.setMinutes(cur_date.getMinutes() - (utcOffset + localOffset)); //Adjusting for the +07:00 offset
 
