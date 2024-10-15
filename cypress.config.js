@@ -1,6 +1,6 @@
 const { defineConfig } = require("cypress");
-const validateEnv = require("./utils/validate-env")
-require('dotenv').config()
+const validateEnv = require("./utils/validate-env");
+require('dotenv').config();
 
 // validateEnv()
 module.exports = defineConfig({
@@ -12,10 +12,15 @@ module.exports = defineConfig({
     baseUrlUser: 'https://sit-users.tbsgroup.co.id/api/v1',
     baseUrlPayment: 'https://sit-payments.tbsgroup.co.id/api/v1'
   },
-  // env: {
-  //   TOKEN_ADMIN: process.env.TOKEN_ADMIN,
-  //   TOKEN_POS: process.env.TOKEN_POS
-  // }
+  env: {
+    TOKEN_ADMIN: process.env.TOKEN_ADMIN,
+    TOKEN_POS: process.env.TOKEN_POS,
+    ADMIN_USERNAME: process.env.ADMIN_USERNAME,
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+    EMP_NIK: process.env.EMP_NIK,
+    EMP_STORECODE: process.env.EMP_STORECODE,
+    EMP_PIN: process.env.EMP_PIN
+  }
 });
 
 
