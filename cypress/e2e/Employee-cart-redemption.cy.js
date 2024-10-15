@@ -7,9 +7,9 @@ const URL_REDEMPTION_ORDER = URL_PRODUCT + "/order-redemption"
 
 const sku_112620556 = '112620556'
 const ubd_112620556 = '2024-10'
-const sort_desc = '-createdAt'
-const store_code = '14160'
-const nik_employee = '05593'
+const sort_desc = '-updatedAt'
+const store_code = Cypress.env('STORE_CODE_BXC')
+const nik_employee = Cypress.env('NIK_BXC')
 
 const sku_112780045 = '112780045'
 const ubd_112780045 = '2024-11'
@@ -17,12 +17,15 @@ const ubd_112780045 = '2024-11'
 describe('Get last product stock on Stock Summary and Stock Movement', function() {
   it('Successfully login Admin', () => {
     const urlUser = URL_USER + "/admin/login"
+    const username_adm = Cypress.env('ADM_USERNAME')
+    const password_adm = Cypress.env('ADM_PASSWORD')
+
     cy.api({
       method: "POST",
       url: urlUser,
       body: {
-        username: "admin-tbs",
-        password: "TBSIcms@Desember2022"
+        username: username_adm,
+        password: password_adm
       }
     })
     .should(response => {
@@ -124,13 +127,14 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
 describe('Staff Add Cart Redemption for Member Customer', function() {
   it('Successfully login', () => {
     const url = URL_USER + "/employee/login"
+    const pin_emp = Cypress.env('PIN_BXC')
     cy.api({
       method: "POST",
       url,
       body: {
         nik: nik_employee,
         storeCode: store_code,
-        pin: "1234"
+        pin: pin_emp
       }
     })
     .should(response => {
@@ -636,6 +640,9 @@ describe('Reduce qty and remove product Redemption test group', function() {
 describe('Staff checkout Redemption Order', function() {
   it("Checkout Redemption order", () => {
     const cartId = Cypress.env("CART_ID")
+    //ambil redemption point dari cart terus compare dengan setelah jadi order
+    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+    const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
 
     cy.api({
       method: "POST",
@@ -651,61 +658,71 @@ describe('Staff checkout Redemption Order', function() {
       expect(response.status).to.equal(201)
       const body = response.body
       const data = response.body.data
-      //const items = response.body.data.items
+      const items = response.body.data.items
+
+      const sku_112620556_pts = sku_112620556_data.product.redemption_catalog.point
+      const sku_112620556_ubd = sku_112620556_data.ubdDetail[0].ubd
+      const sku_112620556_total = sku_112620556_data.ubdDetail[0].total
+
+      const sku_112780045_pts = sku_112780045_data.product.redemption_catalog.point
+      const sku_112780045_ubd = sku_112780045_data.ubdDetail[0].ubd
+      const sku_112780045_total = sku_112780045_data.ubdDetail[0].total
       
       expect(body.statusCode).to.equal(201)
       expect(data.cartId).to.equal(cartId)
+      expect(items[0].sku).to.equal(sku_112620556_data.sku)
+      expect(items[0].qty).to.equal(sku_112620556_data.qty)
+      expect(items[0].redemption_point).to.equal(sku_112620556_pts)
+      expect(items[0].subtotal_redemption_point).to.equal(sku_112620556_pts)
+      expect(items[0].ubdDetail[0].ubd).to.equal(sku_112620556_ubd)
+      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_total)
+
+      expect(items[1].sku).to.equal(sku_112780045_data.sku)
+      expect(items[1].qty).to.equal(sku_112780045_data.qty)
+      expect(items[1].redemption_point).to.equal(sku_112780045_pts)
+      expect(items[1].subtotal_redemption_point).to.equal(sku_112780045_pts)
+      expect(items[1].ubdDetail[0].ubd).to.equal(sku_112780045_ubd)
+      expect(items[1].ubdDetail[0].total).to.equal(sku_112780045_total)
+
+      //belum ada total redemption point setelah jadi order
     })
+    // .then(response => {
+
+
+    // })
   })
 
-  it("Get product stock from Stock Summary 112620556", () => {
-    const ubd = '2024-10-01'
-    const url = URL_PRODUCT + '/admin/stock-summary'
-    const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
-    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
-    const qty_checkout_112620556 = sku_112620556_data.qty
-    const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112620556")
-    //const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
-    
-    cy.request({
-      method: "GET",
-      url: urlFilter,
-      headers: Cypress.env("REQUEST_HEADERS_ADMIN")
-    })
-    .should(response => {
-      expect(response.status).to.equal(200)
-
-      const qty_summary_112620556 = stock_qty_summary_awal - qty_checkout_112620556
-      expect(qty_summary_112620556)
-      //dapetin qty di cart dikurangin sama summary
-    })
-  })
-
-  it("Get product stock from Stock Summary 112780045", () => {
-    const ubd = '2024-11-01'
-    const url = URL_PRODUCT + '/admin/stock-summary'
-    const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
-    const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
-    const qty_checkout_112780045 = sku_112780045_data.qty
-    const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112780045")
-
-    cy.request({
-      method: "GET",
-      url: urlFilter,
-      headers: Cypress.env("REQUEST_HEADERS_ADMIN")
-    })
-    .should(response => {
-      expect(response.status).to.equal(200)
-
-      const qty_summary_112780045 = stock_qty_summary_awal - qty_checkout_112780045
-      cy.log(qty_summary_112780045)
-      //dapetin quantity dikrang yg di cart
-    })
-  })
-  
-  // it("Get product stock from Stock Movement 112620556", () => {
+  //   it("Get product stock from Stock Movement 112620556", () => {
   //   const url = URL_PRODUCT + '/admin/stock-movement'
   //   const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112620556}&from=${store_code}`
+  //   const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+  //   const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+  //   const sku_112620556_movement = Cypress.env("stock_movement_qty_112620556")
+  //   const sku__112780045_movement = Cypress.env("stock_movement_qty_112780045")
+
+  //   cy.request({
+  //     method: "GET",
+  //     url: urlFilter,
+  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+  //   })
+  //   .should(response => {
+  //     const docs = response.body.data.docs[0]
+
+  //     expect(response.status).to.equal(200)
+  //     //qty di cart redemption
+  //     //ambil total stock ambil stock awal
+  //   })
+  // })
+
+  // it("Get product stock from Stock Summary 112620556", () => {
+  //   const ubd = '2024-10-01'
+  //   const url = URL_PRODUCT + '/admin/stock-summary'
+  //   const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+  //   const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+  //   const qty_checkout_112620556 = sku_112620556_data.qty
+  //   const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112620556")
+  //   //const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
+    
   //   cy.request({
   //     method: "GET",
   //     url: urlFilter,
@@ -713,16 +730,36 @@ describe('Staff checkout Redemption Order', function() {
   //   })
   //   .should(response => {
   //     expect(response.status).to.equal(200)
-  //     //qty yg keluar get dari cart redmeption
-  //     //ambil total stock ambil stock awal
-  //   })
-  //   .then(response => {
-  //     const totalStock = response.body.data.docs[0].totalStock
-  //     cy.log('Stock movement Qty 112620556:', totalStock)
-  //     cy.log('Stock movement Qty 112620556:', response.body.data.docs[0].orderNumber)
-  //     Cypress.env("stock_movement_qty_112620556", totalStock)
+
+  //     const qty_summary_112620556 = stock_qty_summary_awal - qty_checkout_112620556
+  //     expect(qty_summary_112620556)
+  //     //dapetin qty di cart dikurangin sama summary
   //   })
   // })
+
+  // it("Get product stock from Stock Summary 112780045", () => {
+  //   const ubd = '2024-11-01'
+  //   const url = URL_PRODUCT + '/admin/stock-summary'
+  //   const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+  //   const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+  //   const qty_checkout_112780045 = sku_112780045_data.qty
+  //   const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112780045")
+
+  //   cy.request({
+  //     method: "GET",
+  //     url: urlFilter,
+  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+  //   })
+  //   .should(response => {
+  //     expect(response.status).to.equal(200)
+
+  //     const qty_summary_112780045 = stock_qty_summary_awal - qty_checkout_112780045
+  //     cy.log(qty_summary_112780045)
+  //     //dapetin quantity dikrang yg di cart
+  //   })
+  // })
+  
+
 
   // it("Get product stock from Stock Movement 112780045", () => {
   //   const url = URL_PRODUCT + '/admin/stock-movement'
