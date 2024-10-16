@@ -38,6 +38,7 @@ module.exports = defineConfig({
     PIN_STAFF: process.env.PIN_STAFF,
     PIN_BXC: process.env.PIN_BXC,
     EMP_NIK: process.env.EMP_NIK,
+    EMP_NIK: process.env.EMP_NIK,
     EMP_STORECODE: process.env.EMP_STORECODE,
     EMP_PIN: process.env.EMP_PIN,
 <<<<<<< HEAD
