@@ -338,7 +338,7 @@ describe("Filter Test Group", () => {
 
     it("Should return the correct SKU & To", () => {
         const sku = '112010666';
-        const to = 'PUBLIC'; // Menambahkan filter 'to'
+        const to = 'Public'; // Menambahkan filter 'to'
         const urlFilter = url + `?sku=${sku}&to=${to}&page=1&limit=100`; // Menyertakan filter 'to' dalam URL
         cy.api({
             method: "GET",
@@ -369,8 +369,8 @@ describe("Filter Test Group", () => {
     });
     
     it("Should return the correct SKU & By", () => {
-        const sku = '112010666';
-        const by = '00012'; // Menambahkan filter 'to'
+        const sku = '126510061';
+        const by = 'DC'; // Menambahkan filter 'to'
         const urlFilter = url + `?sku=${sku}&by=${by}&page=1&limit=100`; // Menyertakan filter 'to' dalam URL
         cy.api({
             method: "GET",
@@ -434,7 +434,7 @@ describe("Filter Test Group", () => {
 
     it("Should return the correct SKU & Order Number", () => {
         const sku = '112010666';
-        const orderNumber = '140363120240213095'; // Menambahkan filter 'to'
+        const orderNumber = '14036-QAMils_1728979758160'; // Menambahkan filter 'to'
         const urlFilter = url + `?sku=${sku}&orderNumber=${orderNumber}&page=1&limit=100`; // Menyertakan filter 'to' dalam URL
         cy.api({
             method: "GET",
@@ -509,10 +509,10 @@ describe("Filter Test Group", () => {
     });
 
     it("Should return the correct SKU + UBD + Order Number", () => {
-        const sku = '112590510';
-        const UBD = '2025-01'; // Menambahkan filter 'to'
-        const orderNumber ='TESTQA_MILS-0001'
-        const urlFilter = url + `?sku=${sku}&ubd=${UBD}&page=1&limit=100`; // Menyertakan filter 'to' dalam URL
+        const sku = '112010666';
+        const UBD = '2024-10'; // Menambahkan filter 'to'
+        const orderNumber ='14036-QAMils_1728979758160';
+        const urlFilter = url + `?sku=${sku}&ubd=${UBD}&orderNumber=${orderNumber}&page=1&limit=100`; // Menyertakan filter 'to' dalam URL
         cy.api({
             method: "GET",
             url: urlFilter,

@@ -435,8 +435,6 @@ expect(stockSummary.length).to.eq(1, 'Jumlah dokumen dalam stock summary harus 1
 
         // Step 4: Calculate expectedQty
         const expectedQty = Before_latestStock_Summary + inputQty;  // Mengurangi inputQty dari initialQty
-
-        // expect(data).to.have.property('qty', expectedQty);
         expect(postDataAdjustment_IN).to.have.property('qty', expectedQty);
 
         
@@ -834,37 +832,5 @@ const After_latestStock_Movement = latestStock.totalStock;  // Ambil nilai qty d
 });
 
 
-// it('Should NOT be able to access the API with invalid token', () => {
-//     const dynamicOrderNumber = `14036-QAMils_${Date.now()}`; // Menggunakan timestamp untuk membuat orderNumber unik
-
-//     // const url = URL_PRODUCT + "/admin/stock-movement"
-//     cy.api({
-//     method: 'POST',
-//     url,
-//     headers: Cypress.env("REQUEST_HEADERS"),
-
-//     body:   {
-//         "sku": "126000992",
-//         "name": "White Musk Perfume Oil 8.5ml",
-//         "ubd": "2025@01",
-//         "qty": 1,
-//         "from": "14036",
-//         "to": "PUBLIC",
-//         "by": "14036",
-//         "notes": "testing",
-//         "event": "sales",
-//         "orderNumber": dynamicOrderNumber,
-//         "siteDescription": "string"
-//             }
-// }).then((response) => {
-//   // Validasi respons API
-//     expect(response.status).to.eq(500); // Pastikan status kode 201 (Created)
-//      // Validasi struktur respons yang benar
-//      const body = response.body;
-//      expect(body).to.have.property('statusCode'); // Sesuaikan dengan struktur yang benar
-//      expect(body).to.have.property('message');
-
-// })
-// })
 
     });
