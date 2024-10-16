@@ -5,4 +5,6 @@ COPY . .
 
 RUN npm install
 
+ENV NO_COLOR=1
+
 ENTRYPOINT [ "cypress" ]
