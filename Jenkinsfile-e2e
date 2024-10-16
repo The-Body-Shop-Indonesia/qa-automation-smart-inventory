@@ -1,0 +1,38 @@
+pipeline {
+   agent any
+   environment {
+       tag = VersionNumber(versionNumberString: 'v${BUILD_DATE_FORMATTED, "yyMMdd"}${BUILDS_TODAY}')
+       slackToken = "${SLACK_TOKEN}"
+       // Global variable from jenkins
+       imageRegistryHost = "${IMAGE_REGISTRY_HOST}"
+       imageRegistry = "${IMAGE_REGISTRY}"
+       jenkinsEnv = "${JENKINS_ENV}"
+       branchName = "${GIT_BRANCH.split("/")[1]}"
+       namespace = "icarus-${branchName}"
+       appName = "qa-automation"
+       registry = "${namespace}/${appName}"
+       envFile = "/var/lib/jenkins/config/icarus/be/${branchName}.env"
+   }
+   stages {
+       stage('Testing') {
+           environment {
+               registryCredential = 'tbsi-jfrog'
+           }
+           steps{
+               script {
+                   sh "infisical export --env icarus-development --projectId ${INFISICAL_PROJECT_ID} --token ${INFISICAL_TOKEN} --domain=${INFISICAL_API_URL} --path /${appName} > .env"
+                   sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"⛏ Cypress test started \n\n🌍 ENV: ${jenkinsEnv}\n\"}'"
+                   sh "docker run -it --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --spec cypress/e2e/POS-UBD-Add-To-Cart.cy.js --browser chrome"
+                   sh "rm -Rf .env"
+                   
+               }
+           }
+       }
+   }
+ 
+   post {
+        failure {
+            sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"❌ Cypress e2e has failed, please check Jenkins UI for complete log\n\n🌍 ENV: ${jenkinsEnv}\n📛 NS: ${namespace}\n\"}'"   
+        }
+    }
+}
