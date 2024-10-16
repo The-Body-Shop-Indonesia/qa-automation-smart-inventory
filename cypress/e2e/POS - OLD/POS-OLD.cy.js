@@ -208,7 +208,7 @@ describe('Staff Create Order for Public Customer', function () {
 
   it('Creates a public cart', () => {
     const { request: mockRequest, response: mockResponse } =
-      require('../fixtures/generators').createPublicCartPayload()
+      require('../../fixtures/generators').createPublicCartPayload()
     const url = URL_PRODUCT + '/employee/cart/create'
     cy.api({
       method: 'POST',
@@ -250,9 +250,8 @@ describe('Staff Create Order for Public Customer', function () {
       delete firstItem.customer_id
 
       const firstname = Cypress.env('PUBLIC_CUSTOMER_FIRSTNAME')
-      const expected = require('../fixtures/generators').newlyCreatedPublicCart(
-        firstname
-      )
+      const expected =
+        require('../../fixtures/generators').newlyCreatedPublicCart(firstname)
       expect(firstItem).to.deep.equal(expected)
     })
   })

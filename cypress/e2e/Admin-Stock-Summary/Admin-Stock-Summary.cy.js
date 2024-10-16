@@ -259,12 +259,11 @@ describe('Filter Test Group', () => {
   //sans
   it('Should return UBD null', () => {
     const ubd = null
-    const urlFilter = url + `?ubd=${ubd}&page=1&limit=100`
+    const urlFilter = url + `?ubd=${ubd}&page=1&limit=10`
     cy.api({
       method: 'GET',
       url: urlFilter,
-      headers: Cypress.env('REQUEST_HEADERS'),
-      failOnStatusCode: false
+      headers: Cypress.env('REQUEST_HEADERS')
     }).should((response) => {
       expect(response.status).to.equal(200)
       const body = response.body
