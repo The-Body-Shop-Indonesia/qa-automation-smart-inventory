@@ -20,11 +20,12 @@ pipeline {
            }
            steps{
                script {
+                 ansiColor('xterm') {
                    sh "infisical export --env icarus-development --projectId ${INFISICAL_PROJECT_ID} --token ${INFISICAL_TOKEN} --domain=${INFISICAL_API_URL} --path /${appName} > .env"
                    sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"⛏ Cypress test started \n\n🌍 ENV: ${jenkinsEnv}\n\"}'"
                    sh "docker run --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --spec cypress/e2e/POS-UBD-Add-To-Cart.cy.js --browser chrome"
                    sh "rm -Rf .env"
-                   
+                 }
                }
            }
        }
