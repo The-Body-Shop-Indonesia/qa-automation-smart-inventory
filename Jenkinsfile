@@ -10,7 +10,7 @@ pipeline {
        branchName = "${GIT_BRANCH.split("/")[1]}"
        namespace = "${branchName}"
        appName = "qa-automation"
-       registry = "${appName}"
+       registry = "docker-local/${appName}"
    }
    stages {
        stage('Build') {
