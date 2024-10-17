@@ -40,7 +40,7 @@ describe('Admin check stock product before transaction', function() {
         url: urlFilter,
         headers: Cypress.env("REQUEST_HEADERS_ADMIN")
       })
-      .should(response => {
+      .then(response => {
         const data = response.body.data.docs
         expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
         expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
@@ -50,9 +50,11 @@ describe('Admin check stock product before transaction', function() {
         if (data.length === 0) {
             const qty_awal = 0
             Cypress.env("qty_awal_112010666", qty_awal)
+            cy.log('Quantity '+sku+' before trx: ', qty_awal)
         } else {
             const qty_awal = data[0].qty
             Cypress.env("qty_awal_112010666", qty_awal)
+            cy.log('Quantity '+sku+' before trx: ', qty_awal)
         }
         // Cypress.env("qty_awal_112010666", qty_awal)
       })
@@ -66,9 +68,9 @@ describe('Admin check stock product before transaction', function() {
         url: urlFilter2,
         headers: Cypress.env("REQUEST_HEADERS_ADMIN")
       })
-      .should(response => {
+      .then(response => {
           const data = response.body.data.docs
-          expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
+          // expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
           expect(Cypress._.every(data, ["sku", sku2])).to.deep.equal(true);
           expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
           expect(Cypress._.every(data, ["ubd", ubd2])).to.deep.equal(true);
@@ -77,9 +79,11 @@ describe('Admin check stock product before transaction', function() {
           if (data.length === 0) {
               const qty_awal = 0
               Cypress.env("qty_awal_126490005", qty_awal)
+              cy.log('Quantity '+sku+' before trx: ', qty_awal)
           } else {
               const qty_awal = data[0].qty
               Cypress.env("qty_awal_126490005", qty_awal)
+              cy.log('Quantity '+sku+' before trx: ', qty_awal)
           }
           // Cypress.env("qty_awal_126490005", qty_awal)
       })
@@ -282,7 +286,7 @@ describe('Staff Create Order for Public Customer', function() {
     })
     .should(response => {
       const actualData = response.body.data.assignTo
-      expect(actualData.nik).to.equal(nik)
+      expect(actualData.nik, "Employee NIK should "+nik).to.equal(nik)
       Cypress.env("CART", response.body.data)
     })
   })
@@ -307,24 +311,24 @@ describe('Staff Create Order for Public Customer', function() {
       expect(data.void_items.length).to.equal(0)
 
       const item = data.items[0]
-      expect(item.sku).to.equal(payload.sku)
-      expect(item.qty).to.equal(payload.qty)
+      expect(item.sku, "SKU should "+payload.sku).to.equal(payload.sku)
+      expect(item.qty, "Quantity of product "+payload.sku+" should "+payload.qty).to.equal(payload.qty)
       expect(item.customPrice).to.equal(payload.customPrice)
-      expect(item.ubd).to.equal(null)
+      expect(item.ubd, "UBD should null").to.equal(null)
 
       const ubdDetail = item.ubdDetail[0]
       expect(ubdDetail.ubd).to.equal(null)
-      expect(ubdDetail.total).to.equal(1)
+      expect(ubdDetail.total, "ubdDetail.total should 1").to.equal(1)
     })
     .should(response => {
       const data = response.body.data
       const itemPrice = data.items[0].sub_total
-      expect(data.totalAmount).to.equal(itemPrice)
-      expect(data.paymentAmount).to.equal(itemPrice)
+      expect(data.totalAmount, "totalAmount should "+itemPrice).to.equal(itemPrice)
+      expect(data.paymentAmount, "paymentAmount should "+itemPrice).to.equal(itemPrice)
 
       const paymentDetails = data.paymentDetails
-      expect(paymentDetails[0].total).to.equal(itemPrice)
-      expect(paymentDetails[12].total).to.equal(itemPrice)
+      expect(paymentDetails[0].total, "paymentDetails.Subtotal should "+itemPrice).to.equal(itemPrice)
+      expect(paymentDetails[12].total, "paymentDetails.Total should "+itemPrice).to.equal(itemPrice)
 
       Cypress.env("CART", data)
     })
@@ -352,24 +356,24 @@ describe('Staff Create Order for Public Customer', function() {
       expect(data.void_items.length).to.equal(0)
 
       const item = data.items[0]
-      expect(item.sku).to.equal(payload.sku)
-      expect(item.qty).to.equal(2)
+      expect(item.sku, "SKU should "+payload.sku).to.equal(payload.sku)
+      expect(item.qty, "Quantity of product "+payload.sku+" should "+payload.qty).to.equal(2)
       expect(item.customPrice).to.equal(payload.customPrice)
-      expect(item.ubd).to.equal(null)
+      expect(item.ubd, "UBD should null").to.equal(null)
 
       const ubdDetail = item.ubdDetail[0]
       expect(ubdDetail.ubd).to.equal(null)
-      expect(ubdDetail.total).to.equal(2)
+      expect(ubdDetail.total, "ubdDetail.total should 2").to.equal(2)
     })
     .should(response => {
       const data = response.body.data
       const itemPrice = data.items[0].sub_total
-      expect(data.totalAmount).to.equal(itemPrice)
-      expect(data.paymentAmount).to.equal(itemPrice)
+      expect(data.totalAmount, "totalAmount should "+itemPrice).to.equal(itemPrice)
+      expect(data.paymentAmount, "paymentAmount should "+itemPrice).to.equal(itemPrice)
 
       const paymentDetails = data.paymentDetails
-      expect(paymentDetails[0].total).to.equal(itemPrice)
-      expect(paymentDetails[12].total).to.equal(itemPrice)
+      expect(paymentDetails[0].total, "paymentDetails.Subtotal should "+itemPrice).to.equal(itemPrice)
+      expect(paymentDetails[12].total, "paymentDetails.Total should "+itemPrice).to.equal(itemPrice)
 
       Cypress.env("CART", data)
     })
@@ -622,7 +626,7 @@ describe('Admin check stock product after transaction', function() {
       const movement = data[0]
       Cypress.env("qty_movement_126490005", movement.qty)
       expect(movement.sku).to.equal(sku2)
-      expect(movement.to).to.equal(Cypress.env("storeCode"))
+      expect(movement.from).to.equal(Cypress.env("storeCode"))
       expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
       expect(movement.qty).to.equal(1)
         

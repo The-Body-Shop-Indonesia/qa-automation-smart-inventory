@@ -21,19 +21,19 @@ module.exports = defineConfig({
         },
       });
     },
-    baseUrlProduct: 'https://sit-products.tbsgroup.co.id/api/v1',
-    baseUrlUser: 'https://sit-users.tbsgroup.co.id/api/v1',
-    baseUrlPayment: 'https://sit-payments.tbsgroup.co.id/api/v1',
-    baseUrlMP: 'https://sit-marketplaces.tbsgroup.co.id/api/v1/callback/create'
+    baseUrlProduct: process.env.BASEURLPRODUCT,
+    baseUrlUser: process.env.BASEURLUSER,
+    baseUrlPayment: process.env.BASEURLPAYMENT,
+    baseUrlMP: process.env.BASEURLMP
   },
   env: {
     TOKEN_ADMIN: process.env.TOKEN_ADMIN,
     TOKEN_POS: process.env.TOKEN_POS,
     ADMIN_USERNAME: process.env.ADMIN_USERNAME,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
-    EMP_NIK: process.env.EMP_NIK,
-    EMP_STORECODE: process.env.EMP_STORECODE,
-    EMP_PIN: process.env.EMP_PIN,
+    EMP_NIK: process.env.NIK_ARTOS,
+    EMP_STORECODE: process.env.STORECODE_ARTOS,
+    EMP_PIN: process.env.PIN_ARTOS,
     MP_KEY: process.env.MP_KEY,
     DB_MP: process.env.DB_MP,
     DB_COLLECTION_FORSTOKORDER: process.env.DB_COLLECTION_FORSTOKORDER,
