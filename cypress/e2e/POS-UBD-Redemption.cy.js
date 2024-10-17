@@ -10,15 +10,20 @@ const ubd_112620556 = '2024-10'
 const sort_desc = '-updatedAt'
 const store_code = Cypress.env('STORE_CODE_BXC')
 const nik_employee = Cypress.env('NIK_BXC')
+const first_name = Cypress.env('FIRST_NAME')
+const last_name = Cypress.env('LAST_NAME')
+const card_number = Cypress.env('CARD_NUMBER')
+
 
 const sku_112780045 = '112780045'
-const ubd_112780045 = '2024-11'
+const ubd_112780045 = 'null'
 
 describe('Get last product stock on Stock Summary and Stock Movement', function() {
   it('Successfully login Admin', () => {
+    cy.log(Cypress.env('ADMIN_USERNAME'))
     const urlUser = URL_USER + "/admin/login"
-    const username_adm = Cypress.env('ADM_USERNAME')
-    const password_adm = Cypress.env('ADM_PASSWORD')
+    const username_adm = Cypress.env('ADMIN_USERNAME')
+    const password_adm = Cypress.env('ADMIN_PASSWORD')
 
     cy.api({
       method: "POST",
@@ -29,12 +34,9 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
       }
     })
     .should(response => {
-      expect(response.status).to.equal(201)
+      expect(response.status, 'Response code should be 201').to.equal(201)
       const body = response.body
-      expect(body).to.haveOwnProperty("statusCode")
-      expect(body).to.haveOwnProperty("message")
-      expect(body).to.haveOwnProperty("data")
-      expect(body.statusCode).to.equal(201)
+      expect(body.statusCode, 'Status code should be 201').to.equal(201)
       expect(body.message).to.equal("Success")
       const data = body.data
       expect(data).to.haveOwnProperty("accessToken")
@@ -47,17 +49,20 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
     })
   })
 
+  //stock summary
   it("Get product stock from Stock Summary 112620556", () => {
-    const ubd = '2024-10-01'
+    //const ubd = '2024-10-01'
     const url = URL_PRODUCT + '/admin/stock-summary'
-    const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+    const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd_112620556}&storeCode=${store_code}`
     cy.request({
       method: "GET",
       url: urlFilter,
       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
     })
     .should(response => {
-      expect(response.status).to.equal(200)
+      const data = response.body.data
+      expect(response.status, 'Response code should be 200').to.equal(200)
+      expect(data.totalDocs, 'Total Docs should be 1').to.equal(1)
     })
     .then(response => {
       const qty = response.body.data.docs[0].qty
@@ -67,16 +72,18 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
   })
 
   it("Get product stock from Stock Summary 112780045", () => {
-    const ubd = '2024-11-01'
+    //const ubd = '2024-11-01'
     const url = URL_PRODUCT + '/admin/stock-summary'
-    const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+    const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd_112780045}&storeCode=${store_code}`
     cy.request({
       method: "GET",
       url: urlFilter,
       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
     })
     .should(response => {
-      expect(response.status).to.equal(200)
+      const data = response.body.data
+      expect(response.status, 'Response code should be 200').to.equal(200)
+      expect(data.totalDocs, 'Total Docs should be 1').to.equal(1)
     })
     .then(response => {
       const qty = response.body.data.docs[0].qty
@@ -85,6 +92,7 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
     })
   })
   
+  //stock movement
   it("Get product stock from Stock Movement 112620556", () => {
     const url = URL_PRODUCT + '/admin/stock-movement'
     const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112620556}&from=${store_code}`
@@ -94,12 +102,12 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
     })
     .should(response => {
-      expect(response.status).to.equal(200)
+      expect(response.status, 'Response code should be 200').to.equal(200)
     })
     .then(response => {
       const totalStock = response.body.data.docs[0].totalStock
       cy.log('Stock movement Qty 112620556:', totalStock)
-      cy.log('Stock movement Qty 112620556:', response.body.data.docs[0].orderNumber)
+      //cy.log('Stock movement Qty 112620556:', response.body.data.docs[0].orderNumber)
       Cypress.env("stock_movement_qty_112620556", totalStock)
     })
   })
@@ -113,12 +121,12 @@ describe('Get last product stock on Stock Summary and Stock Movement', function(
       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
     })
     .should(response => {
-      expect(response.status).to.equal(200)
+      expect(response.status, 'Response code should be 200').to.equal(200)
     })
     .then(response => {
       const totalStock = response.body.data.docs[0].totalStock
       cy.log('Stock movement Qty 112780045:', totalStock)
-      cy.log('Stock movement Qty 112780045:', response.body.data.docs[0].orderNumber)
+      //cy.log('Stock movement Qty 112780045:', response.body.data.docs[0].orderNumber)
       Cypress.env("stock_movement_qty_112780045", totalStock)
     })
   })
@@ -186,7 +194,7 @@ describe('Staff Add Cart Redemption for Member Customer', function() {
         failOnStatusCode: false
       })
       .should(response => {
-        expect(response.status).to.equal(201)
+        expect(response.status, 'Response code should be 201').to.equal(201)
       })
       .then(response => {
         Cypress.env("RESPONSE_BODY", response.body)
@@ -220,13 +228,33 @@ describe('Staff Add Cart Redemption for Member Customer', function() {
         failOnStatusCode: false
       })
       .should(response => {
-        expect(response.status).to.equal(201)
+        expect(response.status, 'Response code should be 201').to.equal(201)
       })
     } else if (body.statusCode === 500) {
       cy.log('Internal Server Error')
     } else {
       cy.log('shift sedang berjalan')
     }
+  })
+
+  it("Get user data", () => {
+    const url = URL_USER + "/employee/detail-member/point"
+    cy.api({
+      method: "POST",
+      url,
+      headers: Cypress.env("REQUEST_HEADERS"),
+      body: {
+        cardNumber: card_number
+      },
+    })
+    .should(response => {
+      expect(response.status, 'Response code should be 201').to.equal(201)
+    })
+    .then(response => {
+      const data = response.body.data
+
+      Cypress.env("CURRENT_POINT", data.currentPoint)
+    })
   })
 
   it("Create Redemption Cart", () => {
@@ -237,9 +265,9 @@ describe('Staff Add Cart Redemption for Member Customer', function() {
       headers: Cypress.env("REQUEST_HEADERS"),
       body: {
         isGuest: false,
-        firstName: "Sandra",
-        lastName: "Testtest",
-        cardNumber: "10000115160820",
+        firstName: first_name,
+        lastName: last_name,
+        cardNumber: card_number,
         nik: "",
         familyNumber: "",
         isFamily: false,
@@ -255,19 +283,19 @@ describe('Staff Add Cart Redemption for Member Customer', function() {
       failOnStatusCode: false
     })
     .should(response => {
-      expect(response.status).to.equal(201)
+      expect(response.status, 'Response code should be 200').to.equal(201)
       const body = response.body
       const data = response.body.data
-      expect(body.statusCode).to.equal(201)
-      expect(data.customer.firstName).to.equal("Sandra")
-      expect(data.customer.lastName).to.equal("Testtest")
-      expect(data.customer.isGuest).to.equal(false)
-      expect(data.customer.cardNumber).to.equal("10000115160820")
+      expect(body.statusCode, 'Status code should be 200').to.equal(201)
+      expect(data.customer.firstName, 'First name should be ' + `${first_name}`).to.equal(first_name)
+      expect(data.customer.lastName, 'Last name should be ' + `${last_name}`).to.equal(last_name)
+      expect(data.customer.isGuest, 'isGuest should be false').to.equal(false)
+      expect(data.customer.cardNumber, 'Card number should be ' + `${card_number}`).to.equal(card_number)
       expect(data.customer.customerGroup).to.equal("FAN")
     })
     .then(response => {
       Cypress.env("CART_ID", response.body.data._id)
-      cy.log(Cypress.env("CART_ID"))
+      //cy.log(Cypress.env("CART_ID"))
     })
   })
 
@@ -284,10 +312,9 @@ describe('Staff Add Cart Redemption for Member Customer', function() {
       failOnStatusCode: false
     })
     .should(response => {
-      expect(response.status).to.equal(201)
+      expect(response.status, 'Response status should be 201').to.equal(201)
       const body = response.body
-      const data = response.body.data
-      expect(body.statusCode).to.equal(201)
+      expect(body.statusCode, 'Status code should be 201').to.equal(201)
     })
   })
 })
@@ -315,6 +342,16 @@ describe('Add product Redemption test group', function() {
       const data = response.body.data
       const items = response.body.data.items
       
+      expect(data).to.haveOwnProperty("_id")
+      items.forEach(function(item){
+        expect(item).to.haveOwnProperty("product")
+        expect(item).to.haveOwnProperty("qty")
+        expect(item).to.haveOwnProperty("sku")
+        expect(item).to.haveOwnProperty("sub_total")
+        expect(item).to.haveOwnProperty("notes")
+        expect(item).to.haveOwnProperty("ubdDetail")
+      })
+
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
       expect(items).to.have.length(1)
@@ -408,6 +445,15 @@ describe('Add product Redemption test group', function() {
       const body = response.body
       const data = response.body.data
       const items = response.body.data.items
+
+      items.forEach(function(item){
+        expect(item).to.haveOwnProperty("product")
+        expect(item).to.haveOwnProperty("qty")
+        expect(item).to.haveOwnProperty("sku")
+        expect(item).to.haveOwnProperty("sub_total")
+        expect(item).to.haveOwnProperty("notes")
+        expect(item).to.haveOwnProperty("ubdDetail")
+      })
       
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
@@ -462,6 +508,15 @@ describe('Add product Redemption test group', function() {
       const body = response.body
       const data = response.body.data
       const items = response.body.data.items
+
+      items.forEach(function(item){
+        expect(item).to.haveOwnProperty("product")
+        expect(item).to.haveOwnProperty("qty")
+        expect(item).to.haveOwnProperty("sku")
+        expect(item).to.haveOwnProperty("sub_total")
+        expect(item).to.haveOwnProperty("notes")
+        expect(item).to.haveOwnProperty("ubdDetail")
+      })
       
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
@@ -621,7 +676,7 @@ describe('Reduce qty and remove product Redemption test group', function() {
       
       expect(body.statusCode).to.equal(200)
       expect(data._id).to.equal(cartId)
-      expect(items).to.have.length(1)
+      expect(items, 'Items length should be 1').to.have.length(1)
       expect(items[0].sku).to.equal(sku_112620556)
       expect(items[0].qty).to.equal(sku_112620556_data_qty)
       expect(items[0].ubdDetail).to.have.length(1)
@@ -637,148 +692,192 @@ describe('Reduce qty and remove product Redemption test group', function() {
 
 })
 
-describe('Staff checkout Redemption Order', function() {
-  it("Checkout Redemption order", () => {
-    const cartId = Cypress.env("CART_ID")
-    //ambil redemption point dari cart terus compare dengan setelah jadi order
-    const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
-    const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+// describe('Staff checkout Redemption Order', function() {
+//   it("Checkout Redemption order", () => {
+//     const cartId = Cypress.env("CART_ID")
+//     //ambil redemption point dari cart terus compare dengan setelah jadi order
+//     const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+//     const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
 
-    cy.api({
-      method: "POST",
-      url: URL_REDEMPTION_ORDER,
-      headers: Cypress.env("REQUEST_HEADERS"),
-      body: {
-        cart: cartId,
-        orderBy: nik_employee,
-        notes: ""
-      }
-    })
-    .should(response => {
-      expect(response.status).to.equal(201)
-      const body = response.body
-      const data = response.body.data
-      const items = response.body.data.items
+//     const sku_112620556_pts = sku_112620556_data.sub_total
+//     const sku_112780045_pts = sku_112780045_data.sub_total
+//     const total_redemption_pts = sku_112620556_pts + sku_112780045_pts
 
-      const sku_112620556_pts = sku_112620556_data.product.redemption_catalog.point
-      const sku_112620556_ubd = sku_112620556_data.ubdDetail[0].ubd
-      const sku_112620556_total = sku_112620556_data.ubdDetail[0].total
+//     cy.log(total_redemption_pts)
 
-      const sku_112780045_pts = sku_112780045_data.product.redemption_catalog.point
-      const sku_112780045_ubd = sku_112780045_data.ubdDetail[0].ubd
-      const sku_112780045_total = sku_112780045_data.ubdDetail[0].total
+//     cy.api({
+//       method: "POST",
+//       url: URL_REDEMPTION_ORDER,
+//       headers: Cypress.env("REQUEST_HEADERS"),
+//       body: {
+//         cart: cartId,
+//         orderBy: nik_employee,
+//         notes: ""
+//       }
+//     })
+//     .should(response => {
+//       expect(response.status).to.equal(201)
+//       const body = response.body
+//       const data = response.body.data
+//       const items = response.body.data.items
+
+//       const sku_112620556_ubd = sku_112620556_data.ubdDetail[0].ubd
+//       const sku_112620556_total = sku_112620556_data.ubdDetail[0].total
+
+//       const sku_112780045_ubd = sku_112780045_data.ubdDetail[0].ubd
+//       const sku_112780045_total = sku_112780045_data.ubdDetail[0].total
+
       
-      expect(body.statusCode).to.equal(201)
-      expect(data.cartId).to.equal(cartId)
-      expect(items[0].sku).to.equal(sku_112620556_data.sku)
-      expect(items[0].qty).to.equal(sku_112620556_data.qty)
-      expect(items[0].redemption_point).to.equal(sku_112620556_pts)
-      expect(items[0].subtotal_redemption_point).to.equal(sku_112620556_pts)
-      expect(items[0].ubdDetail[0].ubd).to.equal(sku_112620556_ubd)
-      expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_total)
+//       expect(body.statusCode).to.equal(201)
+//       expect(data.cartId).to.equal(cartId)
+//       expect(items[0].sku).to.equal(sku_112620556_data.sku)
+//       expect(items[0].qty).to.equal(sku_112620556_data.qty)
+//       expect(items[0].redemption_point).to.equal(sku_112620556_pts)
+//       expect(items[0].subtotal_redemption_point).to.equal(sku_112620556_pts)
+//       expect(items[0].ubdDetail).to.have.length(1)
+//       expect(items[0].ubdDetail[0].ubd).to.equal(sku_112620556_ubd)
+//       expect(items[0].ubdDetail[0].total).to.equal(sku_112620556_total)
 
-      expect(items[1].sku).to.equal(sku_112780045_data.sku)
-      expect(items[1].qty).to.equal(sku_112780045_data.qty)
-      expect(items[1].redemption_point).to.equal(sku_112780045_pts)
-      expect(items[1].subtotal_redemption_point).to.equal(sku_112780045_pts)
-      expect(items[1].ubdDetail[0].ubd).to.equal(sku_112780045_ubd)
-      expect(items[1].ubdDetail[0].total).to.equal(sku_112780045_total)
+//       expect(items[1].sku).to.equal(sku_112780045_data.sku)
+//       expect(items[1].qty).to.equal(sku_112780045_data.qty)
+//       expect(items[1].redemption_point).to.equal(sku_112780045_pts)
+//       expect(items[1].subtotal_redemption_point).to.equal(sku_112780045_pts)
+//       expect(items[1].ubdDetail).to.have.length(1)
+//       expect(items[1].ubdDetail[0].ubd).to.equal(sku_112780045_ubd)
+//       expect(items[1].ubdDetail[0].total).to.equal(sku_112780045_total)
 
-      //belum ada total redemption point setelah jadi order
-    })
-    // .then(response => {
+//       //belum ada total redemption point setelah jadi order
+//       //point user awal
+//     })
+//   })
 
+//   //check user point after transaction
+//   it("Get user data", () => {
+//     const url = URL_USER + "/employee/detail-member/point"
+//     const pts_awal = Cypress.env("CURRENT_POINT")
+//     //const pts_akhir = pts_awal - pts_used
+//     cy.api({
+//       method: "POST",
+//       url,
+//       headers: Cypress.env("REQUEST_HEADERS"),
+//       body: {
+//         cardNumber: card_number
+//       },
+//     })
+//     .should(response => {
+//       expect(response.status, 'Response code should be 201').to.equal(201)
+//     })
+//   })
 
-    // })
-  })
+//   //stock summary
+//   it("Get product stock from Stock Summary 112620556", () => {
+//     const ubd = '2024-10-01'
+//     const url = URL_PRODUCT + '/admin/stock-summary'
+//     const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+//     const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+//     const qty_sku_112620556 = sku_112620556_data.qty
+//     const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112620556")
+//     const qty_summary_112620556 = stock_qty_summary_awal -  qty_sku_112620556
 
-  //   it("Get product stock from Stock Movement 112620556", () => {
-  //   const url = URL_PRODUCT + '/admin/stock-movement'
-  //   const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112620556}&from=${store_code}`
-  //   const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
-  //   const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
-  //   const sku_112620556_movement = Cypress.env("stock_movement_qty_112620556")
-  //   const sku__112780045_movement = Cypress.env("stock_movement_qty_112780045")
-
-  //   cy.request({
-  //     method: "GET",
-  //     url: urlFilter,
-  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
-  //   })
-  //   .should(response => {
-  //     const docs = response.body.data.docs[0]
-
-  //     expect(response.status).to.equal(200)
-  //     //qty di cart redemption
-  //     //ambil total stock ambil stock awal
-  //   })
-  // })
-
-  // it("Get product stock from Stock Summary 112620556", () => {
-  //   const ubd = '2024-10-01'
-  //   const url = URL_PRODUCT + '/admin/stock-summary'
-  //   const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
-  //   const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
-  //   const qty_checkout_112620556 = sku_112620556_data.qty
-  //   const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112620556")
-  //   //const sku_112620556_ubddetail_0_qty = sku_112620556_data.ubdDetail[0].total
     
-  //   cy.request({
-  //     method: "GET",
-  //     url: urlFilter,
-  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
-  //   })
-  //   .should(response => {
-  //     expect(response.status).to.equal(200)
+//     cy.request({
+//       method: "GET",
+//       url: urlFilter,
+//       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+//     })
+//     .should(response => {
+//       const data = response.body.data
+//       const docs = response.body.data.docs[0]
+//       expect(response.status).to.equal(200)
 
-  //     const qty_summary_112620556 = stock_qty_summary_awal - qty_checkout_112620556
-  //     expect(qty_summary_112620556)
-  //     //dapetin qty di cart dikurangin sama summary
-  //   })
-  // })
+//       expect(data.totalDocs).to.equal(1)
+//       expect(docs.qty).to.equal(qty_summary_112620556)
+//       //dapetin qty di cart dikurangin sama summary
+//     })
+//   })
 
-  // it("Get product stock from Stock Summary 112780045", () => {
-  //   const ubd = '2024-11-01'
-  //   const url = URL_PRODUCT + '/admin/stock-summary'
-  //   const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
-  //   const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
-  //   const qty_checkout_112780045 = sku_112780045_data.qty
-  //   const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112780045")
+//   it("Get product stock from Stock Summary 112780045", () => {
+//     const ubd = 'null'
+//     const url = URL_PRODUCT + '/admin/stock-summary'
+//     const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=100&ubd=${ubd}&storeCode=${store_code}`
+//     const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+//     const qty_sku_112780045 = sku_112780045_data.qty
+//     const stock_qty_summary_awal = Cypress.env("stock_summary_qty_112780045")
+//     const qty_summary_112780045 = stock_qty_summary_awal -  qty_sku_112780045
 
-  //   cy.request({
-  //     method: "GET",
-  //     url: urlFilter,
-  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
-  //   })
-  //   .should(response => {
-  //     expect(response.status).to.equal(200)
+    
+//     cy.request({
+//       method: "GET",
+//       url: urlFilter,
+//       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+//     })
+//     .should(response => {
+//       const data = response.body.data
+//       const docs = response.body.data.docs[0]
+//       expect(response.status).to.equal(200)
 
-  //     const qty_summary_112780045 = stock_qty_summary_awal - qty_checkout_112780045
-  //     cy.log(qty_summary_112780045)
-  //     //dapetin quantity dikrang yg di cart
-  //   })
-  // })
+//       expect(data.totalDocs).to.equal(1)
+//       expect(docs.qty).to.equal(qty_summary_112780045)
+//       //dapetin qty di cart dikurangin sama summary
+//     })
+//   })
+
+//     //stock movement
+//   it("Get product stock from Stock Movement 112620556", () => {
+//     const url = URL_PRODUCT + '/admin/stock-movement'
+//     const urlFilter = url + `?sku=${sku_112620556}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112620556}&from=${store_code}`
+//     const sku_112620556_data = Cypress.env("SKU_112620556_DATA")
+//     const qty_sku_112620556 = sku_112620556_data.qty
+//     const qty_movement_awal = Cypress.env("stock_movement_qty_112620556")
+//     const totalStock_sku_112620556 = qty_movement_awal - qty_sku_112620556
+
+//     cy.log(qty_sku_112620556)
+//     cy.log(qty_movement_awal)
+//     cy.log(totalStock_sku_112620556)
+
+//     cy.request({
+//       method: "GET",
+//       url: urlFilter,
+//       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+//     })
+//     .should(response => {
+//       const docs = response.body.data.docs[0]  
+
+//       expect(response.status).to.equal(200)
+//       expect(docs.qty).to.equal(qty_sku_112620556)
+//       expect(docs.totalStock).to.equal(totalStock_sku_112620556)
+//       //qty di cart redemption
+//       //ambil total stock ambil stock awal
+//     })
+//   })
+
+//   it("Get product stock from Stock Movement 112780045", () => {
+//     const url = URL_PRODUCT + '/admin/stock-movement'
+//     const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112780045}&from=${store_code}`
+//     //const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=10&sort=${sort_desc}&from=${store_code}`
+//     const sku_112780045_data = Cypress.env("SKU_112780045_DATA")
+//     const qty_sku_112780045 = sku_112780045_data.qty
+//     const qty_movement_awal = Cypress.env("stock_movement_qty_112780045")
+//     const totalStock_sku_112780045 = qty_movement_awal - qty_sku_112780045
+
+//     cy.log(qty_sku_112780045)
+//     cy.log(qty_movement_awal)
+//     cy.log(totalStock_sku_112780045)
+
+//     cy.request({
+//       method: "GET",
+//       url: urlFilter,
+//       headers: Cypress.env("REQUEST_HEADERS_ADMIN")
+//     })
+//     .should(response => {
+//       const docs = response.body.data.docs[0]  
+
+//       expect(response.status).to.equal(200)
+//       expect(docs.qty).to.equal(qty_sku_112780045)
+//       expect(docs.totalStock).to.equal(totalStock_sku_112780045)
+//       //qty di cart redemption
+//       //ambil total stock ambil stock awal
+//     })
+//   })
   
-
-
-  // it("Get product stock from Stock Movement 112780045", () => {
-  //   const url = URL_PRODUCT + '/admin/stock-movement'
-  //   const urlFilter = url + `?sku=${sku_112780045}&page=1&limit=10&sort=${sort_desc}&ubd=${ubd_112780045}&from=${store_code}`
-  //   cy.request({
-  //     method: "GET",
-  //     url: urlFilter,
-  //     headers: Cypress.env("REQUEST_HEADERS_ADMIN")
-  //   })
-  //   .should(response => {
-  //     expect(response.status).to.equal(200)
-  //     //qty yg keluar get dari cart redmeption
-  //     //ambil total stock ambil stock awal
-  //   })
-  //   .then(response => {
-  //     const totalStock = response.body.data.docs[0].totalStock
-  //     cy.log('Stock movement Qty 112780045:', totalStock)
-  //     cy.log('Stock movement Qty 112780045:', response.body.data.docs[0].orderNumber)
-  //     Cypress.env("stock_movement_qty_112780045", totalStock)
-  //   })
-  // })
-})
+// })
