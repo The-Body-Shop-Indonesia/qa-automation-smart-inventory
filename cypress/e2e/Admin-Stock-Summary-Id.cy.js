@@ -9,12 +9,15 @@ const headers = { Authorization: tokenAdmin }
 describe('General API Test Group', () => {
     it('Successfully login', () => {
         const url = URL_USER + "/admin/login"
+        const username_adm = Cypress.env('ADMIN_USERNAME')
+        const password_adm = Cypress.env('ADMIN_PASSWORD')
+
       cy.api({
         method: "POST",
         url,
         body: {
-          username: "admin-tbs",
-          password: "TBSIcms@Desember2022"
+          username: username_adm,
+          password: password_adm
         }
       })
       .should(response => {
@@ -37,7 +40,7 @@ describe('General API Test Group', () => {
     })
 
     it("Get data ID", () => {
-      const sku = '112590510'
+      const sku = '112620556'
       const urlFilter = url + `?sku=${sku}&page=1&limit=100`
       cy.request({
           method: "GET",

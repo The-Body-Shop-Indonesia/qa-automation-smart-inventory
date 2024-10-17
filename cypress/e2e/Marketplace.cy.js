@@ -4,12 +4,13 @@ const urlMP = Cypress.config("baseUrlMP")
 const local_id = Math.floor(Math.random() * 10000000000).toString() //random id
 const localName = "999AutomationQAMP999"
 
+const skus = "112250061" //dibuat SKU array?
+const price = 130000
+
 describe('Callback create order MP', () => {
     it("Callback create order MP", () => {
         const key = Cypress.env('MP_KEY')
         const channel = "Shopee"
-        const skus = "112250061" //dibuat SKU array?
-        const price = "159000"
         const id =  BigInt(Math.floor(Math.random() * 10000000000000000000000000000)).toString() //musti dibuat random angka
         const storeName = "Shopee 1"
         const storeID = 1323
@@ -86,7 +87,7 @@ describe('Callback create order MP', () => {
                       variant_name: "", //ganti jika ganti produk
                       variant_id: 132606, //ganti jika ganti produk
                       variant_sku: skus, //ganti jika ganti produk
-                      price: 1290000, //ganti jika ganti produk
+                      price: price, //ganti jika ganti produk
                       sale_price: price, //ganti jika ganti produk
                       total_price: price, //ganti jika ganti produk
                       voucher_amount: 0,
@@ -123,12 +124,12 @@ describe('Callback create order MP', () => {
                     shipping_provider: "Reguler (Cashless)",
                     shipping_provider_type: "Reguler (Cashless)",
                     shipping_description: null,
-                    subtotal: 218000,
+                    subtotal: price, //ganti jika produk ganti
                     channel_rebate: 0,
                     cashless: true,
                     discount_amount: 0,
                     voucher_seller: 0,
-                    total_price: 218000,
+                    total_price: price, //ganti jika produk ganti
                     voucher_code: "",
                     insurance_fee: 0,
                     discount_reason: null,
@@ -144,7 +145,7 @@ describe('Callback create order MP', () => {
                 }
         })
         .should(response => {
-            expect(response.status).to.equal(200)
+            expect(response.status, 'Response status should be 200').to.equal(200)
         })
     })
 
@@ -164,15 +165,30 @@ describe('Callback create order MP', () => {
         .should(result => {
             expect(result).to.have.property('_id')
             expect(result).to.have.property('note', null)
+            expect(result).to.have.property('customerInfo') 
+            expect(result).to.have.property('itemLines') 
+            expect(result.itemLines[0]).to.have.property('price') 
+            expect(result.itemLines[0]).to.have.property('salePrice') 
+            expect(result.itemLines[0]).to.have.property('totalPrice') 
             expect(result).to.have.property('status', 'Open')
             expect(result).to.have.property('localId', local_id)
             expect(result).to.have.property('localName', localName)
+            expect(result).to.have.property('shippingPrice') 
+            expect(result).to.have.property('storeName') 
+            expect(result).to.have.property('storeId') 
             expect(result).to.have.property('orderNumber') 
+
+            expect(result.subtotal).to.equal(price) 
+            expect(result.totalPrice).to.equal(price) 
+            expect(result.itemLines[0].price).to.equal(price) 
+            expect(result.itemLines[0].salePrice).to.equal(price) 
+            expect(result.itemLines[0].totalPrice).to.equal(price) 
         })
         .then(result => {
             //get ordernumber dari query
             Cypress.env("MP_ORDERNUMBER", result.orderNumber)
             cy.log("Order Number: ", Cypress.env("MP_ORDERNUMBER"))
+            //cek price price nya
         })
     })
 
@@ -181,8 +197,7 @@ describe('Callback create order MP', () => {
         const order_number = Cypress.env("MP_ORDERNUMBER")
         const db_Order = Cypress.env('DB_PRODUCTS')
         const db_Collection = Cypress.env('DB_COLLECTION_ORDERS')
-        cy.log(db_Order)
-        cy.log(db_Collection)
+        
         //const local_id = ""
         cy.task('mongodb:findOne', {
             database: db_Order,
@@ -192,7 +207,21 @@ describe('Callback create order MP', () => {
             }
         })
         .should(result => {
+            expect(result).to.have.property('items')
             expect(result).to.have.property('orderNumber',order_number)
+
+            // expect(result.items[0].price).to.equal(price) //harga di tbs
+            // expect(result.items[0].discountedPrice).to.equal(price) //harga di tbs
+            // expect(result.items[0].subTotal).to.equal(price) //harga di tbs
+
+            const normal_price = result.items[0].price
+            const price_discount = normal_price - price
+
+            //calculate discount
+            expect(result.items[0].valueDiscount).to.equal(price_discount) //discount amount
+            expect(result.items[0].promoAmount).to.equal(price_discount) //discount amount
+
+            //gwp soon
         })
     })
 })

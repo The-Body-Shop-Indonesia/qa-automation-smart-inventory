@@ -3,7 +3,6 @@ const validateEnv = require("./utils/validate-env");
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
-console.log('DBNAME from .env:', process.env.DB_MP);;
 
 // validateEnv()
 module.exports = defineConfig({
@@ -39,11 +38,12 @@ module.exports = defineConfig({
     DB_COLLECTION_FORSTOKORDER: process.env.DB_COLLECTION_FORSTOKORDER,
     DB_PRODUCTS: process.env.DB_PRODUCTS,
     DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS,
-    ADM_USERNAME: process.env.ADM_USERNAME,
-    ADM_PASSWORD: process.env.ADM_PASSWORD,
     STORE_CODE_BXC: process.env.STORE_CODE_BXC,
     NIK_BXC: process.env.NIK_BXC,
-    PIN_BXC: process.env.PIN_BXC
+    PIN_BXC: process.env.PIN_BXC,
+    FIRST_NAME: process.env.FIRST_NAME,
+    LAST_NAME: process.env.LAST_NAME,
+    CARD_NUMBER: process.env.CARD_NUMBER
   }
 });
 
