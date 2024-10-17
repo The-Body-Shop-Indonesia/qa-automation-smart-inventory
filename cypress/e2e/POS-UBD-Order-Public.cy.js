@@ -40,7 +40,7 @@ describe('Admin check stock product before transaction', function() {
             url: urlFilter,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             const ubdTest = new Date(ubd)
             const yearExpiredTest = ubdTest.getFullYear()
@@ -64,11 +64,11 @@ describe('Admin check stock product before transaction', function() {
             if (data.length === 0) {
                 const qty_awal = 0
                 Cypress.env("qty_awal_112780193", qty_awal)
-                // cy.log('Quantity 112780193 before trx: ', qty_awal)
+                cy.log('Quantity 112780193 before trx: ', qty_awal)
             } else if (data.length === 1) {
                 const qty_awal = data[0].qty
                 Cypress.env("qty_awal_112780193", qty_awal)
-                // cy.log('Quantity 112780193 before trx: ', qty_awal)
+                cy.log('Quantity 112780193 before trx: ', qty_awal)
             }
             // Cypress.env("qty_awal_112780193", qty_awal)
         })
@@ -82,7 +82,7 @@ describe('Admin check stock product before transaction', function() {
             url: urlFilter2,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             const ubdTest = new Date(ubd2)
             const yearExpiredTest = ubdTest.getFullYear()
@@ -106,11 +106,11 @@ describe('Admin check stock product before transaction', function() {
             if (data.length === 0) {
                 const qty_awal = 0
                 Cypress.env("qty_awal_101080547", qty_awal)
-                // cy.log('Quantity 101080547 before trx: ', qty_awal)
+                cy.log('Quantity 101080547 before trx: ', qty_awal)
             } else {
                 const qty_awal = data[0].qty
                 Cypress.env("qty_awal_101080547", qty_awal)
-                // cy.log('Quantity 101080547 before trx: ', qty_awal)
+                cy.log('Quantity 101080547 before trx: ', qty_awal)
             }
             // Cypress.env("qty_awal_101080547", qty_awal)
         })
@@ -124,7 +124,7 @@ describe('Admin check stock product before transaction', function() {
             url: urlFilter3,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             const ubdTest = new Date(ubd3)
             const yearExpiredTest = ubdTest.getFullYear()
@@ -148,11 +148,11 @@ describe('Admin check stock product before transaction', function() {
             if (data.length === 0) {
                 const qty_awal = 0
                 Cypress.env("qty_awal_190252242", qty_awal)
-                // cy.log('Quantity 190252242 before trx: ', qty_awal)
+                cy.log('Quantity 190252242 before trx: ', qty_awal)
             } else {
                 const qty_awal = data[0].qty
                 Cypress.env("qty_awal_190252242", qty_awal)
-                // cy.log('Quantity 190252242 before trx: ', qty_awal)
+                cy.log('Quantity 190252242 before trx: ', qty_awal)
             }
             // Cypress.env("qty_awal_101080547", qty_awal)
         })
@@ -359,7 +359,7 @@ describe('Staff create order public customer with void item', function() {
         .should(response => {
             expect(response.status).to.equal(201)
             const data = response.body.data
-            expect(data.assignTo.nik).to.equal(nik)
+            expect(data.assignTo.nik, "Employee NIK should "+nik).to.equal(nik)
             Cypress.env("CART", response.body.data)
         })
     })
@@ -399,9 +399,9 @@ describe('Staff create order public customer with void item', function() {
             const responseUbdDate = new Date(responseUbd)
             const yearExpiredResponse = responseUbdDate.getFullYear()
             const monthExpiredResponse = responseUbdDate.getMonth() + 1
-            expect(item[0].sku).to.equal(sku)
-            expect(item[0].qty).to.equal(qty)
-            expect(item[0].ubdDetail[0].total).to.equal(qty)
+            expect(item[0].sku, "SKU should "+sku).to.equal(sku)
+            expect(item[0].qty, "Quantity of product "+sku+" should "+qty).to.equal(qty)
+            expect(item[0].ubdDetail[0].total, "Total of product "+sku+" and UBD "+ubd+" should "+qty).to.equal(qty)
             expect(yearExpiredResponse).to.equal(yearExpiredTest)
             expect(monthExpiredResponse).to.equal(monthExpiredTest)
             const price_112780193 = item[0].product.price
@@ -409,9 +409,12 @@ describe('Staff create order public customer with void item', function() {
             Cypress.env("totalAmount", price_112780193)
             Cypress.env("paymentAmount", price_112780193)
             //sub_total
-            expect(item[0].sub_total).to.equal(price_112780193)
-            expect(response.body.data.totalAmount).to.equal(Cypress.env("totalAmount"))
-            expect(response.body.data.paymentAmount).to.equal(Cypress.env("paymentAmount"))
+            expect(item[0].sub_total, "sub_total of product "+sku+" should "+price_112780193).to.equal(price_112780193)
+            expect(response.body.data.totalAmount, "totalAmount should "+Cypress.env("totalAmount")).to.equal(Cypress.env("totalAmount"))
+            expect(response.body.data.paymentAmount, "paymentAmount should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
+            const paymentDetails = response.body.data.paymentDetails
+            expect(paymentDetails[0].total, "paymentDetails.Subtotal should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
+            expect(paymentDetails[12].total, "paymentDetails.Total should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
         })
     })
 
@@ -450,9 +453,9 @@ describe('Staff create order public customer with void item', function() {
             const responseUbdDate = new Date(responseUbd)
             const yearExpiredResponse = responseUbdDate.getFullYear()
             const monthExpiredResponse = responseUbdDate.getMonth() + 1
-            expect(item[1].sku).to.equal(sku)
-            expect(item[1].qty).to.equal(qty)
-            expect(item[1].ubdDetail[0].total).to.equal(qty)
+            expect(item[1].sku, "SKU should "+sku).to.equal(sku)
+            expect(item[1].qty, "Quantity of product "+sku+" should "+qty).to.equal(qty)
+            expect(item[1].ubdDetail[0].total, "Total of product "+sku+" and UBD "+ubd+" should "+qty).to.equal(qty)
             expect(yearExpiredResponse).to.equal(yearExpiredTest)
             expect(monthExpiredResponse).to.equal(monthExpiredTest)
             const price_190252242 = item[1].product.price
@@ -461,9 +464,12 @@ describe('Staff create order public customer with void item', function() {
             Cypress.env("totalAmount", totalAmount)
             Cypress.env("paymentAmount", totalAmount)
             //sub_total
-            expect(item[1].sub_total).to.equal(price_190252242)
-            expect(response.body.data.totalAmount).to.equal(Cypress.env("totalAmount"))
-            expect(response.body.data.paymentAmount).to.equal(Cypress.env("paymentAmount"))
+            expect(item[1].sub_total, "sub_total of product "+sku+" should "+price_190252242).to.equal(price_190252242)
+            expect(response.body.data.totalAmount, "totalAmount should "+Cypress.env("totalAmount")).to.equal(Cypress.env("totalAmount"))
+            expect(response.body.data.paymentAmount, "paymentAmount should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
+            const paymentDetails = response.body.data.paymentDetails
+            expect(paymentDetails[0].total, "paymentDetails.Subtotal should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
+            expect(paymentDetails[12].total, "paymentDetails.Total should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
         })
     })
 
@@ -503,19 +509,22 @@ describe('Staff create order public customer with void item', function() {
             const responseUbdDate = new Date(responseUbd)
             const yearExpiredResponse = responseUbdDate.getFullYear()
             const monthExpiredResponse = responseUbdDate.getMonth() + 1
-            expect(item[0].sku).to.equal(sku)
-            expect(item[0].qty).to.equal(qty)
+            expect(item[0].sku, "SKU should "+sku).to.equal(sku)
+            expect(item[0].qty, "Quantity of product "+sku+" should "+qty).to.equal(qty)
             expect(yearExpiredResponse).to.equal(yearExpiredTest)
             expect(monthExpiredResponse).to.equal(monthExpiredTest)
             const price_101080547 = item[0].product.price
             Cypress.env("price_101080547", price_101080547)
             //sub_total
-            expect(item[0].sub_total).to.equal(price_101080547)
+            expect(item[0].sub_total, "sub_total of product "+sku+" should "+price_101080547).to.equal(price_101080547)
             const totalAmount = Cypress.env("totalAmount")
             const paymentAmount = totalAmount - price_101080547
             Cypress.env("paymentAmount", paymentAmount)
-            expect(response.body.data.totalAmount).to.equal(totalAmount)
-            expect(response.body.data.paymentAmount).to.equal(paymentAmount)
+            expect(response.body.data.totalAmount, "totalAmount should "+Cypress.env("totalAmount")).to.equal(totalAmount)
+            expect(response.body.data.paymentAmount, "paymentAmount should "+Cypress.env("paymentAmount")).to.equal(paymentAmount)
+            const paymentDetails = response.body.data.paymentDetails
+            expect(paymentDetails[0].total, "paymentDetails.Subtotal should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
+            expect(paymentDetails[12].total, "paymentDetails.Total should "+Cypress.env("paymentAmount")).to.equal(Cypress.env("paymentAmount"))
         })
     })
 
@@ -573,6 +582,7 @@ describe('Staff create order public customer with void item', function() {
             // validate multipayment
             expect(body.multiPayments).to.be.an('array');
             expect(body.multiPayments.length).to.be.greaterThan(0)
+            expect(body.multiPayments[0].name, "Payment method selected should Tunai").to.equal("Tunai")
             Cypress.env("CART", response.body.data)
         })
     })
@@ -629,9 +639,9 @@ describe('Staff create order public customer with void item', function() {
         
             expect(body.totalAmount).to.equal(Cypress.env("totalAmount"))
             expect(body.paymentAmount).to.equal(Cypress.env("paymentAmount"))
-            expect(body.payments.paymentStatus).to.equal('Paid')
-            expect(body.paymentStatus).to.equal('Paid')
-            expect(body.orderStatus).to.equal('PAID')
+            expect(body.payments.paymentStatus, "payment.paymentStatus should Paid").to.equal('Paid')
+            expect(body.paymentStatus, "paymentStatus should Paid").to.equal('Paid')
+            expect(body.orderStatus, "orderStatus should PAID").to.equal('PAID')
         })
     })
 
@@ -650,7 +660,7 @@ describe('Admin check stock product after transaction', function() {
             url: urlFilter,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             expect(data.length).to.be.greaterThan(0);
             expect(data.length).to.equal(1);
@@ -659,9 +669,9 @@ describe('Admin check stock product after transaction', function() {
             expect(movement.sku).to.equal(sku)
             expect(movement.from).to.equal(Cypress.env("storeCode"))
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
-            expect(movement.qty).to.equal(1)
+            expect(movement.qty, 'Stock movement for sales product '+sku+' should 1').to.equal(1)
             Cypress.env("qty_movement_112780193", movement.qty)
-            // cy.log('Quantity movement 112780193 after trx: ', movement.qty)
+            cy.log('Quantity movement 112780193 after trx: ', movement.qty)
         })
 
         // check stock movement sku 101080547 void
@@ -673,18 +683,21 @@ describe('Admin check stock product after transaction', function() {
             url: urlFilter2,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             expect(data.length).to.be.greaterThan(0);
             expect(data.length).to.equal(1);
             expect(data).to.be.an('array');
             const movement = data[0]
-            Cypress.env("qty_movement_101080547", movement.qty)
+            Cypress.env("qty_movement_101080547", -1)
             expect(movement.sku).to.equal(sku2)
             expect(movement.from).to.equal(Cypress.env("storeCode"))
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
-            expect(movement.qty).to.equal(-1)
-            // cy.log('Quantity movement 101080547 after trx: ', movement.qty)
+            expect(movement.qty, 'Stock movement for void product '+sku2+' should -1').to.equal(-1)
+            // if(movement.qty!==-1){
+            //     throw new Error('Stock movement for void product is not -1')
+            // }
+            cy.log('Quantity movement 101080547 after trx: ', movement.qty)
         })
 
         // check stock movement sku 190252242
@@ -696,7 +709,7 @@ describe('Admin check stock product after transaction', function() {
             url: urlFilter3,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             expect(data.length).to.be.greaterThan(0);
             expect(data.length).to.equal(1);
@@ -705,9 +718,9 @@ describe('Admin check stock product after transaction', function() {
             expect(movement.sku).to.equal(sku3)
             expect(movement.from).to.equal(Cypress.env("storeCode"))
             expect(movement.orderNumber).to.equal(Cypress.env("orderNumber"))
-            expect(movement.qty).to.equal(1)
+            expect(movement.qty, 'Stock movement for sales product '+sku3+' should 1').to.equal(1)
             Cypress.env("qty_movement_190252242", movement.qty)
-            // cy.log('Quantity movement 190252242 after trx: ', movement.qty)
+            cy.log('Quantity movement 190252242 after trx: ', movement.qty)
         })
     })
     
@@ -723,7 +736,7 @@ describe('Admin check stock product after transaction', function() {
             url: urlFilter,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             expect(data.length).to.equal(1);
             const ubdTest = new Date(ubd)
@@ -743,11 +756,11 @@ describe('Admin check stock product after transaction', function() {
             expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
             expect(Cypress._.every(data, ["sku", sku])).to.deep.equal(true);
             expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
-            // expect(data.length).to.equal(1);
+            expect(data.length).to.equal(1);
             const qty_awal = Cypress.env("qty_awal_112780193")
             const qty_after = qty_awal - Cypress.env("qty_movement_112780193")
-            expect(data[0].qty).to.equal(qty_after)
-            // cy.log('Quantity stock 112780193 after trx: ', data[0].qty)
+            expect(data[0].qty, "Quantity stock "+sku+" after trx should "+qty_after).to.equal(qty_after)
+            cy.log('Quantity stock 112780193 after trx: ', data[0].qty)
         })
 
         // check stock untuk sku 101080547
@@ -759,7 +772,7 @@ describe('Admin check stock product after transaction', function() {
             url: urlFilter2,
             headers: Cypress.env("REQUEST_HEADERS_ADMIN")
         })
-        .should(response => {
+        .then(response => {
             const data = response.body.data.docs
             expect(data.length).to.equal(1);
             const ubdTest = new Date(ubd2)
@@ -779,13 +792,13 @@ describe('Admin check stock product after transaction', function() {
             expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
             expect(Cypress._.every(data, ["sku", sku2])).to.deep.equal(true);
             expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
-            // expect(data.length).to.equal(1);
+            expect(data.length).to.equal(1);
             console.log(Cypress.env("qty_awal_101080547"),Cypress.env("qty_movement_101080547"))
 
             const qty_awal = Cypress.env("qty_awal_101080547")
             const qty_after = qty_awal - Cypress.env("qty_movement_101080547")
-            expect(data[0].qty).to.equal(qty_after)
-            // cy.log('Quantity stock 101080547 after trx: ', data[0].qty)
+            expect(data[0].qty, "Quantity stock "+sku2+" after trx should "+qty_after).to.equal(qty_after)
+            cy.log('Quantity stock 101080547 after trx: ', data[0].qty)
         })
 
         // check stock untuk sku 190252242
@@ -817,13 +830,13 @@ describe('Admin check stock product after transaction', function() {
             expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true);
             expect(Cypress._.every(data, ["sku", sku3])).to.deep.equal(true);
             expect(Cypress._.every(data, ["storeCode", storeCode])).to.deep.equal(true);
-            // expect(data.length).to.equal(1);
+            expect(data.length).to.equal(1);
             console.log(Cypress.env("qty_awal_190252242"),Cypress.env("qty_movement_190252242"))
 
             const qty_awal = Cypress.env("qty_awal_190252242")
             const qty_after = qty_awal - Cypress.env("qty_movement_190252242")
-            expect(data[0].qty).to.equal(qty_after)
-            // cy.log('Quantity stock 190252242 after trx: ', data[0].qty)
+            expect(data[0].qty, "Quantity stock "+sku3+" after trx should "+qty_after).to.equal(qty_after)
+            cy.log('Quantity stock 190252242 after trx: ', data[0].qty)
         })
     })
 
