@@ -358,6 +358,20 @@ describe('Staff create order with void item', function() {
     })
 
     it('Should able to create cart', () => {
+        const url_cus = URL_USER + "/employee/detail-member?cardNumber=" + Cypress.env("CARDNUMBER")
+        cy.api({
+            method: "POST",
+            url: url_cus,
+            headers: Cypress.env("REQUEST_HEADERS")
+        })
+        .then(response => {
+            const currentTier = response.body.data.currentTier.code
+            Cypress.env("currentTier", currentTier)
+            const currentPoint = response.body.data.currentPoint
+            Cypress.env("currentPoint", currentPoint)
+            cy.log(`cuurent point = ${currentPoint}`)
+        })
+
         const url = URL_PRODUCT + "/employee/cart/create"
         cy.api({
             method: "POST",
@@ -371,7 +385,7 @@ describe('Staff create order with void item', function() {
                 nik: "",
                 FamilyNumber: "",
                 isFamily: false,
-                customerGroup: "STARTER",
+                customerGroup: Cypress.env("currentTier"),
                 image: "https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/d4f31a39-5dab-4c50-a307-5d24282453ec.jpg",
                 isScanner: true,
                 isLapsed: false,
@@ -389,6 +403,8 @@ describe('Staff create order with void item', function() {
             Cypress.env("cartId", cartId)
             const customerId = response.body.data.customer._id
             Cypress.env("customerId", customerId)
+            const cardNumber = response.body.data.customer.cardNumber
+            Cypress.env("cus_cardNumber", cardNumber)
         })
     })
 
@@ -741,7 +757,36 @@ describe('Staff create order with void item', function() {
     })
 
 })
-// tambah cek poin untuk member
+describe('Check point after transaction', function() {
+    it('Should get correct point amount', () => {
+        const url_cus = URL_USER + "/employee/detail-member?cardNumber=" + Cypress.env("CARDNUMBER")
+        cy.api({
+            method: "POST",
+            url: url_cus,
+            headers: Cypress.env("REQUEST_HEADERS")
+        })
+        .then(response => {
+            const paymentAmount = Cypress.env("paymentAmount")
+            const tierBefore = Cypress.env("currentTier")
+            const pointBefore = Cypress.env("currentPoint")
+            const pointAfter = response.body.data.currentPoint
+            if (tierBefore === "STARTER") {
+                const pointEarn = Math.floor(paymentAmount / 45000)
+                cy.log(`Point received: ${pointEarn}`)
+                expect(pointAfter, "After purchase, point customer should be ").to.equal(pointBefore + pointEarn)
+            } else if(tierBefore === "CLUB") {
+                const pointEarn = Math.floor(paymentAmount / 35000)
+                cy.log(`Point received: ${pointEarn}`)
+                expect(pointAfter, "After purchase, point customer should be ").to.equal(pointBefore + pointEarn)
+            } else if(tierBefore === "FAN") {
+                const pointEarn = Math.floor(paymentAmount / 25000)
+                cy.log(`Point received: ${pointEarn}`)
+                expect(pointAfter, "After purchase, point customer should be ").to.equal(pointBefore + pointEarn)
+            }
+            // cy.log(`cuurent point = ${currentPoint}`)
+        })
+    })
+})
 describe('Admin check stock product after transaction', function() {
 
     it('Should get stock movement data', () => {
