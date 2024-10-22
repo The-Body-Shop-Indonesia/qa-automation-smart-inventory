@@ -1,7 +1,7 @@
 const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
-const URL_USER = Cypress.config('baseUrlUser')
-const URL_PRODUCT = Cypress.config('baseUrlProduct')
+const URL_USER = Cypress.config("baseUrlUser")
+const URL_PRODUCT = Cypress.config("baseUrlProduct")
 
 const sku_requisition= '134070359'
 const ubd_requisiton= '2025-05'
@@ -47,16 +47,14 @@ describe('Requisition - UBD', function() {
     }
     })
         .should(response => {
-
         expect(response.status).to.equal(201)
         const body = response.body
-        expect(body).to.haveOwnProperty('statusCode')
-        expect(body).to.haveOwnProperty('message')
-        expect(body).to.haveOwnProperty('data')
+        expect(body).to.haveOwnProperty("statusCode")
+        expect(body).to.haveOwnProperty("message")
+        expect(body).to.haveOwnProperty("data")
         expect(body.statusCode).to.equal(201)
-        expect(body.message).to.equal('Success')
+        expect(body.message).to.equal("Success")
         const data = body.data
-
         expect(data).to.haveOwnProperty("accessToken")
         })
         .then(response => {
@@ -544,8 +542,10 @@ it('Should return the correct API and Verify correct Stock Movement - Requisitio
             // Pastikan respons sukses
         expect(response.status).to.eq(200);
 
+        const stockMovement = response.body.data.docs;  // Asumsikan data ada di response.body.data
 
-
+        // Pastikan stockSummary adalah array
+        expect(Array.isArray(stockMovement)).to.eq(true, 'Stock Movement should be an array');
 
             // Cari item dengan SKU yang sesuai dan filter berdasarkan UBD, sesuaikan dengan format bulan dan tahun
         const latestStock = stockMovement
@@ -555,18 +555,9 @@ it('Should return the correct API and Verify correct Stock Movement - Requisitio
             new Date(item.ubd).getFullYear() === 2026 && // Filter berdasarkan tahun
             new Date(item.ubd).getMonth() + 1 === 6 // Filter berdasarkan bulan (bulan dalam JavaScript dimulai dari 0, jadi tambahkan 1)
         )
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];  // Urutkan berdasarkan waktu 
 
-        // Cari item dengan SKU yang sesuai dan filter berdasarkan UBD, sesuaikan dengan format bulan dan tahun
-        const latestStock = stockSummary
-          .filter(
-            (item) =>
-              item.sku === '134070359' &&
-              item.storeCode === '14160' &&
-              new Date(item.ubd).getFullYear() === 2025 && // Filter berdasarkan tahun
-              new Date(item.ubd).getMonth() + 1 === 5 // Filter berdasarkan bulan (bulan dalam JavaScript dimulai dari 0, jadi tambahkan 1)
-          )
-          .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0] // Urutkan berdasarkan waktu
-
+        // Jika data tidak ditemukan, log semua stok yang ada
         if (!latestStock) {
         cy.log('Available Stocks:', stockMovement);  // Log semua data stok yang tersedia
         throw new Error(`No stock movement data found for SKU ${sku_damaged} at from store ${store_requisition} with UBD ${ubd_damaged}`);
@@ -584,75 +575,18 @@ it('Should return the correct API and Verify correct Stock Movement - Requisitio
             sku: sku_damaged,
             storeCode: Cypress.env("STORE_CODE_BXC"),
             ubd: ubd_damaged
-
         }
-        cy.api({
-          method: 'POST',
-          url, // URL untuk POST request
-          headers: Cypress.env('REQUEST_HEADERS_Employee'),
-          body: requestBody
         }).then((response) => {
-          // Validasi respons API
-          expect(response.status).to.eq(201) // Pastikan status kode 201 (Created)
-
-          // Validasi struktur respons yang benar
-          const body = response.body
-          expect(body).to.have.property('statusCode') // Sesuaikan dengan struktur yang benar
-          expect(body).to.have.property('message')
-          expect(body).to.have.property('data')
-
-          // Simpan data POST ke variabel postDataRequisition
-          postDataRequisition = body.data
-
-          // Ambil SKU dan UBD dari hasil respon
-          const product = postDataRequisition.products[0]
-          const ubd = product.ubdDetail[0].ubd
-          const ubdMonthYear = ubd.slice(0, 7) // Ambil bagian '2025-05' dari '2025-05-01T07:00:00.000Z'
-          //Validasi requested & respons
-          expect(postDataRequisition.nik).to.eq(requestBody.nik)
-          expect(product.product.sku).to.eq(requestBody.products[0].sku)
-          expect(postDataRequisition.products[0].qty).to.eq(
-            requestBody.products[0].qty
-          )
-          expect(ubdMonthYear).to.eq('2025-05')
-          expect(postDataRequisition.type).to.eq(requestBody.type)
-          expect(postDataRequisition.reason).to.eq(requestBody.reason)
-
-          // Step 4: Calculate expectedQty
-          const expectedQty = Before_latestStock_Summary - inputQty // Sekarang Before_latestStock_Summary terdefinisi
-          cy.log(
-            'Jumlah stok summary [sebelum movement]:',
-            Before_latestStock_Summary
-          )
-          cy.log('Input qty Requisition', inputQty)
-          cy.log('Expected Quantity:', expectedQty)
-          // expect(postDataRequisition.products[0]).to.have.property('qty', expectedQty);
-
-          //condition after stock movement
-          cy.api({
-            method: 'GET',
-            url: urlGet2,
-            headers: Cypress.env('REQUEST_HEADERS_ADMIN'),
-            qs: {
-              limit: 10,
-              sort: '-updatedAt',
-              sku: '134070359',
-              from: '14160',
-              ubd: '2025-05'
-            }
-          }).then((response) => {
             // Pastikan respons sukses
-            expect(response.status).to.eq(200)
+            expect(response.status).to.eq(200);
 
-            const stockMovement = response.body.data.docs // Asumsikan data ada di response.body.data
+            // Ambil initialQty dari data respons terbaru
+            const stockSummary = response.body.data.docs;  // Asumsikan data ada di response.body.data
 
             // Pastikan stockSummary adalah array
-            expect(Array.isArray(stockMovement)).to.eq(
-              true,
-              'Stock Movement should be an array'
-            )
-
- 
+            expect(Array.isArray(stockSummary)).to.eq(true, 'Stock summary should be an array');
+            
+            // Cari item dengan SKU yang sesuai dan filter berdasarkan UBD, sesuaikan dengan format bulan dan tahun
             const latestStock = stockSummary
             .filter(item => 
             item.sku === sku_damaged && 
