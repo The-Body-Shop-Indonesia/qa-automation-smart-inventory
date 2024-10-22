@@ -7,17 +7,19 @@ const url = baseUrl + '/admin/stock-movement'
 const headers = { Authorization: tokenAdmin }
 
 describe('General API Test Group', () => {
-  it('Successfully login', () => {
-    const url = URL_USER + '/admin/login'
-    cy.api({
-      method: 'POST',
-      url,
-      body: {
-        username: 'admin-tbs',
-        password: 'TBSIcms@Desember2022'
-      }
-    })
-      .should((response) => {
+
+    it('Successfully login', () => {
+        const url = URL_USER + "/admin/login"
+      cy.api({
+        method: "POST",
+        url,
+        body: {
+          username:  Cypress.env('ADMIN_USERNAME'),
+          password: Cypress.env('ADMIN_PASSWORD')
+        }
+      })
+      .should(response => {
+
         expect(response.status).to.equal(201)
         const body = response.body
         expect(body).to.haveOwnProperty('statusCode')
