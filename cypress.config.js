@@ -42,9 +42,16 @@ module.exports = defineConfig({
     DB_MP: process.env.DB_MP,
     DB_COLLECTION_FORSTOKORDER: process.env.DB_COLLECTION_FORSTOKORDER,
     DB_PRODUCTS: process.env.DB_PRODUCTS,
-
-    DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS
-
+    DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS,
+    STORE_CODE_BXC: process.env.STORE_CODE_BXC,
+    NIK_BXC: process.env.NIK_BXC,
+    PIN_BXC: process.env.PIN_BXC,
+    FIRST_NAME: process.env.FIRST_NAME,
+    LAST_NAME: process.env.LAST_NAME,
+    CARD_NUMBER: process.env.CARD_NUMBER,
+    FIRSTNAME: process.env.FIRSTNAME,
+    LASTNAME: process.env.LASTNAME,
+    CARDNUMBER: process.env.CARDNUMBER
   }
 })
 
