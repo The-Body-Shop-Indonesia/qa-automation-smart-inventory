@@ -13,8 +13,8 @@ describe('API Test - Stock Movement', () => {
             method: "POST",
             url,
             body: {
-            "username": "admin-tbs",
-            "password": "TBSIcms@Desember2022"
+            "username": Cypress.env('ADMIN_USERNAME'),
+            "password": Cypress.env('ADMIN_PASSWORD')
             }
         })
         .should(response => {
