@@ -43,7 +43,10 @@ module.exports = defineConfig({
     PIN_BXC: process.env.PIN_BXC,
     FIRST_NAME: process.env.FIRST_NAME,
     LAST_NAME: process.env.LAST_NAME,
-    CARD_NUMBER: process.env.CARD_NUMBER
+    CARD_NUMBER: process.env.CARD_NUMBER,
+    FIRSTNAME: process.env.FIRSTNAME,
+    LASTNAME: process.env.LASTNAME,
+    CARDNUMBER: process.env.CARDNUMBER
   }
 });
 

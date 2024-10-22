@@ -3,6 +3,80 @@ const tokenPOS = Cypress.env('TOKEN_POS')
 const URL_USER = Cypress.config("baseUrlUser")
 const URL_PRODUCT = Cypress.config("baseUrlProduct")
 
+// describe('Set product to use', function() {
+//     it('Successfully login employee', () => {
+//         const url = URL_USER + "/employee/login"
+//         cy.api({
+//             method: "POST",
+//             url,
+//             body: {
+//                 nik: Cypress.env("EMP_NIK"),
+//                 storeCode: Cypress.env("EMP_STORECODE"),
+//                 pin: Cypress.env("EMP_PIN")
+//             }
+//         })
+//         .should(response => {
+//             expect(response.status).to.equal(201)
+//             const body = response.body
+//             expect(body).to.haveOwnProperty("statusCode")
+//             expect(body).to.haveOwnProperty("message")
+//             expect(body).to.haveOwnProperty("data")
+//             expect(body.statusCode).to.equal(201)
+//             expect(body.message).to.equal("Success")
+//             const data = body.data
+//             expect(data).to.haveOwnProperty("accessToken")
+//         })
+//         .then(response => {
+//             const employeeToken = response.body.data.accessToken
+//             Cypress.env("REQUEST_HEADERS", {
+//                 Authorization: "Bearer " + employeeToken,
+//                 channel: "pos"
+//             })
+//             Cypress.env("emp_nik", response.body.data.user.nik)
+//             Cypress.env("storeCode", response.body.data.user.storeCode)
+//         })
+//     })
+
+//     it('Should get product list', () => {
+//         const url = URL_PRODUCT + "/employee/product?page=1&size=10&sort=name_asc&keyword=shampoo&is_virtual_bundling=false"
+//         cy.api({
+//             method: "GET",
+//             url,
+//             headers: Cypress.env("REQUEST_HEADERS")
+//         })
+//         .should(response => {
+//             expect(response.body.data.docs.length).to.be.greaterThan(0)
+//             Cypress.env("Product_A", response.body.data.docs[0])
+//             Cypress.env("Product_B", response.body.data.docs[1])
+//             Cypress.env("Product_C", response.body.data.docs[2])
+//             Cypress.env("Product_D", response.body.data.docs[3])
+//         })
+//     })
+// })
+
+describe('Set sku product to use', function () {
+    it('Set sku product', () => {
+        // Mengambil data dari fixture
+        cy.fixture('skus').then((data) => {
+            const skus = data.skuProducts
+            const selectedSkus = new Set() // Set untuk memastikan SKU unik
+
+            while (selectedSkus.size < 4) {
+                const randomIndex = Math.floor(Math.random() * skus.length)
+                selectedSkus.add(skus[randomIndex])
+            }
+
+            // Mengubah Set ke array
+            const [sku1, sku2, sku3, sku4] = Array.from(selectedSkus)
+            Cypress.env("Product_A", sku1)
+            Cypress.env("Product_B", sku2)
+            Cypress.env("Product_C", sku3)
+            Cypress.env("Product_D", sku4)
+            cy.log(`Used sku product: ${Cypress.env("Product_A")}, ${Cypress.env("Product_B")}, ${Cypress.env("Product_C")}, ${Cypress.env("Product_D")}`)
+        })
+    })
+})
+
 describe('Staff add product to cart customer', function() {
     it('Successfully login', () => {
         const url = URL_USER + "/employee/login"
@@ -151,9 +225,9 @@ describe('Staff add product to cart customer', function() {
             headers: Cypress.env("REQUEST_HEADERS"),
             body: {
                 isGuest: false,
-                firstName: "BE Automation",
-                lastName: "User",
-                cardNumber: "51727230398000325",
+                firstName: Cypress.env("FIRSTNAME"),
+                lastName: Cypress.env("LASTNAME"),
+                cardNumber: Cypress.env("CARDNUMBER"),
                 nik: "",
                 FamilyNumber: "",
                 isFamily: false,
@@ -180,7 +254,8 @@ describe('Staff add product to cart customer', function() {
 
     it('Should able to add product to cart by scan QR', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const qty = 1
         const ubd = "2025-05"
         cy.api({
@@ -271,18 +346,19 @@ describe('Staff add product to cart customer', function() {
             expect(item[0].ubdDetail[0].total).to.equal(qty)
             expect(yearExpiredResponse).to.equal(yearExpiredTest)
             expect(monthExpiredResponse).to.equal(monthExpiredTest)
-            const price_112780193 = item[0].product.price
-            Cypress.env("price_112780193", price_112780193)
+            const price = item[0].product.price
+            Cypress.env(`price_${sku}`, price)
             //sub_total
-            expect(item[0].sub_total).to.equal(price_112780193)
-            expect(response.body.data.totalAmount).to.equal(price_112780193)
-            expect(response.body.data.paymentAmount).to.equal(price_112780193)
+            expect(item[0].sub_total).to.equal(price)
+            expect(response.body.data.totalAmount).to.equal(price)
+            expect(response.body.data.paymentAmount).to.equal(price)
         })
     })
 
     it('Should able to add product quantity to cart', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const qty = 1
         const ubd = "2025-05"
 
@@ -301,7 +377,7 @@ describe('Staff add product to cart customer', function() {
         })
         .should(response => {
             const item = response.body.data.items
-            const price = Cypress.env('price_112780193')*2
+            const price = Cypress.env(`price_${sku}`)*2
             Cypress.env("total_price", price)
             item.forEach((it) => {
                 if (it.sku === sku) {
@@ -318,7 +394,8 @@ describe('Staff add product to cart customer', function() {
 
     it('Should able to add same product with different UBD to cart', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const qty = 1
         const ubd = "2025-07"
         cy.api({
@@ -335,7 +412,7 @@ describe('Staff add product to cart customer', function() {
             }
         })
         .should(response => {
-            const price = Cypress.env('price_112780193')*3
+            const price = Cypress.env(`price_${sku}`)*3
             Cypress.env("total_price", price)
             const item = response.body.data.items
             item.forEach((it) => {
@@ -365,7 +442,8 @@ describe('Staff add product to cart customer', function() {
 
     it('Verify if add product without UBD', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "101050283"
+        const product = Cypress.env("Product_B")
+        const sku = product
         const qty = 1
         const ubd = ""
         cy.api({
@@ -395,13 +473,13 @@ describe('Staff add product to cart customer', function() {
                     expect(it.qty).to.equal(qty)
                     expect(it.ubdDetail[0].ubd).to.equal(null)
                     expect(it.ubdDetail[0].total).to.equal(qty)
-                    const price_101050283 = it.product.price
-                    Cypress.env("price_101050283", price_101050283)
+                    const price = it.product.price
+                    Cypress.env(`price_${sku}`, price)
                     //sub_total
-                    expect(it.sub_total).to.equal(price_101050283)
+                    expect(it.sub_total).to.equal(price)
                 }
             })
-            const total_price = Cypress.env("total_price") + Cypress.env("price_101050283")
+            const total_price = Cypress.env("total_price") + Cypress.env(`price_${sku}`)
             Cypress.env("total_price", total_price)
             expect(response.body.data.totalAmount).to.equal(total_price)
             expect(response.body.data.paymentAmount).to.equal(total_price)
@@ -410,7 +488,8 @@ describe('Staff add product to cart customer', function() {
 
     it('Check validation if add product without UBD', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "101050283"
+        const product = Cypress.env("Product_B")
+        const sku = product
         const qty = 1
         const ubd = ""
         cy.api({
@@ -435,7 +514,8 @@ describe('Staff add product to cart customer', function() {
 
     it('Should not able to add same product with quantity more than 10', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "155060173"
+        const product = Cypress.env("Product_C")
+        const sku = product
         const qty = 1
         const quantity = 0
         const ubd = "2025-07"
@@ -457,9 +537,9 @@ describe('Staff add product to cart customer', function() {
                 const item = response.body.data.items
                 item.forEach((it) => {
                     if (it.sku === sku) {
-                        const price_155060173 = it.product.price
-                        Cypress.env("price_155060173", price_155060173)
-                        const total_price = Cypress.env("total_price") + price_155060173
+                        const price = it.product.price
+                        Cypress.env(`price_${sku}`, price)
+                        const total_price = Cypress.env("total_price") + price
                         Cypress.env("total_price", total_price)
                     }
                 })
@@ -484,9 +564,9 @@ describe('Staff add product to cart customer', function() {
                 const item = response.body.data.items
                 item.forEach((it) => {
                     if (it.sku === sku) {
-                        const price_155060173 = it.product.price
-                        Cypress.env("price_155060173", price_155060173)
-                        const total_price = Cypress.env("total_price") + price_155060173
+                        const price = it.product.price
+                        Cypress.env(`price_${sku}`, price)
+                        const total_price = Cypress.env("total_price") + price
                         Cypress.env("total_price", total_price)
                     }
                 })
@@ -517,7 +597,8 @@ describe('Staff add product to cart customer', function() {
 
     it('Add product by scan barcode', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/add"
-        const sku = "190252242"
+        const product = Cypress.env("Product_D")
+        const sku = product
         const qty = 1
         const ubd = "2026-01"
         cy.api({
@@ -556,13 +637,13 @@ describe('Staff add product to cart customer', function() {
                     const monthExpiredResponse = responseUbdDate.getMonth() + 1
                     expect(yearExpiredResponse).to.equal(yearExpiredTest)
                     expect(monthExpiredResponse).to.equal(monthExpiredTest)
-                    const price_190252242 = it.product.price
-                    Cypress.env("price_190252242", price_190252242)
+                    const price = it.product.price
+                    Cypress.env(`price_${sku}`, price)
                     //sub_total
-                    expect(it.sub_total).to.equal(price_190252242)
+                    expect(it.sub_total).to.equal(price)
                 }
             })
-            const total_price = Cypress.env("total_price") + Cypress.env("price_190252242")
+            const total_price = Cypress.env("total_price") + Cypress.env(`price_${sku}`)
             Cypress.env("total_price", total_price)
             expect(response.body.data.totalAmount).to.equal(total_price)
             expect(response.body.data.paymentAmount).to.equal(total_price)
@@ -620,7 +701,8 @@ describe('Staff add product to cart customer', function() {
 describe('Staff update product in cart customer', function() {
     it('Should able to edit note in product ', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/edit"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const qty = 1
         const ubd = "2025-05"
         cy.api({
@@ -631,7 +713,7 @@ describe('Staff update product in cart customer', function() {
                 sku: sku,
                 qty: qty,
                 customPrice: 0,
-                notes: "Menambahkan note di produk 112780193 ubd 2025-05",
+                notes: `Menambahkan note di produk ${sku} ubd 2025-05`,
                 requiredUbd: true,
                 ubd: ubd
             }
@@ -655,7 +737,7 @@ describe('Staff update product in cart customer', function() {
                     // expect(monthExpiredResponse).to.equal(monthExpiredTest)
                     // expect(it.ubdDetail[1].total).to.equal(qty)
                     //notes
-                    expect(it.notes).to.equal("Menambahkan note di produk 112780193 ubd 2025-05")
+                    expect(it.notes).to.equal(`Menambahkan note di produk ${sku} ubd 2025-05`)
                 }
             })
             expect(response.body.data.totalAmount).to.equal(Cypress.env("total_price"))
@@ -665,7 +747,8 @@ describe('Staff update product in cart customer', function() {
 
     it('Edit note should not add quantity in product ', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/edit"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const qty = 1
         const ubd = "2025-05"
         cy.api({
@@ -676,7 +759,7 @@ describe('Staff update product in cart customer', function() {
                 sku: sku,
                 qty: 5,
                 customPrice: 0,
-                notes: "Menambahkan note di produk 112780193 ubd 2025-05, pastikan qty tidak bertambah",
+                notes: `Menambahkan note di produk ${sku} ubd 2025-05, pastikan qty tidak bertambah`,
                 requiredUbd: true,
                 ubd: ubd
             }
@@ -700,7 +783,7 @@ describe('Staff update product in cart customer', function() {
                     expect(monthExpiredResponse).to.equal(monthExpiredTest)
                     expect(it.ubdDetail[1].total).to.equal(qty)
                     //notes
-                    expect(it.notes).to.equal("Menambahkan note di produk 112780193 ubd 2025-05, pastikan qty tidak bertambah")
+                    expect(it.notes).to.equal(`Menambahkan note di produk ${sku} ubd 2025-05, pastikan qty tidak bertambah`)
                 }
             })
             expect(response.body.data.totalAmount).to.equal(Cypress.env("total_price"))
@@ -710,7 +793,8 @@ describe('Staff update product in cart customer', function() {
 
     it('Verify if edit custom price product that has not config is_customPrice=true in cart', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/edit"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const qty = 1
         const ubd = "2025-05"
         cy.api({
@@ -744,7 +828,8 @@ describe('Staff update product in cart customer', function() {
 describe('Staff remove product in cart customer', function() {
     it('Decrease quantity product', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const ubd = "2025-05"
         cy.api({
             method: "PATCH",
@@ -769,10 +854,10 @@ describe('Staff remove product in cart customer', function() {
                 if (it.sku === sku) {
                     expect(it.qty).to.equal(2)
                     expect(it.ubdDetail[0].total).to.equal(1)
-                    expect(it.sub_total).to.equal(Cypress.env('price_112780193')*2)
+                    expect(it.sub_total).to.equal(Cypress.env(`price_${sku}`)*2)
                 }
             })
-            const total_price = Cypress.env('total_price') - Cypress.env('price_112780193')
+            const total_price = Cypress.env('total_price') - Cypress.env(`price_${sku}`)
             Cypress.env("total_price", total_price)
             expect(response.body.data.totalAmount).to.equal(total_price)
             expect(response.body.data.paymentAmount).to.equal(total_price)
@@ -815,10 +900,10 @@ describe('Staff remove product in cart customer', function() {
                         }
                     })
                     expect(ubdData.length).to.equal(0)
-                    expect(it.sub_total).to.equal(Cypress.env('price_112780193'))
+                    expect(it.sub_total).to.equal(Cypress.env(`price_${sku}`))
                 }
             })
-            const total_price = Cypress.env('total_price') - Cypress.env('price_112780193')
+            const total_price = Cypress.env('total_price') - Cypress.env(`price_${sku}`)
             Cypress.env("total_price", total_price)
             expect(response.body.data.totalAmount).to.equal(total_price)
             expect(response.body.data.paymentAmount).to.equal(total_price)
@@ -827,7 +912,8 @@ describe('Staff remove product in cart customer', function() {
 
     it('Delete product from cart by scan QR', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
-        const sku = "112780193"
+        const product = Cypress.env("Product_A")
+        const sku = product
         const ubd = "2025-05"
         cy.api({
             method: "PATCH",
@@ -848,7 +934,7 @@ describe('Staff remove product in cart customer', function() {
                 }
             })
             expect(jmlItem.length).to.equal(0)
-            const total_price = Cypress.env('total_price') - Cypress.env('price_112780193')
+            const total_price = Cypress.env('total_price') - Cypress.env(`price_${sku}`)
             Cypress.env("total_price", total_price)
             expect(response.body.data.totalAmount).to.equal(total_price)
             expect(response.body.data.paymentAmount).to.equal(total_price)
@@ -857,7 +943,8 @@ describe('Staff remove product in cart customer', function() {
 
     it('Delete product by scan barcode', () => {
         const url = URL_PRODUCT + "/employee/cart/pos-ubd/" +Cypress.env('customerId')+ "/item/remove"
-        const sku = "190252242"
+        const product = Cypress.env("Product_D")
+        const sku = product
         const ubd = "2026-01"
         cy.api({
             method: "PATCH",
@@ -878,7 +965,7 @@ describe('Staff remove product in cart customer', function() {
                 }
             })
             expect(jmlItem.length).to.equal(0)
-            const total_price = Cypress.env('total_price') - Cypress.env('price_190252242')
+            const total_price = Cypress.env('total_price') - Cypress.env(`price_${sku}`)
             Cypress.env("total_price", total_price)
             expect(response.body.data.totalAmount).to.equal(total_price)
             expect(response.body.data.paymentAmount).to.equal(total_price)
