@@ -67,7 +67,6 @@ describe('API Test - Stock Movement', () => {
 
         })
       })
-  })
 
   it('Should NOT be able to access the API with invalid token', () => {
     // const url = URL_USER + "/admin/login"
@@ -152,7 +151,6 @@ describe('API Test - Stock Movement', () => {
       })
     })
   })
-})
 
 describe('Pagination Test Group', () => {
   it('Should be able to apply pagination', () => {
@@ -639,3 +637,4 @@ describe('Filter Test Group', () => {
     })
   })
 })
+
