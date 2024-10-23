@@ -109,7 +109,7 @@ describe('General API Test Group', () => {
 
   it('Shows The Right Result When Search Filter is Applied', () => {
     const URL_PRODUCT = Cypress.config('baseUrlProduct')
-    const query = '123'
+    const query = 'meong'
     const url =
       URL_PRODUCT + '/online-voucher-redemption/list' + `?search=${query}`
     const myPoint = Cypress.env('CUSTOMER_POINT')
@@ -137,10 +137,5 @@ describe('General API Test Group', () => {
   it('', () => {})
 
   // Filter tests
-  it('', () => {})
-
-  it('', () => {})
-
-  it('', () => {})
   it('', () => {})
 })
