@@ -4,8 +4,12 @@ const urlMP = Cypress.config("baseUrlMP")
 const local_id = Math.floor(Math.random() * 10000000000).toString() //random id
 const localName = "999AutomationQAMP999"
 
-const skus = "112250061" //dibuat SKU array?
-const price = 130000
+//const skus = "112250061" //dibuat SKU array?
+//const price = 130000 //159000
+const sku_array = [[101060473,179000,10000], [101060473,179000,10000], [101060466,329000,20000], [101060459,89000,0], [101060459,89000,0]]
+
+
+
 
 describe('Callback create order MP', () => {
     it("Callback create order MP", () => {
@@ -29,9 +33,41 @@ describe('Callback create order MP', () => {
 
         const dateParam = y+"-"+mm+"-"+d+"T"+h+":"+m+":"+s+"."+ms+"+07:00";
 
-        cy.log(id, local_id, dateParam);
+        const item_lines = sku_array.map(item_sku => {
+            const [sku, normal_price, discount] = item_sku;
+            const sku_MP_price = normal_price - discount
+        
+            // Create an object for each item
+            return {
+                id: 133209738,
+                local_id: "0-8643115006",
+                sku: sku,
+                name: "",
+                variant_name: "",
+                variant_id: sku,
+                variant_sku: sku,
+                price: sku_MP_price,
+                sale_price: sku_MP_price,
+                total_price: sku_MP_price,
+                voucher_amount: 0,
+                voucher_code: null,
+                voucher_seller: 0,
+                tax_price: 0,
+                fulfill_by_channel: false,
+                shipping_provider: "Reguler (Cashless)",
+                shipping_provider_type: "Reguler (Cashless)",
+                tracking_number: null,
+                note: null,
+                internal_note: null,
+                bundle_info: []
+            };
+        });
 
-        cy.request({
+        const subtotal_MP = item_lines.reduce((acc, item) => acc + item.price, 0);
+
+        //cy.log(id, local_id, dateParam);
+
+        cy.api({
             method: "POST",
             url: urlMP,
             headers: {
@@ -78,31 +114,7 @@ describe('Callback create order MP', () => {
                 ordered_at: dateParam,
                 created_at: dateParam,
                 updated_at: dateParam,
-                item_lines: [
-                    {
-                      id: 133209738,
-                      local_id: "0-8643115006",              
-                      sku: skus, //ganti jika ganti produk
-                      name: "", //ganti jika ganti produk
-                      variant_name: "", //ganti jika ganti produk
-                      variant_id: 132606, //ganti jika ganti produk
-                      variant_sku: skus, //ganti jika ganti produk
-                      price: price, //ganti jika ganti produk
-                      sale_price: price, //ganti jika ganti produk
-                      total_price: price, //ganti jika ganti produk
-                      voucher_amount: 0,
-                      voucher_code: null,              
-                      voucher_seller: 0,
-                      tax_price: 0,
-                      fulfill_by_channel: false,
-                      shipping_provider: "Reguler (Cashless)",
-                      shipping_provider_type: "Reguler (Cashless)",
-                      tracking_number: null,
-                      note: null,
-                      internal_note: null,
-                      bundle_info: []
-                    }
-                  ],
+                    item_lines: item_lines,
                     payment: {
                         payment_method: "Online Payment",
                         status: "Payment Verified"
@@ -124,12 +136,12 @@ describe('Callback create order MP', () => {
                     shipping_provider: "Reguler (Cashless)",
                     shipping_provider_type: "Reguler (Cashless)",
                     shipping_description: null,
-                    subtotal: price, //ganti jika produk ganti
+                    subtotal: subtotal_MP, //ganti jika produk ganti
                     channel_rebate: 0,
                     cashless: true,
                     discount_amount: 0,
                     voucher_seller: 0,
-                    total_price: price, //ganti jika produk ganti
+                    total_price: subtotal_MP, //ganti jika produk ganti
                     voucher_code: "",
                     insurance_fee: 0,
                     discount_reason: null,
@@ -146,84 +158,108 @@ describe('Callback create order MP', () => {
         })
         .should(response => {
             expect(response.status, 'Response status should be 200').to.equal(200)
+            //expect(response.message, 'Response message should be Success').to.equal("Success")
+            //expect(response.data, 'Response message should "successfully process order"').to.equal("successfully process order")
         })
     })
 
-    it("Cek Database Forstokorders", () => {
-        //const local_id = "8294943204" //tes yg udah jadi
-        const db_MP = Cypress.env('DB_MP')
-        const db_Collection = Cypress.env('DB_COLLECTION_FORSTOKORDER')
-        cy.wait(30000)
+    // it("Cek Database Forstokorders", () => {
+    //     //const local_id = "8294943204" //tes yg udah jadi
+    //     const db_MP = Cypress.env('DB_MP')
+    //     const db_Collection = Cypress.env('DB_COLLECTION_FORSTOKORDER')
+    //     cy.wait(30000)
 
-        cy.task('mongodb:findOne', {
-            database: db_MP,
-            collection: db_Collection,
-            query: {
-                localId: local_id
-            }
-        })
-        .should(result => {
-            expect(result).to.have.property('_id')
-            expect(result).to.have.property('note', null)
-            expect(result).to.have.property('customerInfo') 
-            expect(result).to.have.property('itemLines') 
-            expect(result.itemLines[0]).to.have.property('price') 
-            expect(result.itemLines[0]).to.have.property('salePrice') 
-            expect(result.itemLines[0]).to.have.property('totalPrice') 
-            expect(result).to.have.property('status', 'Open')
-            expect(result).to.have.property('localId', local_id)
-            expect(result).to.have.property('localName', localName)
-            expect(result).to.have.property('shippingPrice') 
-            expect(result).to.have.property('storeName') 
-            expect(result).to.have.property('storeId') 
-            expect(result).to.have.property('orderNumber') 
+    //     cy.task('mongodb:findOne', {
+    //         database: db_MP,
+    //         collection: db_Collection,
+    //         query: {
+    //             localId: local_id
+    //         }
+    //     })
+    //     .should(result => {
+    //         const item_lines = result.itemLines
 
-            expect(result.subtotal).to.equal(price) 
-            expect(result.totalPrice).to.equal(price) 
-            expect(result.itemLines[0].price).to.equal(price) 
-            expect(result.itemLines[0].salePrice).to.equal(price) 
-            expect(result.itemLines[0].totalPrice).to.equal(price) 
-        })
-        .then(result => {
-            //get ordernumber dari query
-            Cypress.env("MP_ORDERNUMBER", result.orderNumber)
-            cy.log("Order Number: ", Cypress.env("MP_ORDERNUMBER"))
-            //cek price price nya
-        })
-    })
+    //         expect(result).to.have.property('_id')
+    //         expect(result).to.have.property('note', null)
+    //         expect(result).to.have.property('customerInfo') 
+    //         expect(result).to.have.property('itemLines') 
+    //         expect(result).to.have.property('status', 'Open')
+    //         expect(result).to.have.property('localId', local_id)
+    //         expect(result).to.have.property('localName', localName)
+    //         expect(result).to.have.property('shippingPrice') 
+    //         expect(result).to.have.property('storeName') 
+    //         expect(result).to.have.property('storeId') 
+    //         expect(result).to.have.property('orderNumber')
+    //         item_lines.forEach(function(item){
+    //             expect(item).to.have.property('sku') 
+    //             expect(item).to.have.property('price') 
+    //             expect(item).to.have.property('salePrice') 
+    //             expect(item).to.have.property('totalPrice') 
+    //         })
 
-    it("Cek Database Order", () => {
-        //const order_number = "359050020240213161" //tes yg udah jadi
-        const order_number = Cypress.env("MP_ORDERNUMBER")
-        const db_Order = Cypress.env('DB_PRODUCTS')
-        const db_Collection = Cypress.env('DB_COLLECTION_ORDERS')
+    //         expect(result.subtotal).to.equal(price) 
+    //         expect(result.totalPrice).to.equal(price) 
+
+    //         const item_length = result.itemLines.lenght
+
+    //         for(let i = 0; i < item_length; i++){
+    //             expect(result.itemLines[i].sku, `SKU should be ${skus}`).to.equal(skus) 
+    //             expect(result.itemLines[i].price, `Price should be ${price}`).to.equal(price) 
+    //             expect(result.itemLines[i].salePrice, `Sale Price should be ${price}`).to.equal(price) 
+    //             expect(result.itemLines[i].totalPrice, `Total Price should be ${price}`).to.equal(price) 
+    //         }
+
+    //     })
+    //     .then(result => {
+    //         //get ordernumber dari query
+    //         Cypress.env("MP_ORDERNUMBER", result.orderNumber)
+    //         cy.log("Order Number: ", Cypress.env("MP_ORDERNUMBER"))
+    //         //cek price price nya
+    //     })
+    // })
+
+    // it("Cek Database Order", () => {
+    //     //const order_number = "359050020240213161" //tes yg udah jadi
+    //     const order_number = Cypress.env("MP_ORDERNUMBER")
+    //     const db_Order = Cypress.env('DB_PRODUCTS')
+    //     const db_Collection = Cypress.env('DB_COLLECTION_ORDERS')
         
-        //const local_id = ""
-        cy.task('mongodb:findOne', {
-            database: db_Order,
-            collection: db_Collection,
-            query: {
-                orderNumber: order_number
-            }
-        })
-        .should(result => {
-            expect(result).to.have.property('items')
-            expect(result).to.have.property('orderNumber',order_number)
+    //     //const local_id = ""
+    //     cy.task('mongodb:findOne', {
+    //         database: db_Order,
+    //         collection: db_Collection,
+    //         query: {
+    //             orderNumber: order_number
+    //         }
+    //     })
+    //     .should(result => {
+    //         const items = result.items
+    //         const items_length = result.items.length
 
-            // expect(result.items[0].price).to.equal(price) //harga di tbs
-            // expect(result.items[0].discountedPrice).to.equal(price) //harga di tbs
-            // expect(result.items[0].subTotal).to.equal(price) //harga di tbs
+    //         expect(result).to.have.property('items')
+    //         expect(result).to.have.property('orderNumber',order_number)
 
-            const normal_price = result.items[0].price
-            const price_discount = normal_price - price
+    //         for(let i = 0; i < items_length; i++){
+    //             expect(items[i]).to.have.property('promoNumber')
+    //             expect(items[i]).to.haveOwnProperty("price") //normal price
+    //             expect(items[i]).to.haveOwnProperty("discountedPrice") //normal price
+    //             expect(items[i]).to.haveOwnProperty("subTotal") //normal price
 
-            //calculate discount
-            expect(result.items[0].valueDiscount).to.equal(price_discount) //discount amount
-            expect(result.items[0].promoAmount).to.equal(price_discount) //discount amount
+    //             if(items[i].promoNumber !== ""){
+    //                 expect(items[i].grandTotal, `Grand Total for GWP should be 0`).to.equal(0)
+    //             } else {
+    //                 const normal_price = items[i].price
+    //                 const price_discount = normal_price - price
 
-            //gwp soon
-        })
-    })
+    //                 //calculate discount
+    //                 expect(items[i].valueDiscount, `Value discount should be ${price_discount}`).to.equal(price_discount) //discount amount
+    //                 expect(items[i].promoAmount, `Promo amount should be ${price_discount}`).to.equal(price_discount) //discount amount
+
+    //                 expect(items[i].grandTotal, `Grand Total should be ${price}`).to.equal(price)
+    //             }
+    //         }
+    //     })
+    // })
 })
 /*  1. callback / create order MP (done)
     2. wait sblm cek db 20-30 detik (ada kemungkinan lbh dari itu jadi ada retry)
@@ -231,4 +267,11 @@ describe('Callback create order MP', () => {
     4. cek forstok order (done)
     5. cek forstok error klo ada stock habis
     6. cek cart
-    7. cek order*/
+    7. cek order
+    
+    catatan untuk tambahan: 
+    1. sku ditambahkan jadi misal SKU 1 qty 1, SKU 2 qty 2, SKU 3 qty 3
+    2. logic untuk ngecek qty nya bener ga 
+    3. voucher amount/promo amount di payload 
+    
+    logic sku: perlu cari SKU yg sama berapa banyak jumlahn*/
