@@ -1,5 +1,4 @@
-const urlMP = Cypress.config("baseUrlMP")
-
+const urlMP = Cypress.config('baseUrlMP')
 
 const local_id = Math.floor(Math.random() * 10000000000).toString() //random id
 const localName = "999AutomationQAMP999"
@@ -12,16 +11,20 @@ const sku_array = [[101060473,179000,10000], [101060473,179000,10000], [10106046
 
 
 describe('Callback create order MP', () => {
-    it("Callback create order MP", () => {
-        const key = Cypress.env('MP_KEY')
-        const channel = "Shopee"
-        const id =  BigInt(Math.floor(Math.random() * 10000000000000000000000000000)).toString() //musti dibuat random angka
-        const storeName = "Shopee 1"
-        const storeID = 1323
-        const cur_date = new Date()
-        const utcOffset = -7 * 60; // UTC offset in minutes (+07:00)
-        const localOffset = cur_date.getTimezoneOffset();
-        cur_date.setMinutes(cur_date.getMinutes() - (utcOffset + localOffset)); //Adjusting for the +07:00 offset
+  it('Callback create order MP', () => {
+    const key = Cypress.env('MP_KEY')
+    const channel = 'Shopee'
+    const skus = '112250061' //dibuat SKU array?
+    const price = '159000'
+    const id = BigInt(
+      Math.floor(Math.random() * 10000000000000000000000000000)
+    ).toString() //musti dibuat random angka
+    const storeName = 'Shopee 1'
+    const storeID = 1323
+    const cur_date = new Date()
+    const utcOffset = -7 * 60 // UTC offset in minutes (+07:00)
+    const localOffset = cur_date.getTimezoneOffset()
+    cur_date.setMinutes(cur_date.getMinutes() - (utcOffset + localOffset)) //Adjusting for the +07:00 offset
 
         const y = cur_date.getFullYear();
         const mm= ('0'+(cur_date.getMonth()+1)).slice(-2);
