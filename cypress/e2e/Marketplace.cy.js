@@ -10,6 +10,12 @@ const sku_array = [[101060473,179000,10000], [101060473,179000,10000], [10106046
 
 
 
+//const skus = "112250061" //dibuat SKU array?
+//const price = 130000 //159000
+const sku_array = [[101060473,179000,10000], [101060473,179000,10000], [101060466,329000,20000], [101060459,89000,0], [101060459,89000,0]]
+
+
+
 
 describe('Callback create order MP', () => {
     it("Callback create order MP", () => {
