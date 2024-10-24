@@ -1,9 +1,9 @@
 const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
+const baseUrl = Cypress.config('baseUrlProduct')
 const URL_USER = Cypress.config('baseUrlUser')
-const URL_PRODUCT = Cypress.config('baseUrlProduct')
 
-const url = URL_PRODUCT + '/admin/stock-movement'
+const url = baseUrl + '/admin/stock-movement'
 const headers = { Authorization: tokenAdmin }
 
 describe('API Test - Valid & invalid', () => {
@@ -339,7 +339,10 @@ describe('Filter Test Group', () => {
         Cypress._.every(data, (doc) => {
           return doc.ubd === null
         })
-      ).to.deep.equal(true)
+      ).to.deep.equal(
+        true,
+        "Pengecekan apakah setiap 'ubd' dalam data adalah null"
+      )
     })
   })
 
@@ -589,12 +592,9 @@ describe('Filter Test Group', () => {
   })
 
   it('The item returned should match the sort Ascending', () => {
-    const urlGet = `${URL_PRODUCT}/admin/stock-movement` // URL endpoint GET
-
-    // Step 1: GET Stock Movement and sort by updatedAt in ascending order
     cy.api({
       method: 'GET',
-      url: urlGet,
+      url,
       headers: Cypress.env('REQUEST_HEADERS'),
       qs: {
         limit: 50,
