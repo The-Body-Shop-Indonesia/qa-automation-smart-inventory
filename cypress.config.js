@@ -38,12 +38,23 @@ module.exports = defineConfig({
     EMP_NIK: process.env.EMP_NIK,
     EMP_STORECODE: process.env.EMP_STORECODE,
     EMP_PIN: process.env.EMP_PIN,
+<<<<<<< HEAD
     MP_KEY: process.env.MP_KEY,
     DB_MP: process.env.DB_MP,
     DB_COLLECTION_FORSTOKORDER: process.env.DB_COLLECTION_FORSTOKORDER,
     DB_PRODUCTS: process.env.DB_PRODUCTS,
-
-    DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS
+    DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS,
+    ADM_USERNAME: process.env.ADM_USERNAME,
+    ADM_PASSWORD: process.env.ADM_PASSWORD,
+    STORE_CODE_BXC: process.env.STORE_CODE_BXC,
+    NIK_BXC: process.env.NIK_BXC,
+    PIN_BXC: process.env.PIN_BXC
+=======
+    baseUrlProduct: process.env.BASEURLPRODUCT,
+    baseUrlUser: process.env.BASEURLUSER,
+    baseUrlPayment: process.env.BASEURLPAYMENT,
+    baseUrlMP: process.env.BASEURLMP
+>>>>>>> 50209a3 (UBD_Requsition-New)
   }
 })
 
