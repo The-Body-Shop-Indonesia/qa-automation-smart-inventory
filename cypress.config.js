@@ -33,7 +33,7 @@ module.exports = defineConfig({
     NIK_BXC: process.env.NIK_BXC,
     NIK_STAFF: process.env.NIK_STAFF,
     STORE_CODE_STAFF: process.env.STORE_CODE_STAFF,
-    PIN_STAFF:process.env.PIN_STAFF,
+    PIN_STAFF: process.env.PIN_STAFF,
     PIN_BXC: process.env.PIN_BXC,
     EMP_NIK: process.env.EMP_NIK,
     EMP_STORECODE: process.env.EMP_STORECODE,
@@ -44,7 +44,6 @@ module.exports = defineConfig({
     DB_PRODUCTS: process.env.DB_PRODUCTS,
 
     DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS
-
   }
 })
 
