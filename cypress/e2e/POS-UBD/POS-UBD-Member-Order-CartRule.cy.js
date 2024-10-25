@@ -4,55 +4,62 @@ const URL_USER = Cypress.config('baseUrlUser')
 const URL_PRODUCT = Cypress.config('baseUrlProduct')
 const URL_PAYMENT = Cypress.config('baseUrlPayment')
 
-// describe('Set product to use', function() {
-//     it('Successfully login employee', () => {
-//         const url = URL_USER + "/employee/login"
-//         cy.api({
-//             method: "POST",
-//             url,
-//             body: {
-//                 nik: Cypress.env("EMP_NIK"),
-//                 storeCode: Cypress.env("EMP_STORECODE"),
-//                 pin: Cypress.env("EMP_PIN")
-//             }
-//         })
-//         .should(response => {
-//             expect(response.status).to.equal(201)
-//             const body = response.body
-//             expect(body).to.haveOwnProperty("statusCode")
-//             expect(body).to.haveOwnProperty("message")
-//             expect(body).to.haveOwnProperty("data")
-//             expect(body.statusCode).to.equal(201)
-//             expect(body.message).to.equal("Success")
-//             const data = body.data
-//             expect(data).to.haveOwnProperty("accessToken")
-//         })
-//         .then(response => {
-//             const employeeToken = response.body.data.accessToken
-//             Cypress.env("REQUEST_HEADERS", {
-//                 Authorization: "Bearer " + employeeToken,
-//                 channel: "pos"
-//             })
-//             Cypress.env("emp_nik", response.body.data.user.nik)
-//             Cypress.env("storeCode", response.body.data.user.storeCode)
-//         })
-//     })
-
-//     it('Should get product list', () => {
-//         const url = URL_PRODUCT + "/employee/product?page=1&size=10&sort=name_asc&keyword=shampoo&is_virtual_bundling=false"
-//         cy.api({
-//             method: "GET",
-//             url,
-//             headers: Cypress.env("REQUEST_HEADERS")
-//         })
-//         .should(response => {
-//             expect(response.body.data.docs.length).to.be.greaterThan(0)
-//             Cypress.env("Product_A", response.body.data.docs[0])
-//             Cypress.env("Product_B", response.body.data.docs[1])
-//             Cypress.env("Product_C", response.body.data.docs[2])
-//         })
-//     })
-// })
+describe('Set cart rule to apply', function () {
+  it('Login admin', () => {
+    const url = URL_USER + '/admin/login'
+    cy.api({
+      method: 'POST',
+      url,
+      // headers,
+      body: {
+        username: Cypress.env('ADMIN_USERNAME'),
+        password: Cypress.env('ADMIN_PASSWORD')
+      }
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.statusCode).to.equal(201)
+      expect(response.body.data.accessToken).to.not.be.empty
+      const tokenAdmin = response.body.data.accessToken
+      // const employeeToken = response.body.data.accessToken
+      Cypress.env('REQUEST_HEADERS_ADMIN', {
+        Authorization: 'Bearer ' + tokenAdmin
+      })
+    })
+  })
+  it('Set cart rule', () => {
+    const url =
+      URL_PRODUCT +
+      '/cart-rule?page=1&limit=10&keyword=PNAUTOPERCENT10&is_exclusive=false&is_discard=false'
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_ADMIN')
+    }).then((response) => {
+      const data = response.body.data.docs[0]
+      Cypress.env('CARTRULE_DETAILS', data)
+      const effect = data.effect
+      const [type, val] = effect.split(',')
+      Cypress.env('CARTRULE_TYPE', type)
+      Cypress.env('CARTRULE_VALUE', val)
+      const terms = data.terms
+      const values = terms.replace(/\*\*\*/g, '').split(',')
+      const field = values[0] // "sku"
+      const operator = values[1] // "=="
+      const value = values[2] // "180150353"
+      if (field === 'sku') {
+        const sku_cartRule = value
+        Cypress.env('SKU_CARTRULE', sku_cartRule)
+        cy.api({
+          method: 'GET',
+          url: `${URL_PRODUCT}/product/search/${sku_cartRule}`
+        }).then((response) => {
+          const data = response.body.data
+          Cypress.env('Product_CartRule', data)
+        })
+      }
+    })
+  })
+})
 
 describe('Set sku product to use', function () {
   before('Set 2 sku product', () => {
@@ -83,10 +90,6 @@ describe('Set sku product to use', function () {
         const data = response.body.data
         Cypress.env('Product_B', data)
       })
-      // Cypress.env('Product_C', sku2)
-      // cy.log(
-      //   `Used sku product: ${Cypress.env('Product_A')} and ${Cypress.env('Product_C')}`
-      // )
     })
   })
 
@@ -210,6 +213,50 @@ describe('Admin check stock product before transaction', function () {
         const qty_awal = data[0].qty
         Cypress.env(`qty_awal_${sku2}`, qty_awal)
         cy.log(`Quantity ${sku2} before trx: `, qty_awal)
+      }
+      // Cypress.env("qty_awal_101080547", qty_awal)
+    })
+
+    const product3 = Cypress.env('Product_CartRule')
+    const sku3 = product3.sku
+    const ubd3 = '2025-02-25'
+    const urlFilter3 =
+      url + `?sku=${sku3}&storeCode=${storeCode}&ubd=${ubd3}&page=1&limit=100`
+    cy.api({
+      method: 'GET',
+      url: urlFilter3,
+      headers: Cypress.env('REQUEST_HEADERS_ADMIN')
+    }).then((response) => {
+      const data = response.body.data.docs
+      const ubdTest = new Date(ubd3)
+      const yearExpiredTest = ubdTest.getFullYear()
+      const monthExpiredTest = ubdTest.getMonth() + 1
+
+      const matchingFunction = (check) => {
+        const ubdResponse = new Date(check.ubd)
+        const yearExpiredResponse = ubdResponse.getFullYear()
+        const monthExpiredResponse = ubdResponse.getMonth() + 1
+
+        const yearIsMatch = yearExpiredResponse === yearExpiredTest
+        const monthIsMatch = monthExpiredResponse === monthExpiredTest
+        return yearIsMatch && monthIsMatch
+      }
+
+      expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true)
+      expect(Cypress._.every(data, ['sku', sku3])).to.deep.equal(true)
+      expect(Cypress._.every(data, ['storeCode', storeCode])).to.deep.equal(
+        true
+      )
+      // expect(data.length).to.equal(1);
+      // const qty_awal = 0
+      if (data.length === 0) {
+        const qty_awal = 0
+        Cypress.env(`qty_awal_${sku3}`, qty_awal)
+        cy.log(`Quantity ${sku3} before trx: `, qty_awal)
+      } else {
+        const qty_awal = data[0].qty
+        Cypress.env(`qty_awal_${sku3}`, qty_awal)
+        cy.log(`Quantity ${sku3} before trx: `, qty_awal)
       }
       // Cypress.env("qty_awal_101080547", qty_awal)
     })
@@ -403,81 +450,8 @@ describe('Staff create order', function () {
           delete data.updatedAt
           delete data.createdAt
           expect(data).to.deep.equal(mockResponse)
-          // expect(data.customer.isGuest).to.equal(false)
-          // expect(data.customer.firstName).to.equal(Cypress.env('FIRSTNAME'))
-          // expect(data.customer.lastName).to.equal(Cypress.env('LASTNAME'))
-          // expect(data.customer.cardNumber).to.equal(Cypress.env('CARDNUMBER'))
-          // expect(data.customer.customerGroup).to.equal(Cypress.env('currentTier'))
         })
     })
-
-    // const { response: mockResponse } =
-    //   require('../../fixtures/cart-member-generators').createCartPayload_14216()
-    // const url = URL_PRODUCT + '/employee/cart/create'
-    // cy.api({
-    //   method: 'POST',
-    //   url,
-    //   headers: Cypress.env('REQUEST_HEADERS'),
-    //   body: {
-    //     isGuest: false,
-    //     firstName: Cypress.env('FIRSTNAME'),
-    //     lastName: Cypress.env('LASTNAME'),
-    //     cardNumber: Cypress.env('CARDNUMBER'),
-    //     nik: '',
-    //     FamilyNumber: '',
-    //     isFamily: false,
-    //     customerGroup: Cypress.env('currentTier'),
-    //     image:
-    //       'https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/d4f31a39-5dab-4c50-a307-5d24282453ec.jpg',
-    //     isScanner: true,
-    //     isLapsed: false,
-    //     isReactivated: false,
-    //     isIcarusAppUser: false,
-    //     autoEnroll: false,
-    //     autoEnrollFrom: ''
-    //   }
-    // })
-    //   .should((response) => {
-    //     expect(response.status).to.equal(201)
-    //     expect(response.body.data).to.haveOwnProperty('_id')
-    //     expect(response.body.data.customer).to.haveOwnProperty('_id')
-    //     const cartId = response.body.data._id
-    //     Cypress.env('cartId', cartId)
-    //     const customerId = response.body.data.customer._id
-    //     Cypress.env('customerId', customerId)
-    //     const cardNumber = response.body.data.customer.cardNumber
-    //     Cypress.env('cus_cardNumber', cardNumber)
-    //     const data = response.body.data
-    //     expect(data.customer.isGuest).to.equal(false)
-    //     expect(data.customer.firstName).to.equal(Cypress.env('FIRSTNAME'))
-    //     expect(data.customer.lastName).to.equal(Cypress.env('LASTNAME'))
-    //     expect(data.customer.cardNumber).to.equal(Cypress.env('CARDNUMBER'))
-    //     expect(data.customer.customerGroup).to.equal(Cypress.env('currentTier'))
-    //   })
-    //   .should((response) => {
-    //     const data = response.body.data
-    //     delete data.user
-    //     delete data.customer._id
-    //     delete data.customer.firstName
-    //     delete data.customer.lastName
-    //     delete data.customer.cardNumber
-    //     delete data.customer.customerGroup
-    //     delete data.customer.image
-    //     delete data.customer.id
-    //     delete data.createdBy.updatedAt
-    //     delete data.createdBy.lastLogin
-    //     delete data.createdBy.shiftAttendanceId
-    //     delete data.createdBy.shiftCode
-    //     delete data._id
-    //     delete data.updatedAt
-    //     delete data.createdAt
-    //     expect(data).to.deep.equal(mockResponse)
-    //     // expect(data.customer.isGuest).to.equal(false)
-    //     // expect(data.customer.firstName).to.equal(Cypress.env('FIRSTNAME'))
-    //     // expect(data.customer.lastName).to.equal(Cypress.env('LASTNAME'))
-    //     // expect(data.customer.cardNumber).to.equal(Cypress.env('CARDNUMBER'))
-    //     // expect(data.customer.customerGroup).to.equal(Cypress.env('currentTier'))
-    //   })
   })
 
   it('Should able to assign employee', () => {
@@ -527,54 +501,6 @@ describe('Staff create order', function () {
       .should((response) => {
         expect(response.status).to.equal(201)
         const data = response.body.data
-        // expect(data).to.haveOwnProperty('_id')
-        // expect(data).to.haveOwnProperty('omni_trx_type')
-        // expect(data).to.haveOwnProperty('is_omni')
-        // expect(data).to.haveOwnProperty('assignToStoreDispatcher')
-        // expect(data).to.haveOwnProperty('user')
-        // expect(data).to.haveOwnProperty('items')
-        // expect(data).to.haveOwnProperty('void_items')
-        // expect(data).to.haveOwnProperty('totalAmount')
-        // expect(data).to.haveOwnProperty('totalWeight')
-        // expect(data).to.haveOwnProperty('payments')
-        // expect(data).to.haveOwnProperty('multiPayments')
-        // expect(data).to.haveOwnProperty('billingAddress')
-        // expect(data).to.haveOwnProperty('shippingMethod')
-        // expect(data).to.haveOwnProperty('shippingAddress')
-        // expect(data).to.haveOwnProperty('shippingDetails')
-        // expect(data).to.haveOwnProperty('vouchers')
-        // expect(data).to.haveOwnProperty('paymentDetails')
-        // expect(data).to.haveOwnProperty('paymentAmount')
-        // expect(data).to.haveOwnProperty('currentPayment')
-        // expect(data).to.haveOwnProperty('isActive')
-        // expect(data).to.haveOwnProperty('isSendAsGift')
-        // expect(data).to.haveOwnProperty('greetingCartType')
-        // expect(data).to.haveOwnProperty('sendAsGiftDetail')
-        // expect(data).to.haveOwnProperty('storeCredit')
-        // expect(data).to.haveOwnProperty('store')
-        // expect(data).to.haveOwnProperty('store_dispatcher')
-        // expect(data).to.haveOwnProperty('point')
-        // expect(data).to.haveOwnProperty('cartRuleApplied')
-        // expect(data).to.haveOwnProperty('customer')
-        // expect(data).to.haveOwnProperty('createdBy')
-        // expect(data).to.haveOwnProperty('channel')
-        // expect(data).to.haveOwnProperty('freeProducts')
-        // expect(data).to.haveOwnProperty('freeProductOptions')
-        // expect(data).to.haveOwnProperty('vatAmount')
-        // expect(data).to.haveOwnProperty('discountDetail')
-        // expect(data).to.haveOwnProperty('assignTo')
-        // expect(data).to.haveOwnProperty('totalAmountVoid')
-        // expect(data).to.haveOwnProperty('type')
-        // expect(data).to.haveOwnProperty('isScanner')
-        // expect(data).to.haveOwnProperty('cartRuleOnSubtotal')
-        // expect(data).to.haveOwnProperty('freeProductOptionsSelected')
-        // expect(data).to.haveOwnProperty('dealsId')
-        // expect(data).to.haveOwnProperty('itemOrders')
-        // expect(data).to.haveOwnProperty('createdAt')
-        // expect(data).to.haveOwnProperty('updatedAt')
-        // expect(data).to.haveOwnProperty('__v')
-        // expect(data).to.haveOwnProperty('productCategoriesInternal')
-        // expect(data).to.haveOwnProperty('cashVoucher')
         data.items.forEach(function (item) {
           expect(item).to.haveOwnProperty('product')
           expect(item).to.haveOwnProperty('qty')
@@ -716,6 +642,123 @@ describe('Staff create order', function () {
           paymentDetails[0].total,
           'paymentDetails.Subtotal should ' + Cypress.env('paymentAmount')
         ).to.equal(Cypress.env('paymentAmount'))
+        expect(
+          paymentDetails[12].total,
+          'paymentDetails.Total should ' + Cypress.env('paymentAmount')
+        ).to.equal(Cypress.env('paymentAmount'))
+      })
+  })
+  it('Should able to add cart rule sku by scan QR', () => {
+    const url =
+      URL_PRODUCT +
+      '/employee/cart/pos-ubd/' +
+      Cypress.env('customerId') +
+      '/item/add'
+    const product = Cypress.env('Product_CartRule')
+    const sku = product.sku
+    const name = product.name
+    const price = product.price
+    const qty = 1
+    const ubd = '2025-02'
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: {
+        sku: sku,
+        qty: qty,
+        customPrice: 0,
+        notes: '',
+        requiredUbd: true,
+        ubd: ubd
+      }
+    })
+      .should((response) => {
+        expect(response.status).to.equal(201)
+      })
+      .should((response) => {
+        const item = response.body.data.items
+        expect(item.length, `Total item should 3`).to.equal(3)
+        const ubdTest = new Date(ubd)
+        const yearExpiredTest = ubdTest.getFullYear()
+        const monthExpiredTest = ubdTest.getMonth() + 1
+        // const formattedUbd = yearExpiredTest + '-' + monthExpiredTest + '-01T00:00:00.000Z'
+        const responseUbd = item[2].ubdDetail[0].ubd
+        const responseUbdDate = new Date(responseUbd)
+        const yearExpiredResponse = responseUbdDate.getFullYear()
+        const monthExpiredResponse = responseUbdDate.getMonth() + 1
+        expect(item[2].sku, 'SKU should ' + sku).to.equal(sku)
+        expect(item[2].product.name, `Product name should be ${name}`).to.equal(
+          name
+        )
+        expect(
+          item[2].qty,
+          'Quantity of product ' + sku + ' should ' + qty
+        ).to.equal(qty)
+        expect(
+          item[2].ubdDetail[0].total,
+          'Total of product ' + sku + ' and UBD ' + ubd + ' should ' + qty
+        ).to.equal(qty)
+        expect(yearExpiredResponse).to.equal(yearExpiredTest)
+        expect(monthExpiredResponse).to.equal(monthExpiredTest)
+        const productPrice = item[2].product.price
+        expect(productPrice, `Product price should be ${price}`).to.equal(price)
+        Cypress.env(`price_${sku}`, price)
+        const totalAmount = Cypress.env('totalAmount') + price
+        Cypress.env('totalAmount', totalAmount)
+        // Cypress.env('paymentAmount', totalAmount)
+        //sub_total
+        expect(
+          item[2].sub_total,
+          'sub_total of product ' + sku + ' should ' + price
+        ).to.equal(price)
+        expect(
+          response.body.data.totalAmount,
+          'totalAmount should ' + Cypress.env('totalAmount')
+        ).to.equal(Cypress.env('totalAmount'))
+        // expect(
+        //   response.body.data.paymentAmount,
+        //   'paymentAmount should ' + Cypress.env('paymentAmount')
+        // ).to.equal(Cypress.env('paymentAmount'))
+        // const paymentDetails = response.body.data.paymentDetails
+        // expect(
+        //   paymentDetails[0].total,
+        //   'paymentDetails.Subtotal should ' + Cypress.env('paymentAmount')
+        // ).to.equal(Cypress.env('paymentAmount'))
+        // expect(
+        //   paymentDetails[12].total,
+        //   'paymentDetails.Total should ' + Cypress.env('paymentAmount')
+        // ).to.equal(Cypress.env('paymentAmount'))
+        // const totalAmount = 0
+        var paymentAmount = 0
+        const promoNumber = Cypress.env('CARTRULE_DETAILS').promoNumber
+        item.forEach((it) => {
+          const sub_total = it.sub_total
+          const promoAmount = sub_total * Cypress.env('CARTRULE_VALUE')
+          expect(
+            it.promoAmount,
+            `Promo amount should be ${promoAmount}`
+          ).to.equal(promoAmount)
+          expect(
+            it.promoNumber,
+            `Promo number should be ${promoNumber}`
+          ).to.equal(promoNumber)
+          const grandTotal = sub_total - promoAmount
+          expect(it.grandTotal, `Grand total should be ${grandTotal}`).to.equal(
+            grandTotal
+          )
+          paymentAmount += grandTotal
+          Cypress.env('paymentAmount', paymentAmount)
+        })
+        expect(
+          response.body.data.paymentAmount,
+          'paymentAmount should ' + Cypress.env('paymentAmount')
+        ).to.equal(Cypress.env('paymentAmount'))
+        const paymentDetails = response.body.data.paymentDetails
+        expect(
+          paymentDetails[0].total,
+          'paymentDetails.Subtotal should ' + Cypress.env('totalAmount')
+        ).to.equal(Cypress.env('totalAmount'))
         expect(
           paymentDetails[12].total,
           'paymentDetails.Total should ' + Cypress.env('paymentAmount')
@@ -953,6 +996,34 @@ describe('Admin check stock product after transaction', function () {
       ).to.equal(1)
       cy.log(`Quantity movement ${sku2} after trx: `, movement.qty)
     })
+
+    // check stock untuk sku cart rule
+    const product3 = Cypress.env('Product_CartRule')
+    const sku3 = product3.sku
+    const ubd3 = '2025-02-25'
+    const urlFilter3 =
+      url +
+      `?sku=${sku3}&from=${Cypress.env('storeCode')}&event=sales&orderNumber=${Cypress.env('orderNumber')}&ubd=${ubd3}&page=1&limit=100`
+    cy.api({
+      method: 'GET',
+      url: urlFilter3,
+      headers: Cypress.env('REQUEST_HEADERS_ADMIN')
+    }).then((response) => {
+      const data = response.body.data.docs
+      expect(data.length).to.be.greaterThan(0)
+      expect(data.length).to.equal(1)
+      expect(data).to.be.an('array')
+      const movement = data[0]
+      Cypress.env(`qty_movement_${sku3}`, 1)
+      expect(movement.sku).to.equal(sku3)
+      expect(movement.from).to.equal(Cypress.env('storeCode'))
+      expect(movement.orderNumber).to.equal(Cypress.env('orderNumber'))
+      expect(
+        movement.qty,
+        'Stock movement for sales product ' + sku3 + ' should 1'
+      ).to.equal(1)
+      cy.log(`Quantity movement ${sku3} after trx: `, movement.qty)
+    })
   })
 
   it('Should return the correct SKU, Store Code, and UBD', () => {
@@ -1045,6 +1116,52 @@ describe('Admin check stock product after transaction', function () {
         'Quantity stock ' + sku2 + ' after trx should ' + qty_after
       ).to.equal(qty_after)
       cy.log(`Quantity stock ${sku2} after trx: `, data[0].qty)
+    })
+    // cart rule
+    const product3 = Cypress.env('Product_CartRule')
+    const sku3 = product3.sku
+    const ubd3 = '2025-02-25'
+    const urlFilter3 =
+      url + `?sku=${sku3}&storeCode=${storeCode}&ubd=${ubd3}&page=1&limit=100`
+    cy.api({
+      method: 'GET',
+      url: urlFilter3,
+      headers: Cypress.env('REQUEST_HEADERS_ADMIN')
+    }).then((response) => {
+      const data = response.body.data.docs
+      expect(data.length).to.equal(1)
+      const ubdTest = new Date(ubd2)
+      const yearExpiredTest = ubdTest.getFullYear()
+      const monthExpiredTest = ubdTest.getMonth() + 1
+
+      const matchingFunction = (check) => {
+        const ubdResponse = new Date(check.ubd)
+        const yearExpiredResponse = ubdResponse.getFullYear()
+        const monthExpiredResponse = ubdResponse.getMonth() + 1
+
+        const yearIsMatch = yearExpiredResponse === yearExpiredTest
+        const monthIsMatch = monthExpiredResponse === monthExpiredTest
+        return yearIsMatch && monthIsMatch
+      }
+
+      expect(Cypress._.every(data, matchingFunction)).to.deep.equal(true)
+      expect(Cypress._.every(data, ['sku', sku3])).to.deep.equal(true)
+      expect(Cypress._.every(data, ['storeCode', storeCode])).to.deep.equal(
+        true
+      )
+      // expect(data.length).to.equal(1);
+      console.log(
+        Cypress.env(`qty_awal_${sku3}`),
+        Cypress.env(`qty_movement_${sku3}`)
+      )
+
+      const qty_awal = Cypress.env(`qty_awal_${sku3}`)
+      const qty_after = qty_awal - Cypress.env(`qty_movement_${sku3}`)
+      expect(
+        data[0].qty,
+        'Quantity stock ' + sku3 + ' after trx should ' + qty_after
+      ).to.equal(qty_after)
+      cy.log(`Quantity stock ${sku3} after trx: `, data[0].qty)
     })
   })
 })
