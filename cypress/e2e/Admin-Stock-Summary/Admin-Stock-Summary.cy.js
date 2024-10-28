@@ -258,7 +258,7 @@ describe('Filter Test Group', () => {
 
   //sans
   it('Should return UBD null', () => {
-    const ubd = null
+    const ubd = 'null'
     const urlFilter = url + `?ubd=${ubd}&page=1&limit=10`
     cy.api({
       method: 'GET',
@@ -269,7 +269,7 @@ describe('Filter Test Group', () => {
       const body = response.body
       const data = response.body.data.docs
       expect(body.statusCode).to.equal(200)
-      expect(Cypress._.every(data, ubd)).to.deep.equal(ubd)
+      expect(Cypress._.every(data, ['ubd', null])).to.deep.equal(true)
     })
   })
 
