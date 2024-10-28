@@ -122,7 +122,7 @@ describe('General API Test Group', () => {
             
         })
         .should(response => {
-            expect(response.status).to.equal(400)
+            expect(response.status, `Response status should be 400`).to.equal(400)
             expect(response.body.statusCode).to.equal(400)
         })
     })
