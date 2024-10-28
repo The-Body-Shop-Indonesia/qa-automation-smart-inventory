@@ -217,7 +217,7 @@ describe('Staff Add Cart Redemption for Member Customer', function () {
 })
 
 describe('Add product Redemption test group', function () {
-  it(`Add product Redemption by scan QR SKU ${sku_redemption_1} with UBD ${ubd_redemption_1}`, () => {
+  it(`Add product Redemption SKU ${sku_redemption_1} with UBD ${ubd_redemption_1}`, () => {
     const cartId = Cypress.env('CART_ID')
     const qtyProduct = 1
     cy.api({
