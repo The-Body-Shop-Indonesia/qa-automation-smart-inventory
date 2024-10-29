@@ -1,6 +1,6 @@
-FROM cypress/included:13.10.0
+FROM node:16-buster
 
-WORKDIR /e2e
+WORKDIR /usr/src/app
 COPY . .
 
 RUN npm install
