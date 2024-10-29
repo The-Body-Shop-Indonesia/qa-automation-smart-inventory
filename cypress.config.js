@@ -1,5 +1,6 @@
 const { defineConfig } = require('cypress')
-const validateEnv = require('./utils/validate-env')
+const { cloudPlugin } = require('cypress-cloud/plugin')
+// const validateEnv = require('./utils/validate-env')
 const { MongoClient } = require('mongodb')
 require('dotenv').config()
 
@@ -20,6 +21,8 @@ module.exports = defineConfig({
           return result
         }
       })
+
+      return cloudPlugin(on, config)
     },
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
@@ -53,8 +56,7 @@ module.exports = defineConfig({
     CARD_NUMBER: process.env.CARD_NUMBER,
     FIRSTNAME: process.env.FIRSTNAME,
     LASTNAME: process.env.LASTNAME,
-    CARDNUMBER: process.env.CARDNUMBER
+    CARDNUMBER: process.env.CARDNUMBER,
+    BASEURLCYPRESSCLOUD: process.env.BASEURLCYPRESSCLOUD
   }
 })
-
-// /products/v1/search-v2/product/search?keyword=&sort=name_asc&price_gt=0&price_lt=9999999&page=1&size=20
