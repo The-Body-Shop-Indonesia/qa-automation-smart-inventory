@@ -5,6 +5,8 @@ require('dotenv').config()
 
 // validateEnv()
 module.exports = defineConfig({
+  projectId: 'pprtz3',
+  video: false,
   e2e: {
     setupNodeEvents(on, config) {
       // implement node event listeners here
