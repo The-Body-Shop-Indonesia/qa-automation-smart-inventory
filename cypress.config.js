@@ -57,6 +57,7 @@ module.exports = defineConfig({
     FIRSTNAME: process.env.FIRSTNAME,
     LASTNAME: process.env.LASTNAME,
     CARDNUMBER: process.env.CARDNUMBER,
-    BASEURLCYPRESSCLOUD: process.env.BASEURLCYPRESSCLOUD
+    BASEURLCYPRESSCLOUD: process.env.BASEURLCYPRESSCLOUD,
+    TOKEN_CUSTOMER_BOB: process.env.CUSTOMER_TOKEN
   }
 })
