@@ -1,3 +1,4 @@
+def url = ""
 pipeline {
    agent any
    environment {
@@ -26,7 +27,7 @@ pipeline {
                    sh "docker run --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --parallel --record --key icarus --ci-build-id ${params.namespace}-${tag}"
                    sh "rm -Rf .env"
                    def consoleLog = currentBuild.rawBuild.getLog(100)
-                   def url = consoleLog.findAll { it.startsWith("🏁 Recorded Run:") }.join('\n')
+                   url = consoleLog.findAll { it.startsWith("🏁 Recorded Run:") }.join('\n')
                }
            }
        }
