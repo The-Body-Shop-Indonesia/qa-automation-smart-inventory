@@ -1,11 +1,10 @@
-#FROM node:20-buster
-FROM cypress/included:12.17.4
+FROM jfrog.sit.tbsgroup.co.id/docker-local/node-cypress:20.9.0
 
-WORKDIR /usr/src/app
 COPY . .
-
+    
 RUN npm install
 
 ENV NO_COLOR=1
-ENV ELECTRON_EXTRA_LAUNCH_ARGS='--disable-gpu'
-ENTRYPOINT [ "npx","cypress-cloud" ]
+ENV DISPLAY=:99
+
+ENTRYPOINT [ "sh", "-c", "Xvfb :99 & exec npx cypress-cloud \"$@\"" ]
