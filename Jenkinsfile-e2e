@@ -2,7 +2,7 @@ pipeline {
    agent any
    environment {
        tag = VersionNumber(versionNumberString: 'v${BUILD_DATE_FORMATTED, "yyMMdd"}${BUILDS_TODAY}')
-       slackToken = "${SLACK_TOKEN}"
+       slackToken = "${SLACK_CYPRESS_TOKEN}"
        // Global variable from jenkins
        imageRegistryHost = "${IMAGE_REGISTRY_HOST}"
        imageRegistry = "${IMAGE_REGISTRY}"
@@ -23,7 +23,7 @@ pipeline {
                    sh "infisical export --env ${params.namespace} --projectId ${INFISICAL_PROJECT_ID} --token ${INFISICAL_TOKEN} --domain=${INFISICAL_API_URL} --path /${appName} > .env"
                    sh "sed -i -e \"s/'//g\" .env"
                    sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"⛏ Cypress test started \n\n🌍 ENV: ${jenkinsEnv}\n\"}'"
-                   sh "docker run --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --parallel --record --key icarus --ci-build-id ${tag}"
+                   sh "docker run --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --parallel --record --key icarus --ci-build-id ${params.namespace}-${tag}"
                    sh "rm -Rf .env"
                    
                }
