@@ -26,8 +26,7 @@ pipeline {
                    sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"⛏ Cypress test started \n\n📛 ENV: ${params.namespace}\n\n⚙️ Build: ${tag}\n\"}'"
                    sh "docker run --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --parallel --record --key icarus --ci-build-id ${params.namespace}-${tag}"
                    sh "rm -Rf .env"
-                   def consoleLog = currentBuild.rawBuild.getLog(100)
-                   url = consoleLog.findAll { it.startsWith("🏁 Recorded Run:") }.join('\n')
+                   url = sh ( script : "grep Recorded ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log",  returnStdout: true ).trim()
                }
            }
        }
