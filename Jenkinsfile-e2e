@@ -22,7 +22,7 @@ pipeline {
                script {
                    sh "infisical export --env ${params.namespace} --projectId ${INFISICAL_PROJECT_ID} --token ${INFISICAL_TOKEN} --domain=${INFISICAL_API_URL} --path /${appName} > .env"
                    sh "sed -i -e \"s/'//g\" .env"
-                   sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"⛏ Cypress test started \n📛 ENV: ${params.namespace}\n⚙️ Build: ${tag}\n\"}'"
+                   //sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"⛏ Cypress test started \n📛 ENV: ${params.namespace}\n⚙️ Build: ${tag}\n\"}'"
                    sh "docker run --env-file .env jfrog.sit.tbsgroup.co.id/docker-local/qa-automation:latest run --parallel --record --key icarus --ci-build-id ${params.namespace}-${tag}"
                    sh "rm -Rf .env"
                }
@@ -30,12 +30,12 @@ pipeline {
        }
    }
  
-   post {
-        failure {
-            script {
-                url = sh ( script : "grep Recorded ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log",  returnStdout: true ).trim()
-            }
-            sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"❌ Cypress e2e has failed, please check Cypress Dashboard for complete log\n📛 NS: ${params.namespace}\n⚙️ Build: ${tag}\n${url}\"}'"   
-        }
-    }
+   //post {
+        //failure {
+            //script {
+            //    url = sh ( script : "grep Recorded ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log",  returnStdout: true ).trim()
+            //}
+            //sh "curl -s -X POST https://hooks.slack.com/services/" + slackToken + " -H 'Content-Type: application/json' -d '{\"text\": \"❌ Cypress e2e has failed, please check Cypress Dashboard for complete log\n📛 NS: ${params.namespace}\n⚙️ Build: ${tag}\n${url}\"}'"   
+        //}
+    //}
 }
