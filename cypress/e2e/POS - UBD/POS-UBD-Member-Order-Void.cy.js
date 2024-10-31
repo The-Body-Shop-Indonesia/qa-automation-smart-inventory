@@ -54,6 +54,44 @@ const URL_PAYMENT = Cypress.config('baseUrlPayment')
 //     })
 // })
 
+describe('Check current tier and purchase total before transaction', function () {
+  before('Login customer', () => {
+    const identifier = Cypress.env('IDENTIFIER_SDC')
+    const otp = Cypress.env('OTP_SDC')
+    const url = `${URL_USER}/otp/validate`
+    cy.api({
+      method: 'POST',
+      url,
+      // headers,
+      body: {
+        identifier: Cypress.env('IDENTIFIER_SDC'),
+        otp: Cypress.env('OTP_SDC'),
+        pageType: 'Login'
+      }
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.statusCode).to.equal(201)
+      expect(response.body.data.accessToken).to.not.be.empty
+      const tokenUser = response.body.data.accessToken
+      Cypress.env('REQUEST_HEADERS_USER', {
+        Authorization: 'Bearer ' + tokenUser
+      })
+    })
+  })
+  it('Should get total purchase', () => {
+    const url = `${URL_USER}/membership/card/info`
+    cy.api({
+      method: 'GET',
+      url: url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      const totalPurchase = response.body.data.currentAmount
+      Cypress.env('totalPurchase', totalPurchase)
+      cy.log(`Total purchase before transaction is ${totalPurchase}`)
+    })
+  })
+})
+
 describe('Set sku product to use', function () {
   before('Set 2 sku product', () => {
     // Mengambil data dari fixture
@@ -1042,6 +1080,41 @@ describe('Check point after transaction', function () {
     })
   })
 })
+
+describe('Check tier and purchase total after transaction', function () {
+  it('Should get tier and total purchase', () => {
+    const url = `${URL_USER}/membership/card/info`
+    cy.api({
+      method: 'GET',
+      url: url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      const tierBefore = Cypress.env('currentTier')
+      const tierAfter = response.body.data.currentTier.code
+      const totalPurchaseBefore = Cypress.env('totalPurchase')
+      const paymentAmount = Cypress.env('paymentAmount')
+      const currentPurchaseAmount = response.body.data.currentAmount
+      const currentAmount = totalPurchaseBefore + paymentAmount
+      expect(
+        currentPurchaseAmount,
+        `Purchase total after transaction should ${currentAmount}`
+      ).to.eql(currentAmount)
+      if (currentAmount >= 0 && currentAmount <= 250000) {
+        const tier = 'STARTER'
+      } else if (currentAmount >= 0 && currentAmount <= 3000000) {
+        const tier = 'CLUB'
+      } else {
+        const tier = 'FAN'
+      }
+      expect(
+        tierAfter,
+        `After purchase, tier customer should be ${tier}`
+      ).to.equal(tier)
+      // cy.log(`Total purchase before transaction is ${totalPurchase}`)
+    })
+  })
+})
+
 describe('Admin check stock product after transaction', function () {
   it('Should get stock movement data', () => {
     // check stock movement sku 112780193

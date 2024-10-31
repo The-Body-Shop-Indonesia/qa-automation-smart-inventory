@@ -2,6 +2,8 @@ const { defineConfig } = require('cypress')
 const validateEnv = require('./utils/validate-env')
 const { MongoClient } = require('mongodb')
 require('dotenv').config()
+const fs = require('fs')
+const path = require('path')
 
 // validateEnv()
 module.exports = defineConfig({
@@ -16,6 +18,22 @@ module.exports = defineConfig({
           const result = await db.collection(collection).findOne(query)
           client.close()
           return result
+        },
+        readCounter() {
+          const data = JSON.parse(
+            fs.readFileSync(
+              path.join(__dirname, 'cypress/fixtures/counter.json'),
+              'utf-8'
+            )
+          )
+          return data.counter
+        },
+        incrementCounter() {
+          const filePath = path.join(__dirname, 'cypress/fixtures/counter.json')
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+          data.counter += 1
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+          return data.counter
         }
       })
     },
@@ -51,7 +69,10 @@ module.exports = defineConfig({
     CARD_NUMBER: process.env.CARD_NUMBER,
     FIRSTNAME: process.env.FIRSTNAME,
     LASTNAME: process.env.LASTNAME,
-    CARDNUMBER: process.env.CARDNUMBER
+    CARDNUMBER: process.env.CARDNUMBER,
+    IDENTIFIER_SDC: process.env.IDENTIFIER,
+    OTP_SDC: process.env.OTP,
+    IDENTIFIER2_SDC: process.env.IDENTIFIER2
   }
 })
 
