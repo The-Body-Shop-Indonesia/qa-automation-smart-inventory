@@ -266,54 +266,74 @@ describe('Staff Add Cart Redemption for Member Customer', function () {
 
   it('Create Redemption Cart', () => {
     const url = URL_PRODUCT + '/employee/cart-redemption'
+    const url_cus =
+      URL_USER + '/employee/detail-member?cardNumber=' + card_number
     cy.api({
       method: 'POST',
-      url,
-      headers: Cypress.env('REQUEST_HEADERS'),
-      body: {
-        isGuest: false,
-        firstName: first_name,
-        lastName: last_name,
-        cardNumber: card_number,
-        nik: '',
-        familyNumber: '',
-        isFamily: false,
-        customerGroup: 'STARTER',
-        image:
-          'https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/0a145430-550a-4099-93d4-9e2b4e63ca5a.jpeg',
-        isScanner: true,
-        isLapsed: true,
-        isReactivated: true,
-        isIcarusAppUser: true,
-        autoEnroll: true,
-        autoEnrollFrom: 'string'
-      },
-      failOnStatusCode: false
+      url: url_cus,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).then((response) => {
+      const first_name = response.body.data.firstName
+      const last_name = response.body.data.lastName
+      const currentTier = response.body.data.currentTier.code
+
+      Cypress.env('FIRST_NAME', first_name)
+      Cypress.env('LAST_NAME', last_name)
+      Cypress.env('CUST_TIER', currentTier)
+
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        body: {
+          isGuest: false,
+          firstName: Cypress.env('FIRST_NAME'),
+          lastName: Cypress.env('LAST_NAME'),
+          cardNumber: card_number,
+          nik: '',
+          familyNumber: '',
+          isFamily: false,
+          customerGroup: Cypress.env('CUST_TIER'),
+          image:
+            'https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/0a145430-550a-4099-93d4-9e2b4e63ca5a.jpeg',
+          isScanner: true,
+          isLapsed: true,
+          isReactivated: true,
+          isIcarusAppUser: true,
+          autoEnroll: true,
+          autoEnrollFrom: 'string'
+        },
+        failOnStatusCode: false
+      })
+        .should((data_response) => {
+          expect(data_response.status, 'Response code should be 200').to.equal(
+            201
+          )
+          const body = data_response.body
+          const data = data_response.body.data
+          expect(body.statusCode, 'Status code should be 200').to.equal(201)
+          expect(
+            data.customer.firstName,
+            'First name should be ' + `${Cypress.env('FIRST_NAME')}`
+          ).to.equal(Cypress.env('FIRST_NAME'))
+          expect(
+            data.customer.lastName,
+            'Last name should be ' + `${Cypress.env('LAST_NAME')}`
+          ).to.equal(Cypress.env('LAST_NAME'))
+          expect(data.customer.isGuest, 'isGuest should be false').to.equal(
+            false
+          )
+          expect(
+            data.customer.cardNumber,
+            'Card number should be ' + `${card_number}`
+          ).to.equal(card_number)
+          expect(data.customer.customerGroup).to.equal(Cypress.env('CUST_TIER'))
+        })
+        .then((response) => {
+          Cypress.env('CART_ID', response.body.data._id)
+          //cy.log(Cypress.env("CART_ID"))
+        })
     })
-      .should((response) => {
-        expect(response.status, 'Response code should be 200').to.equal(201)
-        const body = response.body
-        const data = response.body.data
-        expect(body.statusCode, 'Status code should be 200').to.equal(201)
-        expect(
-          data.customer.firstName,
-          'First name should be ' + `${first_name}`
-        ).to.equal(first_name)
-        expect(
-          data.customer.lastName,
-          'Last name should be ' + `${last_name}`
-        ).to.equal(last_name)
-        expect(data.customer.isGuest, 'isGuest should be false').to.equal(false)
-        expect(
-          data.customer.cardNumber,
-          'Card number should be ' + `${card_number}`
-        ).to.equal(card_number)
-        expect(data.customer.customerGroup).to.equal('STARTER')
-      })
-      .then((response) => {
-        Cypress.env('CART_ID', response.body.data._id)
-        //cy.log(Cypress.env("CART_ID"))
-      })
   })
 
   it('Assign employee to cart', () => {
@@ -584,8 +604,8 @@ describe('Staff checkout Redemption Order', function () {
       expect(body.statusCode, 'Status Code should be 201').to.equal(201)
       expect(data.cartId).to.equal(cartId)
       expect(data.orderStatus, 'Order status should be PAID').to.equal('PAID')
-      expect(customer.firstName).to.equal(first_name)
-      expect(customer.lastName).to.equal(last_name)
+      expect(customer.firstName).to.equal(Cypress.env('FIRST_NAME'))
+      expect(customer.lastName).to.equal(Cypress.env('LAST_NAME'))
       expect(customer.cardNumber).to.equal(card_number)
       expect(employee.nik).to.equal(nik_employee)
       expect(employee.storeCode).to.equal(store_code)

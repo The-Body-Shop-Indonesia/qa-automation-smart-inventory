@@ -43,11 +43,13 @@ module.exports = defineConfig({
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
     baseUrlPayment: process.env.BASEURLPAYMENT,
-    baseUrlMP: process.env.BASEURLMP
+    baseUrlMP: process.env.BASEURLMP,
+    REDEEM_URL: process.env.REDEEM_URL
   },
   env: {
     TOKEN_ADMIN: process.env.TOKEN_ADMIN,
     TOKEN_POS: process.env.TOKEN_POS,
+    TOKEN_CUSTOMER: process.env.TOKEN_CUSTOMER,
     ADMIN_USERNAME: process.env.ADMIN_USERNAME,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     STORE_CODE_BXC: process.env.STORE_CODE_BXC,
@@ -62,6 +64,7 @@ module.exports = defineConfig({
     MP_KEY: process.env.MP_KEY,
     DB_MP: process.env.DB_MP,
     DB_COLLECTION_FORSTOKORDER: process.env.DB_COLLECTION_FORSTOKORDER,
+    DB_COLLECTION_FORSTOKERROR: process.env.DB_COLLECTION_FORSTOKERROR,
     DB_PRODUCTS: process.env.DB_PRODUCTS,
     DB_COLLECTION_ORDERS: process.env.DB_COLLECTION_ORDERS,
     STORE_CODE_BXC: process.env.STORE_CODE_BXC,
@@ -70,6 +73,8 @@ module.exports = defineConfig({
     FIRST_NAME: process.env.FIRST_NAME,
     LAST_NAME: process.env.LAST_NAME,
     CARD_NUMBER: process.env.CARD_NUMBER,
+    USER_EMAIL: process.env.USER_EMAIL,
+    USER_OTP: process.env.USER_OTP,
     FIRSTNAME: process.env.FIRSTNAME,
     LASTNAME: process.env.LASTNAME,
     CARDNUMBER: process.env.CARDNUMBER,
