@@ -3,6 +3,8 @@ const { cloudPlugin } = require('cypress-cloud/plugin')
 // const validateEnv = require('./utils/validate-env')
 const { MongoClient } = require('mongodb')
 require('dotenv').config()
+const fs = require('fs')
+const path = require('path')
 
 // validateEnv()
 module.exports = defineConfig({
@@ -19,10 +21,24 @@ module.exports = defineConfig({
           const result = await db.collection(collection).findOne(query)
           client.close()
           return result
+        },
+        readCounter() {
+          const data = JSON.parse(
+            fs.readFileSync(
+              path.join(__dirname, 'cypress/fixtures/counter.json'),
+              'utf-8'
+            )
+          )
+          return data.counter
+        },
+        incrementCounter() {
+          const filePath = path.join(__dirname, 'cypress/fixtures/counter.json')
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+          data.counter += 1
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+          return data.counter
         }
       })
-
-      return cloudPlugin(on, config)
     },
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
@@ -57,7 +73,8 @@ module.exports = defineConfig({
     FIRSTNAME: process.env.FIRSTNAME,
     LASTNAME: process.env.LASTNAME,
     CARDNUMBER: process.env.CARDNUMBER,
-    BASEURLCYPRESSCLOUD: process.env.BASEURLCYPRESSCLOUD,
-    TOKEN_CUSTOMER_BOB: process.env.CUSTOMER_TOKEN
+    IDENTIFIER_SDC: process.env.IDENTIFIER,
+    OTP_SDC: process.env.OTP,
+    IDENTIFIER2_SDC: process.env.IDENTIFIER2
   }
 })
