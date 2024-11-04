@@ -1,5 +1,5 @@
 const { defineConfig } = require('cypress')
-const { cloudPlugin } = require('cypress-cloud/plugin')
+//const { cloudPlugin } = require('cypress-cloud/plugin')
 // const validateEnv = require('./utils/validate-env')
 const { MongoClient } = require('mongodb')
 require('dotenv').config()
