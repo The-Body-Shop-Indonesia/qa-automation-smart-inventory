@@ -208,133 +208,133 @@ describe('Callback create order MP', () => {
   //   })
   // })
 
-  // it('Check Database Forstokorders', () => {
-  //   //const local_id = "5035163787" //tes yg udah jadi
-  //   const db_MP = Cypress.env('DB_MP')
-  //   const db_Collection = Cypress.env('DB_COLLECTION_FORSTOKORDER')
-  //   cy.wait(30000)
+  it('Check Database Forstokorders', () => {
+    const local_id = '5699917431' //tes yg udah jadi
+    const db_MP = Cypress.env('DB_MP')
+    const db_Collection = Cypress.env('DB_COLLECTION_FORSTOKORDER')
+    cy.wait(30000)
 
-  //   cy.task('mongodb:findOne', {
-  //     database: db_MP,
-  //     collection: db_Collection,
-  //     query: {
-  //       localId: local_id
-  //     }
-  //   })
-  //     .should((result) => {
-  //       const item_lines = result.itemLines
-  //       const item_length = item_lines.length
+    cy.task('mongodb:findOne', {
+      database: db_MP,
+      collection: db_Collection,
+      query: {
+        localId: local_id
+      }
+    })
+      .should((result) => {
+        const item_lines = result.itemLines
+        const item_length = item_lines.length
 
-  //       expect(result).to.have.property('_id')
-  //       expect(result).to.have.property('note', null)
-  //       expect(result).to.have.property('customerInfo')
-  //       expect(result).to.have.property('itemLines')
-  //       expect(result).to.have.property('status', 'Open')
-  //       expect(result).to.have.property('localId', local_id)
-  //       expect(result).to.have.property('localName', localName)
-  //       expect(result).to.have.property('shippingPrice')
-  //       expect(result).to.have.property('storeName')
-  //       expect(result).to.have.property('storeId')
-  //       expect(result).to.have.property('orderNumber')
-  //       item_lines.forEach(function (item) {
-  //         expect(item).to.have.property('sku')
-  //         expect(item).to.have.property('price')
-  //         expect(item).to.have.property('salePrice')
-  //         expect(item).to.have.property('totalPrice')
-  //       })
+        expect(result).to.have.property('_id')
+        expect(result).to.have.property('note', null)
+        expect(result).to.have.property('customerInfo')
+        expect(result).to.have.property('itemLines')
+        expect(result).to.have.property('status', 'Open')
+        expect(result).to.have.property('localId', local_id)
+        expect(result).to.have.property('localName', localName)
+        expect(result).to.have.property('shippingPrice')
+        expect(result).to.have.property('storeName')
+        expect(result).to.have.property('storeId')
+        expect(result).to.have.property('orderNumber')
+        item_lines.forEach(function (item) {
+          expect(item).to.have.property('sku')
+          expect(item).to.have.property('price')
+          expect(item).to.have.property('salePrice')
+          expect(item).to.have.property('totalPrice')
+        })
 
-  //       expect(item_lines).to.have.length(3)
-  //       expect(
-  //         result.subtotal,
-  //         `Subtotal should be ${grand_total_MP}`
-  //       ).to.equal(grand_total_MP)
-  //       expect(
-  //         result.totalPrice,
-  //         `Total Price should be ${grand_total_MP}`
-  //       ).to.equal(grand_total_MP)
+        expect(item_lines).to.have.length(3)
+        expect(
+          result.subtotal,
+          `Subtotal should be ${grand_total_MP}`
+        ).to.equal(grand_total_MP)
+        expect(
+          result.totalPrice,
+          `Total Price should be ${grand_total_MP}`
+        ).to.equal(grand_total_MP)
 
-  //       for (let i = 0; i < item_length; i++) {
-  //         //console.log("test")
-  //         if (result.itemLines[i].sku == sku_product_1) {
-  //           expect(
-  //             result.itemLines[i].sku,
-  //             `SKU should be ${sku_product_1}`
-  //           ).to.equal(sku_product_1)
-  //           //console.log("Test 123",sku_grouping[sku_product_1])
-  //           expect(
-  //             result.itemLines[i].qty,
-  //             `QTY should be ${sku_grouping[sku_product_1].qty}`
-  //           ).to.equal(sku_grouping[sku_product_1].qty)
-  //           expect(
-  //             result.itemLines[i].price,
-  //             `Price should be ${sku_grouping[sku_product_1].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_1].grand_total)
-  //           expect(
-  //             result.itemLines[i].salePrice,
-  //             `Sale Price should be ${sku_grouping[sku_product_1].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_1].grand_total)
-  //           expect(
-  //             result.itemLines[i].totalPrice,
-  //             `Total Price should be ${sku_grouping[sku_product_1].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_1].grand_total)
-  //         } else if (result.itemLines[i].sku == sku_product_2) {
-  //           expect(
-  //             result.itemLines[i].sku,
-  //             `SKU should be ${sku_product_2}`
-  //           ).to.equal(sku_product_2)
-  //           //console.log("Test 123",sku_grouping[sku_product_1])
-  //           expect(
-  //             result.itemLines[i].qty,
-  //             `QTY should be ${sku_grouping[sku_product_2].qty}`
-  //           ).to.equal(sku_grouping[sku_product_2].qty)
-  //           expect(
-  //             result.itemLines[i].price,
-  //             `Price should be ${sku_grouping[sku_product_2].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_2].grand_total)
-  //           expect(
-  //             result.itemLines[i].salePrice,
-  //             `Sale Price should be ${sku_grouping[sku_product_2].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_2].grand_total)
-  //           expect(
-  //             result.itemLines[i].totalPrice,
-  //             `Total Price should be ${sku_grouping[sku_product_2].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_2].grand_total)
-  //         } else if (result.itemLines[i].sku == sku_product_3) {
-  //           expect(
-  //             result.itemLines[i].sku,
-  //             `SKU should be ${sku_product_3}`
-  //           ).to.equal(sku_product_3)
-  //           //console.log("Test 123",sku_grouping[sku_product_1])
-  //           expect(
-  //             result.itemLines[i].qty,
-  //             `QTY should be ${sku_grouping[sku_product_3].qty}`
-  //           ).to.equal(sku_grouping[sku_product_3].qty)
-  //           expect(
-  //             result.itemLines[i].price,
-  //             `Price should be ${sku_grouping[sku_product_3].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_3].grand_total)
-  //           expect(
-  //             result.itemLines[i].salePrice,
-  //             `Sale Price should be ${sku_grouping[sku_product_3].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_3].grand_total)
-  //           expect(
-  //             result.itemLines[i].totalPrice,
-  //             `Total Price should be ${sku_grouping[sku_product_3].grand_total}`
-  //           ).to.equal(sku_grouping[sku_product_3].grand_total)
-  //         }
-  //       }
-  //     })
-  //     .then((result) => {
-  //       //get ordernumber dari query
-  //       Cypress.env('MP_ORDERNUMBER', result.orderNumber)
-  //       cy.log('Order Number: ', Cypress.env('MP_ORDERNUMBER'))
-  //       //cek price price nya
-  //     })
-  // })
+        for (let i = 0; i < item_length; i++) {
+          //console.log("test")
+          if (result.itemLines[i].sku == sku_product_1) {
+            expect(
+              result.itemLines[i].sku,
+              `SKU should be ${sku_product_1}`
+            ).to.equal(sku_product_1)
+            //console.log("Test 123",sku_grouping[sku_product_1])
+            expect(
+              result.itemLines[i].qty,
+              `QTY should be ${sku_grouping[sku_product_1].qty}`
+            ).to.equal(sku_grouping[sku_product_1].qty)
+            expect(
+              result.itemLines[i].price,
+              `Price should be ${sku_grouping[sku_product_1].grand_total}`
+            ).to.equal(sku_grouping[sku_product_1].grand_total)
+            expect(
+              result.itemLines[i].salePrice,
+              `Sale Price should be ${sku_grouping[sku_product_1].grand_total}`
+            ).to.equal(sku_grouping[sku_product_1].grand_total)
+            expect(
+              result.itemLines[i].totalPrice,
+              `Total Price should be ${sku_grouping[sku_product_1].grand_total}`
+            ).to.equal(sku_grouping[sku_product_1].grand_total)
+          } else if (result.itemLines[i].sku == sku_product_2) {
+            expect(
+              result.itemLines[i].sku,
+              `SKU should be ${sku_product_2}`
+            ).to.equal(sku_product_2)
+            //console.log("Test 123",sku_grouping[sku_product_1])
+            expect(
+              result.itemLines[i].qty,
+              `QTY should be ${sku_grouping[sku_product_2].qty}`
+            ).to.equal(sku_grouping[sku_product_2].qty)
+            expect(
+              result.itemLines[i].price,
+              `Price should be ${sku_grouping[sku_product_2].grand_total}`
+            ).to.equal(sku_grouping[sku_product_2].grand_total)
+            expect(
+              result.itemLines[i].salePrice,
+              `Sale Price should be ${sku_grouping[sku_product_2].grand_total}`
+            ).to.equal(sku_grouping[sku_product_2].grand_total)
+            expect(
+              result.itemLines[i].totalPrice,
+              `Total Price should be ${sku_grouping[sku_product_2].grand_total}`
+            ).to.equal(sku_grouping[sku_product_2].grand_total)
+          } else if (result.itemLines[i].sku == sku_product_3) {
+            expect(
+              result.itemLines[i].sku,
+              `SKU should be ${sku_product_3}`
+            ).to.equal(sku_product_3)
+            //console.log("Test 123",sku_grouping[sku_product_1])
+            expect(
+              result.itemLines[i].qty,
+              `QTY should be ${sku_grouping[sku_product_3].qty}`
+            ).to.equal(sku_grouping[sku_product_3].qty)
+            expect(
+              result.itemLines[i].price,
+              `Price should be ${sku_grouping[sku_product_3].grand_total}`
+            ).to.equal(sku_grouping[sku_product_3].grand_total)
+            expect(
+              result.itemLines[i].salePrice,
+              `Sale Price should be ${sku_grouping[sku_product_3].grand_total}`
+            ).to.equal(sku_grouping[sku_product_3].grand_total)
+            expect(
+              result.itemLines[i].totalPrice,
+              `Total Price should be ${sku_grouping[sku_product_3].grand_total}`
+            ).to.equal(sku_grouping[sku_product_3].grand_total)
+          }
+        }
+      })
+      .then((result) => {
+        //get ordernumber dari query
+        Cypress.env('MP_ORDERNUMBER', result.orderNumber)
+        cy.log('Order Number: ', Cypress.env('MP_ORDERNUMBER'))
+        //cek price price nya
+      })
+  })
 
   it('Check Database Order', () => {
-    const order_number = '359050020240213611' //tes yg udah jadi
-    //const order_number = Cypress.env('MP_ORDERNUMBER')
+    //const order_number = '359050020240213798' //tes yg udah jadi
+    const order_number = Cypress.env('MP_ORDERNUMBER')
     const db_Order = Cypress.env('DB_PRODUCTS')
     const db_Collection = Cypress.env('DB_COLLECTION_ORDERS')
 
@@ -361,6 +361,14 @@ describe('Callback create order MP', () => {
 
         expect(result).to.have.property('items')
         expect(result).to.have.property('orderNumber', order_number)
+        expect(
+          result.totalAmount,
+          `Total Amount should be ${grand_total_MP}`
+        ).to.equal(grand_total_MP)
+        expect(
+          result.paymentAmount,
+          `Payment Amount should be ${grand_total_MP}`
+        ).to.equal(grand_total_MP)
 
         for (let i = 0; i < items_length; i++) {
           if (items[i].promoNumber !== '') {
@@ -372,92 +380,101 @@ describe('Callback create order MP', () => {
               items[i].isFreeProduct,
               `isFreeProduct should be true`
             ).to.equal(true)
-          } //else {
-          //   if (items[i].sku == sku_product_1) {
-          //     const normal_price = sku_grouping[sku_product_1].normal_price
-          //     const sku_qty = sku_grouping[sku_product_1].qty
-          //     const subtotal_sku = normal_price * sku_qty
-          //     const grand_total_MP = sku_grouping[sku_product_1].grand_total
-          //     const discount_price = subtotal_sku - grand_total_MP
+          } else {
+            if (items[i].sku == sku_product_1) {
+              const normal_price = sku_grouping[sku_product_1].normal_price
+              const sku_qty = sku_grouping[sku_product_1].qty
+              const subtotal_sku = normal_price * sku_qty
+              const grand_total_MP = sku_grouping[sku_product_1].grand_total
+              const discount_price = subtotal_sku - grand_total_MP
 
-          //     expect(items[i].qty).to.equal(sku_grouping[sku_product_1].qty)
-          //     expect(items[i].sku).to.equal(sku_product_1)
+              expect(items[i].qty).to.equal(sku_grouping[sku_product_1].qty)
+              expect(items[i].sku).to.equal(sku_product_1)
 
-          //     expect(
-          //       items[i].valueDiscount,
-          //       `Value discount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].promoAmount,
-          //       `Promo amount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].grandTotal,
-          //       `Grand Total should be ${grand_total_MP}`
-          //     ).to.equal(grand_total_MP)
-          //   } else if (items[i].sku == sku_product_2) {
-          //     const normal_price = sku_grouping[sku_product_2].normal_price
-          //     const sku_qty = sku_grouping[sku_product_2].qty
-          //     const subtotal_sku = normal_price * sku_qty
-          //     const grand_total_MP = sku_grouping[sku_product_2].grand_total
-          //     const discount_price = subtotal_sku - grand_total_MP
+              expect(
+                items[i].valueDiscount,
+                `Value discount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].promoAmount,
+                `Promo amount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].grandTotal,
+                `Grand Total should be ${grand_total_MP}`
+              ).to.equal(grand_total_MP)
+            } else if (items[i].sku == sku_product_2) {
+              const normal_price = sku_grouping[sku_product_2].normal_price
+              const sku_qty = sku_grouping[sku_product_2].qty
+              const subtotal_sku = normal_price * sku_qty
+              const grand_total_MP = sku_grouping[sku_product_2].grand_total
+              const discount_price = subtotal_sku - grand_total_MP
 
-          //     expect(items[i].qty).to.equal(sku_grouping[sku_product_2].qty)
-          //     expect(items[i].sku).to.equal(sku_product_2)
+              expect(items[i].qty).to.equal(sku_grouping[sku_product_2].qty)
+              expect(items[i].sku).to.equal(sku_product_2)
 
-          //     expect(
-          //       items[i].valueDiscount,
-          //       `Value discount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].promoAmount,
-          //       `Promo amount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].grandTotal,
-          //       `Grand Total should be ${grand_total_MP}`
-          //     ).to.equal(grand_total_MP)
-          //   } else if (items[i].sku == sku_product_3) {
-          //     const normal_price = sku_grouping[sku_product_3].normal_price
-          //     const sku_qty = sku_grouping[sku_product_3].qty
-          //     const subtotal_sku = normal_price * sku_qty
-          //     const grand_total_MP = sku_grouping[sku_product_3].grand_total
-          //     const discount_price = subtotal_sku - grand_total_MP
+              expect(
+                items[i].valueDiscount,
+                `Value discount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].promoAmount,
+                `Promo amount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].grandTotal,
+                `Grand Total should be ${grand_total_MP}`
+              ).to.equal(grand_total_MP)
+            } else if (items[i].sku == sku_product_3) {
+              const normal_price = sku_grouping[sku_product_3].normal_price
+              const sku_qty = sku_grouping[sku_product_3].qty
+              const subtotal_sku = normal_price * sku_qty
+              const grand_total_MP = sku_grouping[sku_product_3].grand_total
+              const discount_price = subtotal_sku - grand_total_MP
 
-          //     expect(items[i].qty).to.equal(sku_grouping[sku_product_3].qty)
-          //     expect(items[i].sku).to.equal(sku_product_3)
+              expect(items[i].qty).to.equal(sku_grouping[sku_product_3].qty)
+              expect(items[i].sku).to.equal(sku_product_3)
 
-          //     expect(
-          //       items[i].valueDiscount,
-          //       `Value discount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].promoAmount,
-          //       `Promo amount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].grandTotal,
-          //       `Grand Total should be ${grand_total_MP}`
-          //     ).to.equal(grand_total_MP)
-          //   }
-          // }
+              expect(
+                items[i].valueDiscount,
+                `Value discount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].promoAmount,
+                `Promo amount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].grandTotal,
+                `Grand Total should be ${grand_total_MP}`
+              ).to.equal(grand_total_MP)
+            }
+          }
         }
       })
       .then((result) => {
         const items = result.items
+        const paymentAmount = result.paymentAmount
+        const storeCode = result.store.storeCode
+        Cypress.env('PAYMENT_AMOUNT', paymentAmount)
+        Cypress.env('STORE_CODE', storeCode)
+
         const items_length = result.items.length
+        const gwp_array = []
 
         for (let i = 0; i < items_length; i++) {
           if (items[i].promoNumber !== '') {
-            Cypress.env('PRODUCT_GWP', items[i])
+            gwp_array.push(items[i])
+            Cypress.env('PRODUCT_GWP', gwp_array)
             console.log(Cypress.env('PRODUCT_GWP'))
+            const test = Cypress.env('PRODUCT_GWP').length
+            cy.log('Product qty GWP: ', test)
           }
         }
       })
   })
 
-  it('Successfully login Admin', () => {
-    cy.log(Cypress.env('ADMIN_USERNAME'))
+  it('Check cart rule', () => {
+    //login admin
     const urlUser = URL_USER + '/admin/login'
     const username_adm = Cypress.env('ADMIN_USERNAME')
     const password_adm = Cypress.env('ADMIN_PASSWORD')
@@ -469,44 +486,78 @@ describe('Callback create order MP', () => {
         username: username_adm,
         password: password_adm
       }
-    })
-      .should((response) => {
-        expect(response.status, 'Response code should be 201').to.equal(201)
-        const body = response.body
-        expect(body.statusCode, 'Status code should be 201').to.equal(201)
-        expect(body.message).to.equal('Success')
-        const data = body.data
-        expect(data).to.haveOwnProperty('accessToken')
+    }).then((response) => {
+      const adminToken = response.body.data.accessToken
+      Cypress.env('REQUEST_HEADERS_ADMIN', {
+        Authorization: 'Bearer ' + adminToken
       })
-      .then((response) => {
-        const adminToken = response.body.data.accessToken
-        Cypress.env('REQUEST_HEADERS_ADMIN', {
-          Authorization: 'Bearer ' + adminToken
+
+      //const url_cartrule_detail = URL_PRODUCT + `/cart-rule/get/${promo_id}`
+      const product_gwp = Cypress.env('PRODUCT_GWP')
+      cy.log(`Order have ${product_gwp.length} GWP`)
+
+      for (let i = 0; i < product_gwp.length; i++) {
+        const gwp_pn = product_gwp[i].promoNumber
+        const gwp_qty = product_gwp[i].qty
+        const gwp_sku = product_gwp[i].sku
+        cy.log('GWP PN: ', gwp_pn)
+        cy.log('GWP qty: ', gwp_qty)
+        cy.log('GWP sku: ', gwp_sku)
+        const url_cartrule_list =
+          URL_PRODUCT +
+          `/cart-rule/?page=1&limit=10&keyword=${gwp_pn}&is_exclusive=false&is_discard=false`
+        cy.log(url_cartrule_list)
+
+        cy.api({
+          method: 'GET',
+          url: url_cartrule_list,
+          headers: Cypress.env('REQUEST_HEADERS_ADMIN')
+        }).should((response) => {
+          const docs = response.body.data.docs[0]
+          expect(response.status, 'Response status should be 200').to.equal(200)
+          expect(docs.promoNumber, `Promo Number should be ${gwp_pn}`).to.equal(
+            gwp_pn
+          )
+          //check if order condition match with promo condition
+          const rawTermsData = response.body.data.docs[0].rawTermsData
+          const promoTerm = JSON.parse(rawTermsData)
+          console.log(promoTerm)
+
+          const total_value = parseInt(promoTerm[0].value)
+          const rawStoreCode = promoTerm[1].value
+          const store_code = rawStoreCode.split(';')
+
+          expect(
+            store_code,
+            `Store code ${Cypress.env('STORE_CODE')} should be in store condition`
+          ).to.include(Cypress.env('STORE_CODE'))
+          expect(
+            Cypress.env('PAYMENT_AMOUNT'),
+            `Total value in order should be greater than ${total_value}`
+          ).to.be.greaterThan(total_value)
+
+          const rawEffect = response.body.data.docs[0].rawEffectData
+          const promoEffect = JSON.parse(rawEffect)
+
+          const type_promo = promoEffect.type
+          const qty_promo = parseInt(promoEffect.value)
+          const sku_promo = promoEffect.optionalVal1
+
+          console.log('Type Promo:', type_promo)
+          console.log('Quantity Promo:', qty_promo)
+          console.log('SKU Promo:', sku_promo)
+
+          //check if gwp match with promo reward
+          expect(
+            gwp_qty,
+            `Quantity GWP in order should be ${qty_promo}`
+          ).to.equal(qty_promo)
+          expect(gwp_sku, `SKU GWP in order should be ${sku_promo}`).to.equal(
+            sku_promo
+          )
         })
-      })
-  })
-
-  it('Check cart rule', () => {
-    const product_gwp = Cypress.env('PRODUCT_GWP')
-    const gwp_pn = product_gwp.promoNumber
-    const url_cartrule_list =
-      URL_PRODUCT +
-      `/cart-rule/?page=1&limit=10&keyword=${gwp_pn}&is_exclusive=false&is_discard=false`
-    //const url_cartrule_detail = URL_PRODUCT + `/cart-rule/get/${promo_id}`
-
-    cy.api({
-      method: 'GET',
-      url: url_cartrule_list,
-      headers: Cypress.env('REQUEST_HEADERS_ADMIN')
+      }
     })
-      .should((response) => {
-        const docs = response.body.data.docs[0]
-        expect(response.status).to.equal(200)
-        expect(docs.promoNumber).to.equal(gwp_pn)
-      })
-      .then((response) => {
-        //get cart rule ID
-      })
 
     // cy.api({
     //   method: 'GET',
