@@ -39,6 +39,8 @@ module.exports = defineConfig({
           return data.counter
         }
       })
+
+      return cloudPlugin(on, config)
     },
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
