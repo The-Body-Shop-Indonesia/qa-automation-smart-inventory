@@ -61,10 +61,12 @@ describe('General API Test Group', () => {
       prevalidityPeriod: 0,
       validityStartDate: '',
       validityEndDate: '',
-      image: 'https://assets.thebodyshop.co.idundefined',
+      image:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       notif_title: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
       notif_body: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
-      notif_img: 'https://assets.thebodyshop.co.idundefined',
+      notif_img:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       displayName: `QA-TEST-AUTO-PARTNER-${currentCounter} displayName`,
       tnc: `QA-TEST-AUTO-PARTNER-${currentCounter} tnc`,
       howToUse: `QA-TEST-AUTO-PARTNER-${currentCounter} howToUse`,
@@ -76,7 +78,8 @@ describe('General API Test Group', () => {
       voucherRulesTrue: [],
       voucherRulesFalse: [],
       applicableToProduct: [],
-      bgImageUrl: 'https://assets.thebodyshop.co.idundefined',
+      bgImageUrl:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
 
       isRedeemable: true,
       redeemPoint: 10,
@@ -122,10 +125,12 @@ describe('General API Test Group', () => {
       prevalidityPeriod: 0,
       validityStartDate: '',
       validityEndDate: '',
-      image: 'https://assets.thebodyshop.co.idundefined',
+      image:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       notif_title: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
       notif_body: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
-      notif_img: 'https://assets.thebodyshop.co.idundefined',
+      notif_img:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       displayName: `QA-TEST-AUTO-PARTNER-${currentCounter} displayName`,
       tnc: `QA-TEST-AUTO-PARTNER-${currentCounter} tnc`,
       howToUse: `QA-TEST-AUTO-PARTNER-${currentCounter} howToUse`,
@@ -137,7 +142,8 @@ describe('General API Test Group', () => {
       voucherRulesTrue: [],
       voucherRulesFalse: [],
       applicableToProduct: [],
-      bgImageUrl: 'https://assets.thebodyshop.co.idundefined',
+      bgImageUrl:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
 
       isRedeemable: true,
       redeemPoint: 10,
@@ -183,10 +189,12 @@ describe('General API Test Group', () => {
       prevalidityPeriod: 0,
       validityStartDate: '',
       validityEndDate: '',
-      image: 'https://assets.thebodyshop.co.idundefined',
+      image:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       notif_title: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
       notif_body: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
-      notif_img: 'https://assets.thebodyshop.co.idundefined',
+      notif_img:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       displayName: `QA-TEST-AUTO-PARTNER-${currentCounter} displayName`,
       tnc: `QA-TEST-AUTO-PARTNER-${currentCounter} tnc`,
       howToUse: `QA-TEST-AUTO-PARTNER-${currentCounter} howToUse`,
@@ -198,7 +206,8 @@ describe('General API Test Group', () => {
       voucherRulesTrue: [],
       voucherRulesFalse: [],
       applicableToProduct: [],
-      bgImageUrl: 'https://assets.thebodyshop.co.idundefined',
+      bgImageUrl:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
 
       isRedeemable: true,
       redeemPoint: 10,
@@ -344,10 +353,12 @@ describe('General API Test Group', () => {
       prevalidityPeriod: 0,
       validityStartDate: '',
       validityEndDate: '',
-      image: 'https://assets.thebodyshop.co.idundefined',
+      image:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       notif_title: `QA-TEST-AUTO-PARTNER-${existCounter}`,
       notif_body: `QA-TEST-AUTO-PARTNER-${existCounter}`,
-      notif_img: 'https://assets.thebodyshop.co.idundefined',
+      notif_img:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
       displayName: `QA-TEST-AUTO-PARTNER-${existCounter} displayName`,
       tnc: `QA-TEST-AUTO-PARTNER-${existCounter} tnc`,
       howToUse: `QA-TEST-AUTO-PARTNER-${existCounter} howToUse`,
@@ -359,7 +370,8 @@ describe('General API Test Group', () => {
       voucherRulesTrue: [],
       voucherRulesFalse: [],
       applicableToProduct: [],
-      bgImageUrl: 'https://assets.thebodyshop.co.idundefined',
+      bgImageUrl:
+        'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
 
       isRedeemable: true,
       redeemPoint: 10,

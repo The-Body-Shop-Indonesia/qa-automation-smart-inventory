@@ -80,6 +80,8 @@ module.exports = defineConfig({
     CARDNUMBER: process.env.CARDNUMBER,
     IDENTIFIER_SDC: process.env.IDENTIFIER,
     OTP_SDC: process.env.OTP,
-    IDENTIFIER2_SDC: process.env.IDENTIFIER2
+    IDENTIFIER2_SDC: process.env.IDENTIFIER2,
+    USER_EMAIL: process.env.USER_EMAIL,
+    USER_OTP: process.env.USER_OTP
   }
 })
