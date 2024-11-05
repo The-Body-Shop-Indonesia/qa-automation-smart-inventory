@@ -179,11 +179,13 @@ describe('General API Test Group', () => {
     // Menyimpan tanggal yang diformat ke dalam variable
     const todayFormatted = formatDate(today)
     const futureDateFormatted = formatDate(futureDate)
+    const voucherProgramCode = `QA-TEST-AUTOMATION-PARTNER-${todayFormatted}-${Date.now()}`
+    Cypress.env('CMS_VOUCHER_PROGRAM_CODE', voucherProgramCode)
     const payload = {
       periodStart: todayFormatted,
       periodEnd: futureDateFormatted,
       programDescription: 'Test automation online voucher redemption',
-      tbsCodeVoucherProgram: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
+      tbsCodeVoucherProgram: voucherProgramCode,
       tbsVoucherType: '0',
       validityPeriod: 30,
       prevalidityPeriod: 0,
@@ -191,14 +193,14 @@ describe('General API Test Group', () => {
       validityEndDate: '',
       image:
         'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
-      notif_title: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
-      notif_body: `QA-TEST-AUTO-PARTNER-${currentCounter}`,
+      notif_title: voucherProgramCode,
+      notif_body: voucherProgramCode,
       notif_img:
         'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
-      displayName: `QA-TEST-AUTO-PARTNER-${currentCounter} displayName`,
-      tnc: `QA-TEST-AUTO-PARTNER-${currentCounter} tnc`,
-      howToUse: `QA-TEST-AUTO-PARTNER-${currentCounter} howToUse`,
-      title: `QA-TEST-AUTO-PARTNER-${currentCounter} Title`,
+      displayName: `${voucherProgramCode} displayName`,
+      tnc: `${voucherProgramCode} tnc`,
+      howToUse: `${voucherProgramCode} howToUse`,
+      title: `${voucherProgramCode} Title`,
       isShowVoucherCode: true,
       isNewMember: false,
       quota: 100,
@@ -327,7 +329,8 @@ describe('General API Test Group', () => {
   })
 
   it('Shows error 400 when voucher program code is already exist', () => {
-    const existCounter = currentCounter - 1
+    // const existCounter = currentCounter - 1
+    const voucherProgramToCheck = Cypress.env('CMS_VOUCHER_PROGRAM_CODE')
     const url = URL_PRODUCT + `/admin/voucher/vms/voucher-program`
     const today = new Date()
     // Mendapatkan tanggal 30 hari setelahnya
@@ -347,7 +350,7 @@ describe('General API Test Group', () => {
       periodStart: todayFormatted,
       periodEnd: futureDateFormatted,
       programDescription: 'Test automation online voucher redemption',
-      tbsCodeVoucherProgram: `QA-TEST-AUTO-PARTNER-${existCounter}`,
+      tbsCodeVoucherProgram: `${voucherProgramToCheck}`,
       tbsVoucherType: '0',
       validityPeriod: 30,
       prevalidityPeriod: 0,
@@ -355,14 +358,14 @@ describe('General API Test Group', () => {
       validityEndDate: '',
       image:
         'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
-      notif_title: `QA-TEST-AUTO-PARTNER-${existCounter}`,
-      notif_body: `QA-TEST-AUTO-PARTNER-${existCounter}`,
+      notif_title: `${voucherProgramToCheck}`,
+      notif_body: `${voucherProgramToCheck}`,
       notif_img:
         'https://assets.thebodyshop.co.id/voucher/0d1c779e-1135-44f0-884f-d83250d7241f.png',
-      displayName: `QA-TEST-AUTO-PARTNER-${existCounter} displayName`,
-      tnc: `QA-TEST-AUTO-PARTNER-${existCounter} tnc`,
-      howToUse: `QA-TEST-AUTO-PARTNER-${existCounter} howToUse`,
-      title: `QA-TEST-AUTO-PARTNER-${existCounter} Title`,
+      displayName: `${voucherProgramToCheck} displayName`,
+      tnc: `${voucherProgramToCheck} tnc`,
+      howToUse: `${voucherProgramToCheck} howToUse`,
+      title: `${voucherProgramToCheck} Title`,
       isShowVoucherCode: true,
       isNewMember: false,
       quota: 100,

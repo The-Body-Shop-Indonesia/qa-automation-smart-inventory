@@ -17,7 +17,7 @@ describe('General API Test Group', () => {
       headers: Cypress.env('CUSTOMER_REQ_HEADERS')
     })
       .should((response) => {
-        expect(response.status, 'Expect Statuscode to be 200').to.equal(200)
+        expect(response.status, 'Expect Status Code to be 200').to.equal(200)
         const body = response.body.data
         expect(body, 'Check Point Availability').to.haveOwnProperty(
           'currentPoint'
