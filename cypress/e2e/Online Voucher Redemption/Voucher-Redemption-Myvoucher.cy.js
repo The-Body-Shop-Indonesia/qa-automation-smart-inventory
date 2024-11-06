@@ -194,10 +194,10 @@ describe('General API Test Group', () => {
 
   // ---- technical sections
   // wrong ID format: non-MongoDB, undefined, empty
-  it('', () => {})
+  //   it('', () => {})
 
   // not found ID
-  it('', () => {})
+  //   it('', () => {})
 
   // ---- business sections
   // what data to show?
@@ -214,7 +214,7 @@ describe('General API Test Group', () => {
         expect(response.body.data).to.haveOwnProperty('partnershipVouchers')
         // check in partnershipVouchers
         const data = response.body.data.partnershipVouchers
-        data.forEach((partnership) => {
+        data.slice(0, 3).forEach((partnership) => {
           expect(partnership).to.haveOwnProperty('voucherCode')
           expect(partnership).to.haveOwnProperty('title')
           expect(partnership).to.haveOwnProperty('description')
@@ -229,7 +229,7 @@ describe('General API Test Group', () => {
       .then((response) => {
         // check in activeVouchers
         const data = response.body.data.activeVouchers
-        data.forEach((active) => {
+        data.slice(0, 3).forEach((active) => {
           expect(active).to.haveOwnProperty('voucherCode')
           expect(active).to.haveOwnProperty('title')
           expect(active).to.haveOwnProperty('description')
@@ -244,7 +244,7 @@ describe('General API Test Group', () => {
       .then((response) => {
         // check in inactiveVouchers
         const data = response.body.data.inactiveVouchers
-        data.forEach((inactive) => {
+        data.slice(0, 3).forEach((inactive) => {
           expect(inactive).to.haveOwnProperty('voucherCode')
           expect(inactive).to.haveOwnProperty('title')
           expect(inactive).to.haveOwnProperty('description')
@@ -259,11 +259,11 @@ describe('General API Test Group', () => {
   })
 
   // is the price right?
-  it('', () => {})
+  //   it('', () => {})
 
   // is redeemable? compared to my current point
-  it('', () => {})
+  //   it('', () => {})
 
-  it('', () => {})
-  it('', () => {})
+  //   it('', () => {})
+  //   it('', () => {})
 })

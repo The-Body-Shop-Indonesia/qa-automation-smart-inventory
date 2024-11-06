@@ -1,5 +1,5 @@
 const { defineConfig } = require('cypress')
-const { cloudPlugin } = require('cypress-cloud/plugin')
+// const { cloudPlugin } = require('cypress-cloud/plugin')
 // const validateEnv = require('./utils/validate-env')
 const { MongoClient } = require('mongodb')
 require('dotenv').config()
@@ -39,6 +39,7 @@ module.exports = defineConfig({
           return data.counter
         }
       })
+      // return cloudPlugin(on, config)
     },
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
