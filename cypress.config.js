@@ -41,6 +41,7 @@ module.exports = defineConfig({
       })
 
       return cloudPlugin(on, config)
+
     },
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
