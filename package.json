@@ -16,7 +16,8 @@
     "cypress-mongodb": "^6.2.1",
     "cypress-plugin-api": "^2.11.2",
     "dotenv": "^16.4.5",
-    "faker": "^6.6.6"
+    "faker": "^6.6.6",
+    "redis": "^4.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
