@@ -5,6 +5,8 @@ const { MongoClient } = require('mongodb')
 require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
+// Import Redis
+const redis = require('redis')
 
 // validateEnv()
 module.exports = defineConfig({
@@ -31,6 +33,33 @@ module.exports = defineConfig({
           )
           return data.counter
         },
+        addStock({ key, amount }) {
+          return new Promise((resolve, reject) => {
+            const client = redis.createClient({
+              url: process.env.BASEURLREDISDEV
+            })
+
+            client
+              .connect()
+              .then(() => {
+                // Set nilai kunci 'key' menjadi amount (mengabaikan nilai sebelumnya)
+                return client.set(key, amount)
+              })
+              .then(() => {
+                // Mengambil nilai stok yang telah diset
+                return client.get(key)
+              })
+              .then((newStock) => {
+                client.quit()
+                resolve(newStock) // Kembalikan hasil stok baru
+              })
+              .catch((error) => {
+                client.quit()
+                reject(error) // Tangani error jika ada
+              })
+          })
+        },
+
         incrementCounter() {
           const filePath = path.join(__dirname, 'cypress/fixtures/counter.json')
           const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
@@ -43,12 +72,15 @@ module.exports = defineConfig({
       return cloudPlugin(on, config)
 
     },
+
+    taskTimeout: 10000,
     baseUrlProduct: process.env.BASEURLPRODUCT,
     baseUrlUser: process.env.BASEURLUSER,
     baseUrlPayment: process.env.BASEURLPAYMENT,
     baseUrlMP: process.env.BASEURLMP,
     REDEEM_URL: process.env.REDEEM_URL
   },
+
   env: {
     TOKEN_ADMIN: process.env.TOKEN_ADMIN,
     TOKEN_POS: process.env.TOKEN_POS,
