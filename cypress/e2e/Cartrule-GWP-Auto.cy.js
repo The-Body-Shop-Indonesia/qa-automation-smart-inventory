@@ -221,7 +221,6 @@ describe('Customer cart section', function () {
             `Product term total in ubd detail should be ${sku_term_qty}`
           ).to.be.gte(sku_term_qty)
 
-
           //free product section check
           expect(GWP.length, 'GWP length on data should be 1').to.equal(1)
           expect(
@@ -234,7 +233,7 @@ describe('Customer cart section', function () {
           ).to.equal(sku_effect_qty)
           expect(
             GWP[0].promoNumber,
-            `GWP product qty should be ${Cypress.env('CARTRULE_DATA').promoNumber}`
+            `GWP Promo Number should be ${Cypress.env('CARTRULE_DATA').promoNumber}`
           ).to.equal(Cypress.env('CARTRULE_DATA').promoNumber)
           expect(
             GWP[0].grandTotal,
@@ -426,49 +425,73 @@ describe('Customer cart section', function () {
       body: {
         cart: Cypress.env('CART_DATA')._id
       }
+    }).should((response) => {
+      const cart_data = Cypress.env('CART_DATA')
+      const cart_items = cart_data.items[0]
+      const cart_gwp = cart_data.freeProducts[0]
+      const order_data = response.body.data
+      const order_items = order_data.items
+
+      expect(response.status, 'Response code should be 201').to.equal(201)
+      expect(order_data).to.haveOwnProperty('orderNumber')
+
+      expect(order_data.cartId, `Cart ID should be ${cart_data._id}`).to.equal(
+        cart_data._id
+      )
+
+      //product biasa
+      expect(
+        order_items[0].sku,
+        `SKU ${cart_items.sku} should be in order`
+      ).to.equal(cart_items.sku)
+      expect(
+        order_items[0].qty,
+        `SKU qty ${cart_items.qty} should be in order`
+      ).to.equal(cart_items.qty)
+      expect(
+        order_items[0].price,
+        `SKU price ${cart_items.product.price} should be in order`
+      ).to.equal(cart_items.product.price)
+      expect(
+        order_items[0].grandTotal,
+        `SKU price ${cart_items.grandTotal} should be in order`
+      ).to.equal(cart_items.grandTotal)
+      expect(
+        order_items[0].ubdDetail[0].ubd,
+        `SKU ubd should be null in order`
+      ).to.equal(null)
+      expect(
+        order_items[0].ubdDetail[0].total,
+        `SKU ubd total shoud be ${cart_items.qty} in order`
+      ).to.equal(cart_items.qty)
+
+      //product GWP
+      expect(
+        order_items[1].sku,
+        `SKU GWP ${cart_gwp.sku} should be in order`
+      ).to.equal(cart_gwp.sku)
+      expect(
+        order_items[1].qty,
+        `GWP qty ${cart_gwp.qty} should be in order`
+      ).to.equal(cart_gwp.qty)
+      expect(
+        order_items[1].promoNumber,
+        `Promo Number ${cart_gwp.promoNumber} should be in order`
+      ).to.equal(cart_gwp.promoNumber)
+      expect(
+        order_items[1].grandTotal,
+        `SKU GWP price 0 should be in order`
+      ).to.equal(0)
+      expect(
+        order_items[0].ubdDetail[0].ubd,
+        `SKU GWP ubd should be null in order`
+      ).to.equal(null)
+      expect(
+        order_items[0].ubdDetail[0].total,
+        `SKU GWP ubd total shoud be ${cart_gwp.qty} in order`
+      ).to.equal(cart_gwp.qty)
     })
-      .should((response) => {
-        const cart_data = Cypress.env('CART_DATA')
-        const cart_items = cart_data.items[0]
-        const cart_gwp = cart_data.freeProducts[0]
-        const order_data = response.body.data
-        const order_items = order_data.items
-
-        expect(response.status, 'Response code should be 201').to.equal(201)
-        expect(order_data).to.haveOwnProperty('orderNumber')
-        
-        expect(order_data.cartId, `Cart ID should be ${cart_data._id}`).to.equal(cart_data._id)
-
-        //product biasa
-        expect(order_items[0].sku, `SKU ${cart_items.sku} should be in order`).to.equal(cart_items.sku)
-        expect(order_items[0].qty, `SKU qty ${cart_items.qty} should be in order`).to.equal(cart_items.qty)
-        expect(order_items[0].price, `SKU price ${cart_items.product.price} should be in order`).to.equal(cart_items.product.price)
-        expect(order_items[0].grandTotal, `SKU price ${cart_items.grandTotal} should be in order`).to.equal(cart_items.grandTotal)
-        expect(
-          order_items[0].ubdDetail[0].ubd,
-          `SKU ubd should be null in order`
-        ).to.equal(null)
-        expect(
-          order_items[0].ubdDetail[0].total,
-          `SKU ubd total shoud be ${cart_items.qty} in order`
-        ).to.equal(cart_items.qty)
-
-        //product GWP
-        expect(order_items[1].sku, `SKU GWP ${cart_gwp.sku} should be in order`).to.equal(cart_gwp.sku)
-        expect(order_items[1].qty, `GWP qty ${cart_gwp.qty} should be in order`).to.equal(cart_gwp.qty)
-        expect(order_items[1].promoNumber, `Promo Number ${cart_gwp.promoNumber} should be in order`).to.equal(cart_gwp.promoNumber)
-        expect(order_items[1].grandTotal, `SKU GWP price 0 should be in order`).to.equal(0)
-        expect(
-          order_items[0].ubdDetail[0].ubd,
-          `SKU GWP ubd should be null in order`
-        ).to.equal(null)
-        expect(
-          order_items[0].ubdDetail[0].total,
-          `SKU GWP ubd total shoud be ${cart_gwp.qty} in order`
-        ).to.equal(cart_gwp.qty)
-      })
   })
 })
-
 
 //ubd detail
