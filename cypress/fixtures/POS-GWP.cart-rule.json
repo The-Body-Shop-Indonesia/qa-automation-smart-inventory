@@ -1,0 +1,52 @@
+{
+  "_id": {
+    "$oid": "671f34c26d35a6eb68722b57"
+  },
+  "name": "%5BWINDOWS%20CHIRSTMAS%5D%20GWP%20MIN.%20PURCHASE%201.500.000%20%5BPOS%5D%20%5BWEB%5D%20%5BMOBILE%5D",
+  "description": "Cart%20rule%20auto%20generated%20by%20system%20for%20combrief%20WINDOWS%20CHIRSTMAS",
+  "startDate": {
+    "$date": "2024-11-03T16:58:10.000Z"
+  },
+  "endDate": {
+    "$date": "2025-01-01T16:59:10.000Z"
+  },
+  "effect": "buy_x_for_y,sku,508013128,1,percentage:1,false",
+  "rawEffectData": "%7B%22type%22:%22buy_x_for_y%22,%22value%22:%22508013128%22,%22optionalVal1%22:%22sku%22,%22optionalVal2%22:%221%22,%22optionalVal3%22:%22percentage%22,%22optionalVal4%22:%22100%22,%22optionalVal5%22:%22false%22%7D",
+  "cascade": false,
+  "status": true,
+  "terms": "***channel,pos***&&***total_value,%3E=,1500000***&&***total_value,=%3C,2500000***",
+  "rawTermsData": "%5B%7B%22id%22:1730349240456,%22operator%22:%22%22,%22value%22:%22pos%22,%22logicalOp%22:%22%22,%22logicalOpToChildren%22:%22%22,%22optionalLabel%22:%22%22,%22optionalVal%22:%22%22,%22hasParent%22:false,%22children%22:%5B%5D,%22type%22:%22channel%22%7D,%7B%22id%22:1730349240458,%22operator%22:%22%3E=%22,%22value%22:%221500000%22,%22logicalOp%22:%22&&%22,%22logicalOpToChildren%22:%22%22,%22optionalLabel%22:%22%22,%22optionalVal%22:%22%22,%22hasParent%22:false,%22children%22:%5B%5D,%22type%22:%22total_value%22%7D,%7B%22id%22:1730349240459,%22operator%22:%22=%3C%22,%22value%22:%222500000%22,%22logicalOp%22:%22&&%22,%22logicalOpToChildren%22:%22%22,%22optionalLabel%22:%22%22,%22optionalVal%22:%22%22,%22hasParent%22:false,%22children%22:%5B%5D,%22type%22:%22total_value%22%7D%5D",
+  "tiers": "CLUB,EMPLOYEE,FAN,PUBLIC,STARTER",
+  "isPopulated": false,
+  "isGlobalUse": false,
+  "promoNumber": "PN0101609005",
+  "tnc": "%5BWINDOWS%20CHIRSTMAS%5D%20GWP%20MIN.%20PURCHASE%201.500.000%20%5BPOS%5D%20%5BWEB%5D%20%5BMOBILE%5D",
+  "isExclusive": true,
+  "displayName": "WINDOWS CHIRSTMAS",
+  "multipliedTerms": "",
+  "forceCalculateOnSubtotal": false,
+  "applyDiscountedPrice": true,
+  "usageLimitationConfig": null,
+  "version": 2,
+  "promoSummaryCombrief": {
+    "$oid": "671f0bd46d35a6eb6872264c"
+  },
+  "usage": "offline",
+  "cartRuleCuan": false,
+  "createdAt": {
+    "$date": "2024-10-28T06:52:50.996Z"
+  },
+  "updatedAt": {
+    "$date": "2024-11-11T08:17:51.180Z"
+  },
+  "__v": 0,
+  "voucherConfig": {
+    "type": ""
+  },
+  "image": "",
+  "multipleDatesConfig": [],
+  "priority": 1,
+  "productGroupId": null,
+  "usesGlobal": 0,
+  "usesPerDay": 0
+}
