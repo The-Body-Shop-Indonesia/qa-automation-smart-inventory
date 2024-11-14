@@ -225,10 +225,12 @@ describe('Staff Add Cart Redemption for Member Customer', function () {
       const first_name = response.body.data.firstName
       const last_name = response.body.data.lastName
       const currentTier = response.body.data.currentTier.code
+      const currentTierImg = response.body.data.currentTier.image
 
       Cypress.env('FIRST_NAME', first_name)
       Cypress.env('LAST_NAME', last_name)
       Cypress.env('CUST_TIER', currentTier)
+      Cypress.env('CUST_IMG', currentTierImg)
 
       cy.api({
         method: 'POST',
@@ -243,8 +245,7 @@ describe('Staff Add Cart Redemption for Member Customer', function () {
           familyNumber: '',
           isFamily: false,
           customerGroup: Cypress.env('CUST_TIER'),
-          image:
-            'https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/0a145430-550a-4099-93d4-9e2b4e63ca5a.jpeg',
+          image: Cypress.env('CUST_IMG'),
           isScanner: true,
           isLapsed: true,
           isReactivated: true,

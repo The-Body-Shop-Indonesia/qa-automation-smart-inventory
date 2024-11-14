@@ -380,75 +380,75 @@ describe('Callback create order MP', () => {
               items[i].isFreeProduct,
               `isFreeProduct should be true`
             ).to.equal(true)
-          } //else {
-          //   if (items[i].sku == sku_product_1) {
-          //     const normal_price = sku_grouping[sku_product_1].normal_price
-          //     const sku_qty = sku_grouping[sku_product_1].qty
-          //     const subtotal_sku = normal_price * sku_qty
-          //     const grand_total_MP = sku_grouping[sku_product_1].grand_total
-          //     const discount_price = subtotal_sku - grand_total_MP
+          } else {
+            if (items[i].sku == sku_product_1) {
+              const normal_price = sku_grouping[sku_product_1].normal_price
+              const sku_qty = sku_grouping[sku_product_1].qty
+              const subtotal_sku = normal_price * sku_qty
+              const grand_total_MP = sku_grouping[sku_product_1].grand_total
+              const discount_price = subtotal_sku - grand_total_MP
 
-          //     expect(items[i].qty).to.equal(sku_grouping[sku_product_1].qty)
-          //     expect(items[i].sku).to.equal(sku_product_1)
+              expect(items[i].qty).to.equal(sku_grouping[sku_product_1].qty)
+              expect(items[i].sku).to.equal(sku_product_1)
 
-          //     expect(
-          //       items[i].valueDiscount,
-          //       `Value discount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].promoAmount,
-          //       `Promo amount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].grandTotal,
-          //       `Grand Total should be ${grand_total_MP}`
-          //     ).to.equal(grand_total_MP)
-          //   } else if (items[i].sku == sku_product_2) {
-          //     const normal_price = sku_grouping[sku_product_2].normal_price
-          //     const sku_qty = sku_grouping[sku_product_2].qty
-          //     const subtotal_sku = normal_price * sku_qty
-          //     const grand_total_MP = sku_grouping[sku_product_2].grand_total
-          //     const discount_price = subtotal_sku - grand_total_MP
+              expect(
+                items[i].valueDiscount,
+                `Value discount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].promoAmount,
+                `Promo amount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].grandTotal,
+                `Grand Total should be ${grand_total_MP}`
+              ).to.equal(grand_total_MP)
+            } else if (items[i].sku == sku_product_2) {
+              const normal_price = sku_grouping[sku_product_2].normal_price
+              const sku_qty = sku_grouping[sku_product_2].qty
+              const subtotal_sku = normal_price * sku_qty
+              const grand_total_MP = sku_grouping[sku_product_2].grand_total
+              const discount_price = subtotal_sku - grand_total_MP
 
-          //     expect(items[i].qty).to.equal(sku_grouping[sku_product_2].qty)
-          //     expect(items[i].sku).to.equal(sku_product_2)
+              expect(items[i].qty).to.equal(sku_grouping[sku_product_2].qty)
+              expect(items[i].sku).to.equal(sku_product_2)
 
-          //     expect(
-          //       items[i].valueDiscount,
-          //       `Value discount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].promoAmount,
-          //       `Promo amount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].grandTotal,
-          //       `Grand Total should be ${grand_total_MP}`
-          //     ).to.equal(grand_total_MP)
-          //   } else if (items[i].sku == sku_product_3) {
-          //     const normal_price = sku_grouping[sku_product_3].normal_price
-          //     const sku_qty = sku_grouping[sku_product_3].qty
-          //     const subtotal_sku = normal_price * sku_qty
-          //     const grand_total_MP = sku_grouping[sku_product_3].grand_total
-          //     const discount_price = subtotal_sku - grand_total_MP
+              expect(
+                items[i].valueDiscount,
+                `Value discount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].promoAmount,
+                `Promo amount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].grandTotal,
+                `Grand Total should be ${grand_total_MP}`
+              ).to.equal(grand_total_MP)
+            } else if (items[i].sku == sku_product_3) {
+              const normal_price = sku_grouping[sku_product_3].normal_price
+              const sku_qty = sku_grouping[sku_product_3].qty
+              const subtotal_sku = normal_price * sku_qty
+              const grand_total_MP = sku_grouping[sku_product_3].grand_total
+              const discount_price = subtotal_sku - grand_total_MP
 
-          //     expect(items[i].qty).to.equal(sku_grouping[sku_product_3].qty)
-          //     expect(items[i].sku).to.equal(sku_product_3)
+              expect(items[i].qty).to.equal(sku_grouping[sku_product_3].qty)
+              expect(items[i].sku).to.equal(sku_product_3)
 
-          //     expect(
-          //       items[i].valueDiscount,
-          //       `Value discount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].promoAmount,
-          //       `Promo amount should be ${discount_price}`
-          //     ).to.equal(discount_price) //discount amount
-          //     expect(
-          //       items[i].grandTotal,
-          //       `Grand Total should be ${grand_total_MP}`
-          //     ).to.equal(grand_total_MP)
-          //   }
-          // }
+              expect(
+                items[i].valueDiscount,
+                `Value discount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].promoAmount,
+                `Promo amount should be ${discount_price}`
+              ).to.equal(discount_price) //discount amount
+              expect(
+                items[i].grandTotal,
+                `Grand Total should be ${grand_total_MP}`
+              ).to.equal(grand_total_MP)
+            }
+          }
         }
       })
       .then((result) => {

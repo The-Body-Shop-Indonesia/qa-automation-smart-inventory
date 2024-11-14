@@ -69,7 +69,7 @@ describe('General API Test Group', () => {
     })
   })
 
-  it('Should NOT be able to access the API with invalid token', () => {
+  it('Should return error if request invalid token', () => {
     const invalidToken =
       'Bearer xyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJadF9fZHV4a2daTC01Q01lZTFqSjhFS2tWczJRSDJVdE1QNGZ5OENqM1pFIn0.eyJleHAiOjE3Mjc5MjI1NzgsImlhdCI6MTcyNzgzNjE3OCwianRpIjoiMzVjNjNmYzAtNzc4OC00NzQ1LWJkZDgtMTM2NjMwZmUyMTgwIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5zaXQudGJzZ3JvdXAuY28uaWQvcmVhbG1zL3Ricy1pY2FydXMiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiZGNlY2UyNzEtZWJkMi00ZjU2LWE2ZmYtYWVlZjFkMDhiODM4IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGJzLWFwcCIsInNlc3Npb25fc3RhdGUiOiIwODBmNmZmYy1kZDA2LTRmYTQtOTBhNy1iM2ZjZmEwNTg0NGMiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtdGJzLWljYXJ1cyIsInN1cGVyX2FkbWluIiwib2ZmbGluZV9hY2Nlc3MiLCJhcHAtYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjA4MGY2ZmZjLWRkMDYtNGZhNC05MGE3LWIzZmNmYTA1ODQ0YyIsInVpZCI6ImRjZWNlMjcxLWViZDItNGY1Ni1hNmZmLWFlZWYxZDA4YjgzOCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkFkbWluIFRCUyIsInByZWZlcnJlZF91c2VybmFtZSI6ImFkbWluLXRicyIsImdpdmVuX25hbWUiOiJBZG1pbiIsImZhbWlseV9uYW1lIjoiVEJTIiwiZW1haWwiOiJhZG1pbi10YnNAdGhlYm9keXNob3AuY28uaWQifQ.jd6JJqHV0BVOCP7-lEWgfY1shgWuclMK-5YAUym4JTNnNtflHFyk4eVTxBe9OcBsqSgFkGaI3GER7Hi--XikKaT-aMYp4OO8oleiD0lPlwYV_c-GBZ1Ig5_SCsSxr46llVuTZb9tVqNZW33vygcz58IKVi4wn45_aL_lJTZnOM49-rUedA2a650jiipuhHXqeA4Q_9k_73SDBJYozQKSkJwd6noEiBbDyalGf_JYZEBKLL-doWqKxH2-B518lKwVIQ9ii4mglGE7Y2dEOAdG6NDIUMpmxF5SNuDbATYxCFvtvdQxQ2J2zLwxQxSYT1zuuecjN5131XYv9uYFtQkTSw'
     const dataId = Cypress.env('stockSummaryID')
@@ -84,7 +84,7 @@ describe('General API Test Group', () => {
     })
   })
 
-  it('Should NOT be able to access the API without token', () => {
+  it('Should return error if request without token', () => {
     const invalidToken = ''
     const dataId = Cypress.env('stockSummaryID')
     const urlStockSumID = baseUrl + '/admin/stock-summary/' + dataId
@@ -150,7 +150,7 @@ describe('ID test', () => {
     })
   })
 
-  it('Should NOT show data from empty ID', () => {
+  it('Should show all data if ID is empty', () => {
     const dataId = ''
     const urlStockSumID = baseUrl + '/admin/stock-summary/' + dataId
     cy.api({
@@ -167,7 +167,7 @@ describe('ID test', () => {
     })
   })
 
-  it('Should NOT return non exist ID', () => {
+  it('Should return error if ID is invalid', () => {
     const id = '66fsss7b016f96leaf2784f4'
     const urlStockSumID = baseUrl + '/admin/stock-summary/' + id
     cy.request({
@@ -181,7 +181,7 @@ describe('ID test', () => {
     })
   })
 
-  it('Should NOT return undefined ID', () => {
+  it('Should return error if ID is undefined', () => {
     const id = 'undefined'
     const urlStockSumID = baseUrl + '/admin/stock-summary/' + id
     cy.request({
