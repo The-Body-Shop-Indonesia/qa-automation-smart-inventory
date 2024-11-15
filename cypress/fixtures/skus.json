@@ -8,5 +8,12 @@
   ],
   "skuVoids": ["101080547", "190252218"],
 
-  "skuCashVouchers": 101060431
+  "skuCashVouchers": ["101060431", "101060438", "190180432", "101050290"],
+
+  "skuPOS": ["134070225", "126410124", "101011120"],
+  "skuPOSName": [
+    "VITAMIN C CONCEALER FAIR 2W 8ML",
+    "WHITE MUSK FLORA EDT 30ML",
+    "VITAMIN E MOISTURE CREAM 100ML"
+  ]
 }
