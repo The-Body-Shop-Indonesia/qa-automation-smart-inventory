@@ -1,25 +1,32 @@
-// Definisikan getDynamicVoucherCode di luar hook dan describe
+const URL_USER = Cypress.config('baseUrlUser')
+const URL_PRODUCT = Cypress.config('baseUrlProduct')
+const voucherProgramCode = 'TESTCASH002'
+Cypress.env('voucherProgramCode', voucherProgramCode)
+const suffixBase = 'QA-MILS'
 
-function getDynamicVoucherCode(baseVoucherCode) {
+// Definisikan getDynamicVoucherCode di luar hook dan describe
+function getDynamicVoucherCode(voucherProgramCode, suffixBase) {
   // Dapatkan nomor terakhir dari file JSON di fixtures
   return cy.readFile('cypress/fixtures/lastVoucherNumber.json').then((data) => {
-    let currentNumber = data.lastVoucherNumber || 1
+    const currentNumber = data.lastVoucherNumber || 1
     const formattedNumber = String(currentNumber).padStart(2, '0') // Tambahkan '0' di depan jika kurang dari 10
-    Cypress.env('VoucherCode', `${baseVoucherCode}-${formattedNumber}`)
+    Cypress.env('suffix', `${suffixBase}-${formattedNumber}`)
+    const voucherCode = `${Cypress.env('voucherProgramCode')}-${Cypress.env('suffix')}`
+
+    // Simpan voucherCode dan nomor terakhir sebagai environment variable
+    Cypress.env('VoucherCode', voucherCode)
+    Cypress.env('currentNumber', currentNumber)
+
     // Simpan nomor terbaru ke file JSON untuk iterasi berikutnya
     return cy
       .writeFile('cypress/fixtures/lastVoucherNumber.json', {
         lastVoucherNumber: currentNumber + 1
       })
-      .then(() => Cypress.env('VoucherCode'))
+      .then(() => voucherCode)
   })
 }
 
-const URL_USER = Cypress.config('baseUrlUser')
-const URL_PRODUCT = Cypress.config('baseUrlProduct')
-const baseVoucherCode = 'TESTCASH002-Mils'
 let voucherCode
-// let RespondataVoucher
 describe('Get Last Voucher Code', () => {
   before('User Login', () => {
     const url_user = URL_USER + '/otp/validate'
@@ -82,35 +89,58 @@ describe('Get Last Voucher Code', () => {
       })
   })
 
-  before('Generate Voucher Code', () => {
-    // Menghasilkan kode voucher dinamis sebelum semua tes dijalankan
-    getDynamicVoucherCode(baseVoucherCode).then((code) => {
-      voucherCode = code
-      cy.log('Generated Voucher Code:', voucherCode)
-    })
-  })
-
-  before('Cek Stok', () => {
+  before('Cek Stok untuk Semua SKU', () => {
     // Muat data dari fixture
     cy.fixture('skus').then((data) => {
-      const sku = data.skuCashVouchers // Ambil SKU dari fixture
-      const key = `stock:${sku}-34999-stock` // Buat key dengan SKU yang diambil
-      const amount = 10 // jumlah stok yang ingin ditambahkan
+      const amount = 100 // jumlah stok yang ingin ditambahkan
 
-      cy.task('addStock', { key, amount }, { timeout: 30000 }).should('exist')
-      // cy.task('addStock', { key, amount }, { timeout: 10000 }).then(
-      //   (newStock) => {
-      //     cy.log(`Stok baru adalah: ${newStock}`)
-      //     expect(newStock).to.be.a('number')
-      //     // cy.log(`Stok baru adalah: ${newStock}`)
-      //     expect(newStock).to.be.a('number')
-      //   }
-      // )
+      // Iterasi setiap SKU dalam array skuCashVouchers
+      data.skuCashVouchers.forEach((sku) => {
+        const key = `stock:${sku}-34999-stock` // Buat key dengan SKU yang diambil
+
+        // Menjalankan cy.task untuk mengatur stok pada setiap SKU
+        cy.task('addStock', { key, amount }, { timeout: 30000 }).should('exist')
+      })
     })
   })
 
-  it('Shows voucher Code Last', () => {
-    cy.log('Generated Voucher Code:', voucherCode)
+  let voucherCode
+  it('Generate Voucher Code', () => {
+    // Menghasilkan kode voucher dinamis sebelum semua tes dijalankan
+    getDynamicVoucherCode(voucherProgramCode, suffixBase).then((code) => {
+      voucherCode = code
+      const URL_Generate_VOUCHER =
+        URL_PRODUCT + '/admin/voucher/vms/autogenerate'
+      //Menyimpan kode voucher dengan memanggil API
+      cy.api({
+        method: 'POST',
+        url: URL_Generate_VOUCHER,
+        headers: {
+          ...Cypress.env('REQUEST_HEADERS')
+        },
+        body: {
+          vouchers: [
+            {
+              voucher_program_code: Cypress.env('voucherProgramCode'),
+              card_number: '',
+              voucher_amount: 50000,
+              voucher_value: 50000,
+              code_suffix: Cypress.env('suffix')
+            }
+          ]
+        }
+      }).then((response) => {
+        expect(response.status).to.eq(201)
+        const body = response.body
+        expect(body).to.have.property('statusCode', 201)
+
+        cy.log('Generated Voucher Code:', Cypress.env('VoucherCode'))
+        cy.log('Generated last Number:', Cypress.env('currentNumber'))
+        cy.log('Sufix', Cypress.env('suffix'))
+        cy.log('Voucher program Code', Cypress.env('voucherProgramCode'))
+        // expect(body).to.have.property('message', 'Voucher saved successfully')
+      })
+    })
   })
 })
 
@@ -127,7 +157,7 @@ describe('Show Cash Voucher in Detail Voucher', () => {
       qs: {
         limit: 50,
         sort: '-updatedAt',
-        keywords: voucherCode
+        keywords: Cypress.env('VoucherCode')
       }
     }).then((response) => {
       expect(response.status).to.equal(200)
@@ -147,7 +177,7 @@ describe('Show Cash Voucher in Detail Voucher', () => {
             // Only log vouchers that have not expired
             if (expiry >= today) {
               // Prepare a single string to log voucher details
-              let voucherDetails = `Voucher ID: ${_id}, Redeem Status: ${redeemStatus}, TBS Code Voucher: ${voucherCode}, Voucher Amount:${voucherAmount}`
+              let voucherDetails = `Voucher ID: ${_id}, Redeem Status: ${redeemStatus}, TBS Code Voucher: ${Cypress.env('VoucherCode')}, Voucher Amount:${voucherAmount}`
 
               // Add expiryDate to the log
               voucherDetails += `, Expiry Date: ${expiryDate}`
@@ -170,68 +200,68 @@ describe('Show Cash Voucher in Detail Voucher', () => {
     const URL_PRODUCT = Cypress.config('baseUrlProduct')
     const url_add_bulkCart = URL_PRODUCT + '/cart/add/bulk'
     const url_delete_allcart = URL_PRODUCT + '/cart/remove-all-item'
-    Cypress.env('SKU1', {
-      sku: '101060431',
-      qty: 1,
-      name: 'ALOE CREAM CLEANSER 125ML'
-    })
-    Cypress.env('SKU2', { sku: '101060438', qty: 1, name: 'ALOE TONER 250ML' })
+    cy.fixture('skus').then((data) => {
+      const sku1 = data.skuCashVouchers[0] // SKU pertama
+      const sku2 = data.skuCashVouchers[1] // SKU kedua
 
-    requestBodyCart = {
-      data: [
-        {
-          sku: Cypress.env('SKU1').sku,
-          qty: Cypress.env('SKU1').qty
-        },
-        {
-          sku: Cypress.env('SKU2').sku,
-          qty: Cypress.env('SKU2').qty
-        }
-      ]
-    }
+      Cypress.env('SKU1', {
+        sku: sku1,
+        qty: 1,
+        name: 'ALOE CREAM CLEANSER 125ML'
+      })
+      Cypress.env('SKU2', { sku: sku2, qty: 1, name: 'ALOE TONER 250ML' })
 
-    // Step 1: Check if the cart has any items
-    cy.api({
-      method: 'GET',
-      url: URL_PRODUCT + '/cart/my-cart',
-      headers: {
-        ...Cypress.env('REQUEST_HEADERS')
-        // Channel: 'web'
-      }
-    }).then((response) => {
-      const items = response.body.data.items || []
-
-      if (items.length > 0) {
-        // Step 2: If cart has items, delete all items
-        cy.request({
-          method: 'PATCH',
-          url: url_delete_allcart,
-          headers: {
-            ...Cypress.env('REQUEST_HEADERS'),
-            Channel: 'web'
+      requestBodyCart = {
+        data: [
+          {
+            sku: Cypress.env('SKU1').sku,
+            qty: Cypress.env('SKU1').qty
+          },
+          {
+            sku: Cypress.env('SKU2').sku,
+            qty: Cypress.env('SKU2').qty
           }
-        }).then(() => {
-          expect(response.status).to.eq(200)
-          // Proceed with adding items to cart after clearing the cart
-          addToCart(
-            url_add_bulkCart,
-            requestBodyCart,
-            Cypress.env('SKU1'),
-            Cypress.env('SKU2')
-          )
-        })
-      } else {
-        // If cart is already empty, proceed directly with adding items
-        addToCart(
-          url_add_bulkCart,
-          requestBodyCart,
-          Cypress.env('SKU1'),
-          Cypress.env('SKU2')
-        )
+        ]
       }
-    })
-    // Function to add items to cart and validate response
 
+      // Step 1: Check if the cart has any items
+      cy.api({
+        method: 'GET',
+        url: URL_PRODUCT + '/cart/my-cart',
+        headers: {
+          ...Cypress.env('REQUEST_HEADERS')
+          // Channel: 'web'
+        }
+      }).then((response) => {
+        const items = response.body.data.items || []
+
+        if (items.length > 0) {
+          // Step 2: If cart has items, delete all items
+          cy.request({
+            method: 'PATCH',
+            url: url_delete_allcart,
+            headers: {
+              ...Cypress.env('REQUEST_HEADERS'),
+              Channel: 'web'
+            }
+          }).then(() => {
+            expect(response.status).to.eq(200)
+            // Proceed with adding items to cart after clearing the cart
+            addToCart(
+              url_add_bulkCart,
+              requestBodyCart,
+              Cypress.env('SKU1'),
+              Cypress.env('SKU2')
+            )
+          })
+        } else {
+          // If cart is already empty, proceed directly with adding items
+          addToCart(url_add_bulkCart, requestBodyCart)
+        }
+      })
+    })
+
+    // Function to add items to cart and validate response
     function addToCart(url_add_bulkCart, requestBodyCart) {
       const sku1 = Cypress.env('SKU1')
       const sku2 = Cypress.env('SKU2')
@@ -401,7 +431,7 @@ describe('Show Cash Voucher in Detail Voucher', () => {
     const url_deleteVoucher = URL_PRODUCT + '/cart/remove-voucher'
 
     const requestBodyVoucher = {
-      voucherCode: voucherCode,
+      voucherCode: Cypress.env('VoucherCode'),
       category: 'cash_voucher',
       description: 'TEST CASH VOUCHER 2 AJA',
       available: true,
@@ -415,7 +445,7 @@ describe('Show Cash Voucher in Detail Voucher', () => {
         ...Cypress.env('REQUEST_HEADERS')
       },
       body: {
-        voucherCode: voucherCode
+        voucherCode: Cypress.env('VoucherCode')
       }
     }).then((response) => {
       expect(response.status).to.eq(201)
@@ -903,57 +933,92 @@ const baseVoucherCodes = {
   voucherCode2: 'TESTCASH002-QAMilss' // Perbaiki penulisan tanda kutip
 }
 
-const baseVoucherCode1 = baseVoucherCodes.voucherCode1
-const baseVoucherCode2 = baseVoucherCodes.voucherCode2
-function getDynamicVoucherCode1(baseVoucherCode1) {
-  // Dapatkan nomor terakhir untuk voucher pertama dari file JSON di fixtures
+// Definisikan getDynamicVoucherCode di luar hook dan describe
+const voucherProgramCode1 = 'TESTCASH002'
+Cypress.env('voucherProgramCode1', voucherProgramCode1)
+const suffixBase1 = 'QA-JMils'
+const suffixBase2 = 'QA-JMilss'
+
+// Definisikan getDynamicVoucherCode di luar hook dan describe
+function getDynamicVoucherCode1(voucherProgramCode1, suffixBase1, suffixBase2) {
+  // Dapatkan nomor terakhir dari file JSON di fixtures - voucher1
   return cy
     .readFile('cypress/fixtures/multipleCashVoucher.json')
     .then((data) => {
-      let currentNumber = data.lastMultipleVoucherNumber1 || 1
-      const formattedNumber = String(currentNumber).padStart(2, '0') // Tambahkan '0' di depan jika kurang dari 10
-      Cypress.env('VoucherCode1', `${baseVoucherCode1}-${formattedNumber}`)
+      const currentNumber1 = data.lastMultipleVoucherNumber1 || 1
+      const formattedNumber1 = String(currentNumber1).padStart(2, '0') // Tambahkan '0' di depan jika kurang dari 10
+
+      // Voucher 1
+      Cypress.env('suffix1', `${suffixBase1}-${formattedNumber1}`)
+      const voucherCode1 = `${Cypress.env('voucherProgramCode1')}-${Cypress.env('suffix1')}`
+
+      // Voucher 2 (menggunakan nomor dan program yang sama, tapi suffix berbeda)
+      Cypress.env('suffix2', `${suffixBase2}-${formattedNumber1}`)
+      const voucherCode2 = `${Cypress.env('voucherProgramCode1')}-${Cypress.env('suffix2')}`
+
+      // Simpan voucherCode dan nomor terakhir sebagai environment variable
+      Cypress.env('VoucherCode1', voucherCode1)
+      Cypress.env('VoucherCode2', voucherCode2)
+      Cypress.env('currentNumber1', currentNumber1)
 
       // Simpan nomor terbaru ke file JSON untuk iterasi berikutnya
       return cy
         .writeFile('cypress/fixtures/multipleCashVoucher.json', {
-          ...data,
-          lastMultipleVoucherNumber1: currentNumber + 1
+          lastMultipleVoucherNumber1: currentNumber1 + 1
         })
-        .then(() => Cypress.env('VoucherCode1'))
+        .then(() => ({ voucherCode1, voucherCode2 }))
     })
 }
 
-function getDynamicVoucherCode2(baseVoucherCode2) {
-  // Dapatkan nomor terakhir untuk voucher kedua dari file JSON di fixtures
-  return cy
-    .readFile('cypress/fixtures/multipleCashVoucher.json')
-    .then((data) => {
-      let currentNumber = data.lastMultipleVoucherNumber2 || 1
-      const formattedNumber = String(currentNumber).padStart(2, '0') // Tambahkan '0' di depan jika kurang dari 10
-      Cypress.env('VoucherCode2', `${baseVoucherCode2}-${formattedNumber}`)
+let MultiplevoucherCode
+describe('Multiple Voucher Code', () => {
+  it('Generate Voucher Codes', () => {
+    // Menghasilkan kode voucher dinamis sebelum semua tes dijalankan
+    getDynamicVoucherCode1(voucherProgramCode1, suffixBase1, suffixBase2).then(
+      ({ voucherCode1, voucherCode2 }) => {
+        MultiplevoucherCode = [voucherCode1, voucherCode2]
+        const URL_Generate_VOUCHER =
+          URL_PRODUCT + '/admin/voucher/vms/autogenerate'
 
-      // Simpan nomor terbaru ke file JSON untuk iterasi berikutnya
-      return cy
-        .writeFile('cypress/fixtures/multipleCashVoucher.json', {
-          ...data,
-          lastMultipleVoucherNumber2: currentNumber + 1
+        // Menyimpan kode voucher dengan memanggil API
+        cy.api({
+          method: 'POST',
+          url: URL_Generate_VOUCHER,
+          headers: {
+            ...Cypress.env('REQUEST_HEADERS')
+          },
+          body: {
+            vouchers: [
+              {
+                voucher_program_code: Cypress.env('voucherProgramCode1'),
+                card_number: '',
+                voucher_amount: 50000,
+                voucher_value: 50000,
+                code_suffix: Cypress.env('suffix1')
+              },
+              {
+                voucher_program_code: Cypress.env('voucherProgramCode1'),
+                card_number: '',
+                voucher_amount: 191000,
+                voucher_value: 191000,
+                code_suffix: Cypress.env('suffix2')
+              }
+            ]
+          }
+        }).then((response) => {
+          expect(response.status).to.eq(201)
+          const body = response.body
+          expect(body).to.have.property('statusCode', 201)
+
+          cy.log('Generated Voucher Code 1:', Cypress.env('VoucherCode1'))
+          cy.log('Generated Voucher Code 2:', Cypress.env('VoucherCode2'))
+          cy.log('Generated last Number:', Cypress.env('currentNumber1'))
+          cy.log('Suffix 1:', Cypress.env('suffix1'))
+          cy.log('Suffix 2:', Cypress.env('suffix2'))
+          cy.log('Voucher Program Code:', Cypress.env('voucherProgramCode1'))
         })
-        .then(() => Cypress.env('VoucherCode2'))
-    })
-}
-
-//sku:101050290
-describe('Should be able apply Multiple cash voucher', () => {
-  before('Generate Voucher Code', () => {
-    getDynamicVoucherCode1(baseVoucherCode1).then((code1) => {
-      // const voucherCode1 = code1
-      cy.log('Generated Voucher Code 1:', Cypress.env('VoucherCode1'))
-    })
-    getDynamicVoucherCode2(baseVoucherCode2).then((code2) => {
-      // const voucherCode2 = code2
-      cy.log('Generated Voucher Code 2:', Cypress.env('VoucherCode2'))
-    })
+      }
+    )
   })
 
   let RespondataVoucher1
@@ -1046,6 +1111,7 @@ describe('Should be able apply Multiple cash voucher', () => {
       }
     })
   })
+
   let requestBodyCart
   let requestBodyShipment
   let requestBodyAddress
@@ -1403,75 +1469,75 @@ describe('Should be able apply Multiple cash voucher', () => {
     })
   })
 
-  // it('Should be able select payment methode', () => {
-  //   const URL_PRODUCT = Cypress.config('baseUrlProduct')
-  //   const URL_PAYMENT = URL_PRODUCT + '/cart/update-payment'
-  //   const requestBodyPaymentMethode = {
-  //     method: 'shopeepay',
-  //     isInstallment: false,
-  //     token: '',
-  //     installmentTenor: 0,
-  //     isOvo: false,
-  //     ovoNumber: '',
-  //     ovoRetryCount: 0,
-  //     bin_number: '',
-  //     approvalCode: 'string',
-  //     value: Cypress.env('SisaBayar')
-  //   }
-  //   cy.api({
-  //     method: 'PATCH',
-  //     url: URL_PAYMENT,
-  //     headers: {
-  //       ...Cypress.env('REQUEST_HEADERS')
-  //       // Channel: 'web' // Add header Channel
-  //     },
-  //     body: requestBodyPaymentMethode
-  //   }).then((response) => {
-  //     expect(response.status).to.eq(200)
-  //     const body = response.body
-  //     expect(body).to.have.property('statusCode')
-  //     expect(body).to.have.property('message')
-  //     expect(body).to.have.property('data')
-  //     const postDataRespon = body.data
+  // // it('Should be able select payment methode', () => {
+  // //   const URL_PRODUCT = Cypress.config('baseUrlProduct')
+  // //   const URL_PAYMENT = URL_PRODUCT + '/cart/update-payment'
+  // //   const requestBodyPaymentMethode = {
+  // //     method: 'shopeepay',
+  // //     isInstallment: false,
+  // //     token: '',
+  // //     installmentTenor: 0,
+  // //     isOvo: false,
+  // //     ovoNumber: '',
+  // //     ovoRetryCount: 0,
+  // //     bin_number: '',
+  // //     approvalCode: 'string',
+  // //     value: Cypress.env('SisaBayar')
+  // //   }
+  // //   cy.api({
+  // //     method: 'PATCH',
+  // //     url: URL_PAYMENT,
+  // //     headers: {
+  // //       ...Cypress.env('REQUEST_HEADERS')
+  // //       // Channel: 'web' // Add header Channel
+  // //     },
+  // //     body: requestBodyPaymentMethode
+  // //   }).then((response) => {
+  // //     expect(response.status).to.eq(200)
+  // //     const body = response.body
+  // //     expect(body).to.have.property('statusCode')
+  // //     expect(body).to.have.property('message')
+  // //     expect(body).to.have.property('data')
+  // //     const postDataRespon = body.data
 
-  //     Cypress.env(
-  //       'MultiPayment_Name[1]',
-  //       postDataRespon.multiPayments[0].info.name
-  //     )
-  //     Cypress.env(
-  //       'MultiPayment_Value[1]',
-  //       postDataRespon.multiPayments[0].value
-  //     )
-  //     Cypress.env(
-  //       'MultiPayment_Name[2]',
-  //       postDataRespon.multiPayments[1].info.name
-  //     )
-  //     Cypress.env(
-  //       'MultiPayment_Value[2]',
-  //       postDataRespon.multiPayments[1].value
-  //     )
-  //     Cypress.env(
-  //       'MultiPayment_Name[3]',
-  //       postDataRespon.multiPayments[2].info.name
-  //     )
-  //     Cypress.env(
-  //       'MultiPayment_Value[3]',
-  //       postDataRespon.multiPayments[2].value
-  //     )
+  // //     Cypress.env(
+  // //       'MultiPayment_Name[1]',
+  // //       postDataRespon.multiPayments[0].info.name
+  // //     )
+  // //     Cypress.env(
+  // //       'MultiPayment_Value[1]',
+  // //       postDataRespon.multiPayments[0].value
+  // //     )
+  // //     Cypress.env(
+  // //       'MultiPayment_Name[2]',
+  // //       postDataRespon.multiPayments[1].info.name
+  // //     )
+  // //     Cypress.env(
+  // //       'MultiPayment_Value[2]',
+  // //       postDataRespon.multiPayments[1].value
+  // //     )
+  // //     Cypress.env(
+  // //       'MultiPayment_Name[3]',
+  // //       postDataRespon.multiPayments[2].info.name
+  // //     )
+  // //     Cypress.env(
+  // //       'MultiPayment_Value[3]',
+  // //       postDataRespon.multiPayments[2].value
+  // //     )
 
-  //     cy.log('Payment Amount', postDataRespon.paymentAmount)
-  //     cy.log('Payment Methode 1', Cypress.env('MultiPayment_Name[1]'))
-  //     cy.log('Total Payment 1', Cypress.env('MultiPayment_Value[1]'))
-  //     cy.log('Payment Methode 2:', Cypress.env('MultiPayment_Name[2]'))
-  //     cy.log('Total Payment 2', Cypress.env('MultiPayment_Value[2]'))
-  //     cy.log('Payment Methode 3:', Cypress.env('MultiPayment_Name[3]'))
-  //     cy.log('Total Payment 3', Cypress.env('MultiPayment_Value[3]'))
+  // //     cy.log('Payment Amount', postDataRespon.paymentAmount)
+  // //     cy.log('Payment Methode 1', Cypress.env('MultiPayment_Name[1]'))
+  // //     cy.log('Total Payment 1', Cypress.env('MultiPayment_Value[1]'))
+  // //     cy.log('Payment Methode 2:', Cypress.env('MultiPayment_Name[2]'))
+  // //     cy.log('Total Payment 2', Cypress.env('MultiPayment_Value[2]'))
+  // //     cy.log('Payment Methode 3:', Cypress.env('MultiPayment_Name[3]'))
+  // //     cy.log('Total Payment 3', Cypress.env('MultiPayment_Value[3]'))
 
-  //     expect(Cypress.env('MultiPayment_Value[3]'), 'Total Bayar').to.eq(
-  //       Cypress.env('SisaBayar')
-  //     )
-  //   })
-  // })
+  // //     expect(Cypress.env('MultiPayment_Value[3]'), 'Total Bayar').to.eq(
+  // //       Cypress.env('SisaBayar')
+  // //     )
+  // //   })
+  // // })
 
   it('Successfully create order', () => {
     const cart = Cypress.env('Cart')
@@ -1503,19 +1569,19 @@ describe('Should be able apply Multiple cash voucher', () => {
       cy.log('Payment Methode 3', body.multiPayments[2].info.name)
       cy.log('Value Payment Methode 3', body.multiPayments[2].value)
 
-      // expect(body.cartId, 'Cart ID:').to.equal(cart._id)
-      // expect(body.items).to.be.an('array')
-      // expect(body.items.length).to.be.greaterThan(0)
-      // expect(body.items[0].name, 'SKU1 Name').to.equal(Cypress.env('SKU1').name)
-      // expect(body.items[0].qty, 'SKU 1 QTY').to.equal(Cypress.env('SKU1').qty)
-      // expect(body.paymentAmount, 'Payment Amount').to.equal(
-      //   Cypress.env('PaymentAmount')
-      // )
-      // expect(body.vouchers[0].voucherCode, 'Voucher Code sesuai').to.eq(
-      //   Cypress.env('Apply_codeCashVoucher')
-      // )
+      expect(body.cartId, 'Cart ID:').to.equal(cart._id)
+      expect(body.items).to.be.an('array')
+      expect(body.items.length).to.be.greaterThan(0)
+      expect(body.items[0].name, 'SKU1 Name').to.equal(Cypress.env('SKU1').name)
+      expect(body.items[0].qty, 'SKU 1 QTY').to.equal(Cypress.env('SKU1').qty)
+      expect(body.paymentAmount, 'Payment Amount').to.equal(
+        Cypress.env('PaymentAmount')
+      )
+      expect(body.vouchers[0].voucherCode, 'Voucher Code sesuai').to.eq(
+        Cypress.env('Apply_codeCashVoucher')
+      )
     })
   })
-  //hasil jika melalui payment methode error 400 Bad Request -> Order Pending
-  //jika lgsg create order tanpa milih payment methode error 502 Bad Gateway -> Order terbentuk
 })
+//   //hasil jika melalui payment methode error 400 Bad Request -> Order Pending
+//   //jika lgsg create order tanpa milih payment methode error 502 Bad Gateway -> Order terbentuk
