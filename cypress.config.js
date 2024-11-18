@@ -70,7 +70,6 @@ module.exports = defineConfig({
       })
 
       return cloudPlugin(on, config)
-
     },
 
     taskTimeout: 10000,

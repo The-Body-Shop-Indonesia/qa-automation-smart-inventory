@@ -12,7 +12,8 @@ describe('General API Test Group', () => {
       url,
       // headers,
       body: {
-        identifier: Cypress.env('USER_EMAIL'),
+        identifier: Cypress.env('IDENTIFIER2_SDC'),
+        // identifier: Cypress.env('USER_EMAIL'),
         otp: Cypress.env('USER_OTP'),
         pageType: 'Login'
       }
@@ -207,55 +208,133 @@ describe('General API Test Group', () => {
       method: 'GET',
       url,
       headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data).to.haveOwnProperty('partnershipVouchers')
+      // check in partnershipVouchers
+      const data = response.body.data.partnershipVouchers
+      data.slice(0, 3).forEach((partnership) => {
+        expect(partnership).to.haveOwnProperty('voucherCode')
+        expect(partnership).to.haveOwnProperty('title')
+        expect(partnership).to.haveOwnProperty('description')
+        expect(partnership).to.haveOwnProperty('image')
+        expect(partnership).to.haveOwnProperty('tnc')
+        expect(partnership).to.haveOwnProperty('expiryDate')
+        expect(partnership).to.haveOwnProperty('howToUse')
+        expect(partnership).to.haveOwnProperty('bgImgUrl')
+        expect(partnership).to.haveOwnProperty('status')
+        const image = partnership.image
+        if (image != '') {
+          cy.request({
+            method: 'GET',
+            url: image
+          }).then((response) => {
+            expect(response.status, `Should return valid image`, {
+              timeout: 60000
+            }).to.equal(200)
+          })
+        }
+      })
+      const dataActive = response.body.data.activeVouchers
+      dataActive.slice(0, 3).forEach((active) => {
+        expect(active).to.haveOwnProperty('voucherCode')
+        expect(active).to.haveOwnProperty('title')
+        expect(active).to.haveOwnProperty('description')
+        expect(active).to.haveOwnProperty('image')
+        expect(active).to.haveOwnProperty('tnc')
+        expect(active).to.haveOwnProperty('expiryDate')
+        expect(active).to.haveOwnProperty('howToUse')
+        expect(active).to.haveOwnProperty('bgImgUrl')
+        expect(active).to.haveOwnProperty('status')
+        const image = active.image
+        if (image != '') {
+          cy.request({
+            method: 'GET',
+            url: image
+          }).then((response) => {
+            expect(response.status, `Should return valid image`, {
+              timeout: 60000
+            }).to.equal(200)
+          })
+        }
+      })
+      const dataInactive = response.body.data.inactiveVouchers
+      dataInactive.slice(0, 3).forEach((inactive) => {
+        expect(inactive).to.haveOwnProperty('voucherCode')
+        expect(inactive).to.haveOwnProperty('title')
+        expect(inactive).to.haveOwnProperty('description')
+        expect(inactive).to.haveOwnProperty('image')
+        expect(inactive).to.haveOwnProperty('tnc')
+        expect(inactive).to.haveOwnProperty('expiryDate')
+        expect(inactive).to.haveOwnProperty('howToUse')
+        expect(inactive).to.haveOwnProperty('bgImgUrl')
+        expect(inactive).to.haveOwnProperty('status')
+        const image = inactive.image
+        if (image != '') {
+          cy.request({
+            method: 'GET',
+            url: image
+          }).then((response) => {
+            expect(response.status, `Should return valid image`, {
+              timeout: 60000
+            }).to.equal(200)
+          })
+        }
+      })
     })
-      .then((response) => {
-        expect(response.status).to.equal(200)
-        expect(response.body.statusCode).to.equal(200)
-        expect(response.body.data).to.haveOwnProperty('partnershipVouchers')
-        // check in partnershipVouchers
-        const data = response.body.data.partnershipVouchers
-        data.slice(0, 3).forEach((partnership) => {
-          expect(partnership).to.haveOwnProperty('voucherCode')
-          expect(partnership).to.haveOwnProperty('title')
-          expect(partnership).to.haveOwnProperty('description')
-          expect(partnership).to.haveOwnProperty('image')
-          expect(partnership).to.haveOwnProperty('tnc')
-          expect(partnership).to.haveOwnProperty('expiryDate')
-          expect(partnership).to.haveOwnProperty('howToUse')
-          expect(partnership).to.haveOwnProperty('bgImgUrl')
-          expect(partnership).to.haveOwnProperty('status')
-        })
-      })
-      .then((response) => {
-        // check in activeVouchers
-        const data = response.body.data.activeVouchers
-        data.slice(0, 3).forEach((active) => {
-          expect(active).to.haveOwnProperty('voucherCode')
-          expect(active).to.haveOwnProperty('title')
-          expect(active).to.haveOwnProperty('description')
-          expect(active).to.haveOwnProperty('image')
-          expect(active).to.haveOwnProperty('tnc')
-          expect(active).to.haveOwnProperty('expiryDate')
-          expect(active).to.haveOwnProperty('howToUse')
-          expect(active).to.haveOwnProperty('bgImgUrl')
-          expect(active).to.haveOwnProperty('status')
-        })
-      })
-      .then((response) => {
-        // check in inactiveVouchers
-        const data = response.body.data.inactiveVouchers
-        data.slice(0, 3).forEach((inactive) => {
-          expect(inactive).to.haveOwnProperty('voucherCode')
-          expect(inactive).to.haveOwnProperty('title')
-          expect(inactive).to.haveOwnProperty('description')
-          expect(inactive).to.haveOwnProperty('image')
-          expect(inactive).to.haveOwnProperty('tnc')
-          expect(inactive).to.haveOwnProperty('expiryDate')
-          expect(inactive).to.haveOwnProperty('howToUse')
-          expect(inactive).to.haveOwnProperty('bgImgUrl')
-          expect(inactive).to.haveOwnProperty('status')
-        })
-      })
+    // .then((response) => {
+    //   // check in activeVouchers
+    //   const data = response.body.data.activeVouchers
+    //   data.slice(0, 3).forEach((active) => {
+    //     expect(active).to.haveOwnProperty('voucherCode')
+    //     expect(active).to.haveOwnProperty('title')
+    //     expect(active).to.haveOwnProperty('description')
+    //     expect(active).to.haveOwnProperty('image')
+    //     expect(active).to.haveOwnProperty('tnc')
+    //     expect(active).to.haveOwnProperty('expiryDate')
+    //     expect(active).to.haveOwnProperty('howToUse')
+    //     expect(active).to.haveOwnProperty('bgImgUrl')
+    //     expect(active).to.haveOwnProperty('status')
+    //     const image = active.image
+    //     if (image != '') {
+    //       cy.request({
+    //         method: 'GET',
+    //         url: image
+    //       }).then((response) => {
+    //         expect(response.status, `Should return valid image`, {
+    //           timeout: 60000
+    //         }).to.equal(200)
+    //       })
+    //     }
+    //   })
+    // })
+    // .then((response) => {
+    //   // check in inactiveVouchers
+    //   const data = response.body.data.inactiveVouchers
+    //   data.slice(0, 3).forEach((inactive) => {
+    //     expect(inactive).to.haveOwnProperty('voucherCode')
+    //     expect(inactive).to.haveOwnProperty('title')
+    //     expect(inactive).to.haveOwnProperty('description')
+    //     expect(inactive).to.haveOwnProperty('image')
+    //     expect(inactive).to.haveOwnProperty('tnc')
+    //     expect(inactive).to.haveOwnProperty('expiryDate')
+    //     expect(inactive).to.haveOwnProperty('howToUse')
+    //     expect(inactive).to.haveOwnProperty('bgImgUrl')
+    //     expect(inactive).to.haveOwnProperty('status')
+    //     const image = inactive.image
+    //     if (image != '') {
+    //       cy.request({
+    //         method: 'GET',
+    //         url: image
+    //       }).then((response) => {
+    //         expect(response.status, `Should return valid image`, {
+    //           timeout: 60000
+    //         }).to.equal(200)
+    //       })
+    //     }
+    //   })
+    // })
   })
 
   // is the price right?
