@@ -8,7 +8,7 @@ describe('Create cart', function () {
     const pin_emp = Cypress.env('PIN_BXC')
     const store_code = Cypress.env('STORE_CODE_BXC')
 
-    cy.api({
+    cy.request({
       method: 'POST',
       url,
       body: {
@@ -34,12 +34,13 @@ describe('Create cart', function () {
           Authorization: 'Bearer ' + employeeToken,
           channel: 'pos'
         })
+        Cypress.env('EMP_TOKEN', employeeToken)
       })
   })
 
-  it('Check shift', () => {
+  before(() => {
     const url = URL_USER + '/employee/shift'
-    cy.api({
+    cy.request({
       method: 'GET',
       url,
       headers: Cypress.env('REQUEST_HEADERS'),
@@ -55,11 +56,11 @@ describe('Create cart', function () {
       })
   })
 
-  it('Close shift', () => {
+  before(() => {
     const body = Cypress.env('RESPONSE_BODY')
     if (body.statusCode === 200 && body.data.shift.status === 'expired') {
       const url = URL_USER + '/employee/shift/close'
-      cy.api({
+      cy.request({
         method: 'POST',
         url,
         headers: Cypress.env('REQUEST_HEADERS'),
@@ -78,11 +79,11 @@ describe('Create cart', function () {
     }
   })
 
-  it('Open shift', () => {
+  before(() => {
     const body = Cypress.env('RESPONSE_BODY')
     if (body.statusCode === 201) {
       const url = URL_USER + '/employee/shift/open'
-      cy.api({
+      cy.request({
         method: 'POST',
         url,
         headers: Cypress.env('REQUEST_HEADERS'),
@@ -92,7 +93,7 @@ describe('Create cart', function () {
       })
     } else if (body.statusCode === 400) {
       const url = URL_USER + '/employee/shift/open'
-      cy.api({
+      cy.request({
         method: 'POST',
         url,
         headers: Cypress.env('REQUEST_HEADERS'),
@@ -156,7 +157,7 @@ describe('General API Test Assign Staff to cart', function () {
     })
   })
 
-  it('Should return error if request without token', () => {
+  it('Should return error if request token is empty', () => {
     const invalidToken = ''
     const cust_id = Cypress.env('CUSTOMER_ID')
     const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
@@ -177,6 +178,114 @@ describe('General API Test Assign Staff to cart', function () {
       expect(body.message, 'Message should be Unauthorized').to.equal(
         'Unauthorized'
       )
+    })
+  })
+
+  it('Should return error if request token is undefined', () => {
+    const invalidToken = undefined
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: { Authorization: invalidToken },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if request token is null', () => {
+    const invalidToken = null
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: { Authorization: invalidToken },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if request channel is empty', () => {
+    const invalidChannel = ''
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: { Authorization: Cypress.env('EMP_TOKEN'), channel:  invalidChannel},
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+    })
+  })
+
+  it('Should return error if request channel is null', () => {
+    const invalidChannel = null
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: { Authorization: Cypress.env('EMP_TOKEN'), channel:  invalidChannel},
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+    })
+  })
+
+  it('Should return error if request channel is undefined', () => {
+    const invalidChannel = undefined
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: { Authorization: Cypress.env('EMP_TOKEN'), channel:  invalidChannel},
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
     })
   })
 })
@@ -227,6 +336,46 @@ describe('API Test Group Assign Staff to cart', function () {
     })
   })
 
+  it('Should return error if customer ID is undefined', () => {
+    const invalidCustID = undefined
+    const url = URL_PRODUCT + `/employee/cart/${invalidCustID}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 400').to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 400').to.equal(400)
+    })
+  })
+
+  it('Should return error if customer ID is null', () => {
+    const invalidCustID = null
+    const url = URL_PRODUCT + `/employee/cart/${invalidCustID}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 400').to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 400').to.equal(400)
+    })
+  })
+
   it('Should return error if NIK is invalid', () => {
     const cust_id = Cypress.env('CUSTOMER_ID')
     const invalidNIK = '12345'
@@ -245,36 +394,124 @@ describe('API Test Group Assign Staff to cart', function () {
       expect(body).to.haveOwnProperty('statusCode')
       expect(body).to.haveOwnProperty('message')
       expect(body.statusCode, 'Response code should be 400').to.equal(400)
-      expect(body.message, 'Error should be Failed to get employee').to.equal(
+      expect(body.message, 'Message should be Failed to get employee').to.equal(
         'Failed to get employee'
       )
     })
   })
 
-  //karena crosstore bisa
-  //   it('Should return error if NIK is from another store', () => {
-  //     const cust_id = Cypress.env('CUSTOMER_ID')
-  //     const invalidNIK = '00012'
-  //     const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
-  //     cy.api({
-  //       method: 'POST',
-  //       url,
-  //       body: {
-  //         nik: invalidNIK
-  //       },
-  //       headers: Cypress.env('REQUEST_HEADERS'),
-  //       failOnStatusCode: false
-  //     }).should((response) => {
-  //       expect(response.status, 'Response status should be 400').to.equal(400)
-  //       const body = response.body
-  //       expect(body).to.haveOwnProperty('statusCode')
-  //       expect(body).to.haveOwnProperty('message')
-  //       expect(body.statusCode, 'Response code should be 400').to.equal(400)
-  //       expect(body.message, 'Error should be Failed to get employee').to.equal(
-  //         'Failed to get employee'
-  //       )
-  //     })
-  //   })
+  //karena crosstore employee
+    it('Should return error if NIK is from another store (Cross Store Employee)', () => {
+      ///employee/nik/{nik}
+      const nik_emp_artos = Cypress.env('EMP_NIK')
+      const url_emp = URL_USER + `/employee/nik/${nik_emp_artos}`
+      cy.api({
+        method: 'GET',
+        url: url_emp,
+        headers: Cypress.env('REQUEST_HEADERS')
+      }).then((response) => {
+        const data = response.body.data
+        Cypress.env('OTHER_EMP', data)
+        
+        const cust_id = Cypress.env('CUSTOMER_ID')
+        const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+        cy.api({
+          method: 'POST',
+          url,
+          body: {
+            nik: nik_emp_artos
+          },
+          headers: Cypress.env('REQUEST_HEADERS')
+        }).should((response) => {
+          expect(response.status, 'Response status should be 201').to.equal(201)
+          const body = response.body
+          const assign_emp = body.data.assignTo
+          expect(body).to.haveOwnProperty('statusCode')
+          expect(body).to.haveOwnProperty('message')
+          expect(assign_emp).to.haveOwnProperty('originStoreCode')
+          expect(assign_emp).to.haveOwnProperty('originStoreName')
+          expect(assign_emp).to.haveOwnProperty('isCrossStoreEmployee')
+          expect(body.statusCode, 'Response code should be 201').to.equal(201)
+          expect(assign_emp.nik, `NIK employee should be ${nik_emp_artos}`).to.equal(nik_emp_artos)
+          expect(assign_emp.name, `Name employee should be ${Cypress.env('OTHER_EMP').name}`).to.equal(Cypress.env('OTHER_EMP').name)
+          expect(assign_emp.isCrossStoreEmployee, 'Cross Store Employee should be TRUE').to.equal(true)
+          expect(assign_emp.originStoreCode, `Origin Store Code should be ${Cypress.env('OTHER_EMP').storeCode}`).to.equal(Cypress.env('OTHER_EMP').storeCode)
+          expect(assign_emp.originStoreName, `Origin Store Name should be ${Cypress.env('OTHER_EMP').storeName}`).to.equal(Cypress.env('OTHER_EMP').storeName)
+        })
+      })
+    })
+
+      it('Should return error if NIK is empty', () => {
+      const cust_id = Cypress.env('CUSTOMER_ID')
+      const invalidNIK = ''
+      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+      cy.api({
+        method: 'POST',
+        url,
+        body: {
+          nik: invalidNIK
+        },
+        headers: Cypress.env('REQUEST_HEADERS'),
+        failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status, 'Response status should be 400').to.equal(400)
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+        expect(body).to.haveOwnProperty('error')
+        expect(body.statusCode, 'Response code should be 400').to.equal(400)
+        expect(body.message[0], 'Message should be nik should not be empty').to.equal(
+          'nik should not be empty'
+        )
+        expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
+      })
+    })
+
+    it('Should return error if NIK is undefined', () => {
+      const cust_id = Cypress.env('CUSTOMER_ID')
+      const invalidNIK = undefined
+      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+      cy.api({
+        method: 'POST',
+        url,
+        body: {
+          nik: invalidNIK
+        },
+        headers: Cypress.env('REQUEST_HEADERS'),
+        failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status, 'Response status should be 400').to.equal(400)
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+        expect(body).to.haveOwnProperty('error')
+        expect(body.statusCode, 'Response code should be 400').to.equal(400)
+        expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
+      })
+    })
+
+    it('Should return error if NIK is null', () => {
+      const cust_id = Cypress.env('CUSTOMER_ID')
+      const invalidNIK = null
+      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+      cy.api({
+        method: 'POST',
+        url,
+        body: {
+          nik: invalidNIK
+        },
+        headers: Cypress.env('REQUEST_HEADERS'),
+        failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status, 'Response status should be 400').to.equal(400)
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+        expect(body).to.haveOwnProperty('error')
+        expect(body.statusCode, 'Response code should be 400').to.equal(400)
+        expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
+      })
+    })
 
   it('Should be able to access the API with valid token', () => {
     const cust_id = Cypress.env('CUSTOMER_ID')
@@ -289,7 +526,12 @@ describe('API Test Group Assign Staff to cart', function () {
     }).should((response) => {
       expect(response.status, 'Response status should be 201').to.equal(201)
       const body = response.body
+      const assign_emp = body.data.assignTo
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
       expect(body.statusCode, 'Response code should be 201').to.equal(201)
+      expect(assign_emp.nik, `NIK employee should be ${nik_employee}`).to.equal(nik_employee)
+      expect(assign_emp.isCrossStoreEmployee, 'isCrossStoreEmployee should be FALSE').to.equal(false)
     })
   })
 
@@ -307,8 +549,4 @@ describe('API Test Group Assign Staff to cart', function () {
       expect(body.data, 'Data should be Cart deleted').to.equal('Cart deleted')
     })
   })
-  /*
-     2. NIK store lain
-     3. NIK kosong
-     */
 })

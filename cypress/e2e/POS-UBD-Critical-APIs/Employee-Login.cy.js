@@ -97,6 +97,99 @@ describe('API Test Group Employee Login', function () {
     })
   })
 
+  //tidak terbatas hanya number karena formatnya string
+  it('Should return error if login with invalid format Store Code', () => {
+    const invalid_storeCode = 'AB123'
+
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee,
+        storeCode: invalid_storeCode,
+        pin: pin_emp
+      },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode).to.equal(400)
+      expect(
+        body.message,
+        'Message should be NIK dan store id tidak sesuai'
+      ).to.equal('NIK dan store id tidak sesuai')
+    })
+  })
+
+  it(`Should return error if login with other than Store Code ${store_code}`, () => {
+    const invalid_storeCode = '14036'
+
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee,
+        storeCode: invalid_storeCode,
+        pin: pin_emp
+      },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode).to.equal(400)
+      expect(
+        body.message,
+        'Message should be NIK dan store id tidak sesuai'
+      ).to.equal('NIK dan store id tidak sesuai')
+    })
+  })
+
+  it('Should return error if login with undefined Store Code', () => {
+    const invalid_storeCode = undefined
+
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee,
+        storeCode: invalid_storeCode,
+        pin: pin_emp
+      },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode).to.equal(400)
+    })
+  })
+
+  it('Should return error if login with null Store Code', () => {
+    const invalid_storeCode = null
+
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: nik_employee,
+        storeCode: invalid_storeCode,
+        pin: pin_emp
+      },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode).to.equal(400)
+    })
+  })
+
   it('Should return error if login with invalid pin', () => {
     const invalid_pin = '0099'
 

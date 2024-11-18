@@ -30,8 +30,7 @@ describe('API Test Group Staff List', function () {
         const employeeToken = response.body.data.accessToken
         const store_name = response.body.data.user.storeName
         Cypress.env('REQUEST_HEADERS', {
-          Authorization: 'Bearer ' + employeeToken,
-          channel: 'pos'
+          Authorization: 'Bearer ' + employeeToken
         })
         Cypress.env('STORE_NAME', store_name)
       })
@@ -78,6 +77,47 @@ describe('API Test Group Staff List', function () {
     })
   })
 
+  it('Should return error if request has undefined token', () => {
+    const invalidToken = undefined
+    const url = URL_USER + '/employee'
+    cy.api({
+      method: 'GET',
+      url,
+      headers: { Authorization: invalidToken },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if request has null token', () => {
+    const invalidToken = null
+    const url = URL_USER + '/employee'
+    cy.api({
+      method: 'GET',
+      url,
+      headers: { Authorization: invalidToken },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  //nda valid kalo ada cross store employee
   it(`Should be able to show staff list on store ${store_code}`, () => {
     const url = URL_USER + '/employee'
     cy.api({
@@ -117,13 +157,43 @@ describe('API Test Group Staff List', function () {
         'All data has status property'
       ).to.equal(true)
       expect(
-        Cypress._.every(data, ['storeCode', store_code]),
-        `All data has storeCode ${store_code}`
-      ).to.deep.equal(true)
+        Cypress._.every(data, (data) => data.hasOwnProperty('isMutation')),
+        'All data has isMutation property'
+      ).to.equal(true)
+      //error karena ada cross store employee
+      // expect(
+      //   Cypress._.every(data, ['storeCode', store_code]),
+      //   `All data has storeCode ${store_code}`
+      // ).to.deep.equal(true)
+      // expect(
+      //   Cypress._.every(data, ['storeName', Cypress.env('STORE_NAME')]),
+      //   `All data has storeName ${Cypress.env('STORE_NAME')}`
+      // ).to.deep.equal(true)
+      //difilter dulu
+      const isMutationTrue = data.filter(item => item.isMutation === true);
+      const isMutationFalse = data.filter(item => item.isMutation === false);
+      console.log(isMutationTrue)
       expect(
-        Cypress._.every(data, ['storeName', Cypress.env('STORE_NAME')]),
-        `All data has storeCode ${Cypress.env('STORE_NAME')}`
-      ).to.deep.equal(true)
+        Cypress._.every(isMutationFalse, ['storeCode', store_code]),
+        `If isMutation is FALSE, all data has storeCode ${store_code}`
+      ).to.equal(true)
+      expect(
+        Cypress._.every(isMutationFalse, ['storeName', Cypress.env('STORE_NAME')]),
+        `If isMutation is FALSE, all data has storeName ${Cypress.env('STORE_NAME')}`
+      ).to.equal(true)
+
+      if(isMutationTrue.length > 0) {
+        expect(
+          Cypress._.every(isMutationTrue, ['searchBy', nik_employee]),
+          `If isMutation is TRUE, all data has searchBy ${nik_employee}`
+        ).to.equal(true)
+        expect(
+          Cypress._.every(isMutationTrue, ['searchByStoreCode', store_code]),
+          `If isMutation is TRUE, all data has searchByStoreCode ${store_code}`
+        ).to.equal(true)
+      }
     })
   })
 })
+
+//tambah if untuk isMutation false dan true??
