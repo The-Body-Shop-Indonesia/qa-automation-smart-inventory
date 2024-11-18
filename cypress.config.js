@@ -38,7 +38,6 @@ module.exports = defineConfig({
             const client = redis.createClient({
               url: process.env.BASEURLREDISDEV
             })
-
             client
               .connect()
               .then(() => {
@@ -70,7 +69,6 @@ module.exports = defineConfig({
       })
 
       return cloudPlugin(on, config)
-
     },
 
     taskTimeout: 10000,
