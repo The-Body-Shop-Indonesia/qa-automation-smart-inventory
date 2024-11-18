@@ -126,6 +126,7 @@ describe('Pagination Test Group', () => {
       })
       .should((response) => {
         const data = response.body.data
+        expect(data.docs.length, `Docs length data should be ${limit}`).to.equal(limit)
         expect(data.page).to.equal(page)
         expect(data.limit).to.eq(limit)
         expect(data.hasPrevPage).to.equal(false)
@@ -142,11 +143,11 @@ describe('Pagination Test Group', () => {
       headers: Cypress.env('REQUEST_HEADERS')
     }).should((response) => {
       const data = response.body.data
+      expect(data.docs.length, `Docs length data should be ${limit1}`).to.equal(limit1)
       expect(data.page).to.equal(page1)
       expect(data.limit).to.eq(limit1)
       expect(data.hasPrevPage).to.equal(false)
       expect(data.prevPage).to.equal(null)
-      expect(data.docs.length).to.equal(limit1)
     })
 
     const page2 = 1
@@ -157,11 +158,11 @@ describe('Pagination Test Group', () => {
       headers: Cypress.env('REQUEST_HEADERS')
     }).should((response) => {
       const data = response.body.data
+      expect(data.docs.length, `Docs length data should be ${limit2}`).to.equal(limit2)
       expect(data.page).to.equal(page2)
       expect(data.limit).to.eq(limit2)
       expect(data.hasPrevPage).to.equal(false)
       expect(data.prevPage).to.equal(null)
-      expect(data.docs.length).to.equal(limit2)
     })
   })
 })

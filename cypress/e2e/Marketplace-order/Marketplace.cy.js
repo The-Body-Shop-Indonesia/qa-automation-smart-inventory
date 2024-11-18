@@ -9,8 +9,8 @@ let sku_array = []
 
 // Add Product A (quantity: 2)
 const qty_sku_1 = 2
-const sku_product_1 = '152011010'
-const sku_1 = Array(qty_sku_1).fill([sku_product_1, 199000, 10000])
+const sku_product_1 = '101060473'
+const sku_1 = Array(qty_sku_1).fill([sku_product_1, 179000, 10000])
 
 const qty_sku_2 = 2
 const sku_product_2 = '112520870'

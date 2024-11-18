@@ -8,7 +8,7 @@ describe('General API Test Group Create Cart', function () {
     const store_code = Cypress.env('STORE_CODE_BXC')
     const nik_employee = Cypress.env('NIK_BXC')
 
-    cy.api({
+    cy.request({
       method: 'POST',
       url,
       body: {
@@ -34,12 +34,13 @@ describe('General API Test Group Create Cart', function () {
           Authorization: 'Bearer ' + employeeToken,
           channel: 'pos'
         })
+        Cypress.env('EMP_TOKEN', employeeToken)
       })
   })
 
-  it('Check shift', () => {
+  before(() => {
     const url = URL_USER + '/employee/shift'
-    cy.api({
+    cy.request({
       method: 'GET',
       url,
       headers: Cypress.env('REQUEST_HEADERS'),
@@ -55,11 +56,11 @@ describe('General API Test Group Create Cart', function () {
       })
   })
 
-  it('Close shift', () => {
+  before(() => {
     const body = Cypress.env('RESPONSE_BODY')
     if (body.statusCode === 200 && body.data.shift.status === 'expired') {
       const url = URL_USER + '/employee/shift/close'
-      cy.api({
+      cy.request({
         method: 'POST',
         url,
         headers: Cypress.env('REQUEST_HEADERS'),
@@ -78,11 +79,11 @@ describe('General API Test Group Create Cart', function () {
     }
   })
 
-  it('Open shift', () => {
+  before(() => {
     const body = Cypress.env('RESPONSE_BODY')
     if (body.statusCode === 201) {
       const url = URL_USER + '/employee/shift/open'
-      cy.api({
+      cy.request({
         method: 'POST',
         url,
         headers: Cypress.env('REQUEST_HEADERS'),
@@ -108,7 +109,7 @@ describe('General API Test Group Create Cart', function () {
   })
 
   it('Should return error if request invalid token', () => {
-    const { request: mockRequest, response: mockResponse } =
+    const { request: mockRequest } =
       require('../../fixtures/generators').createPublicCartPayload_14160()
     const invalidToken =
       'Bearer xyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJadF9fZHV4a2daTC01Q01lZTFqSjhFS2tWczJRSDJVdE1QNGZ5OENqM1pFIn0.eyJleHAiOjE3Mjc5MjI1NzgsImlhdCI6MTcyNzgzNjE3OCwianRpIjoiMzVjNjNmYzAtNzc4OC00NzQ1LWJkZDgtMTM2NjMwZmUyMTgwIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5zaXQudGJzZ3JvdXAuY28uaWQvcmVhbG1zL3Ricy1pY2FydXMiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiZGNlY2UyNzEtZWJkMi00ZjU2LWE2ZmYtYWVlZjFkMDhiODM4IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGJzLWFwcCIsInNlc3Npb25fc3RhdGUiOiIwODBmNmZmYy1kZDA2LTRmYTQtOTBhNy1iM2ZjZmEwNTg0NGMiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtdGJzLWljYXJ1cyIsInN1cGVyX2FkbWluIiwib2ZmbGluZV9hY2Nlc3MiLCJhcHAtYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjA4MGY2ZmZjLWRkMDYtNGZhNC05MGE3LWIzZmNmYTA1ODQ0YyIsInVpZCI6ImRjZWNlMjcxLWViZDItNGY1Ni1hNmZmLWFlZWYxZDA4YjgzOCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkFkbWluIFRCUyIsInByZWZlcnJlZF91c2VybmFtZSI6ImFkbWluLXRicyIsImdpdmVuX25hbWUiOiJBZG1pbiIsImZhbWlseV9uYW1lIjoiVEJTIiwiZW1haWwiOiJhZG1pbi10YnNAdGhlYm9keXNob3AuY28uaWQifQ.jd6JJqHV0BVOCP7-lEWgfY1shgWuclMK-5YAUym4JTNnNtflHFyk4eVTxBe9OcBsqSgFkGaI3GER7Hi--XikKaT-aMYp4OO8oleiD0lPlwYV_c-GBZ1Ig5_SCsSxr46llVuTZb9tVqNZW33vygcz58IKVi4wn45_aL_lJTZnOM49-rUedA2a650jiipuhHXqeA4Q_9k_73SDBJYozQKSkJwd6noEiBbDyalGf_JYZEBKLL-doWqKxH2-B518lKwVIQ9ii4mglGE7Y2dEOAdG6NDIUMpmxF5SNuDbATYxCFvtvdQxQ2J2zLwxQxSYT1zuuecjN5131XYv9uYFtQkTSw'
@@ -131,8 +132,8 @@ describe('General API Test Group Create Cart', function () {
     })
   })
 
-  it('Should return error if request without token', () => {
-    const { request: mockRequest, response: mockResponse } =
+  it('Should return error if request token is empty', () => {
+    const { request: mockRequest } =
       require('../../fixtures/generators').createPublicCartPayload_14160()
     const invalidToken = ''
     const url = URL_PRODUCT + '/employee/cart/create'
@@ -153,10 +154,125 @@ describe('General API Test Group Create Cart', function () {
       )
     })
   })
+
+  it('Should return error if request token is undefined', () => {
+    const { request: mockRequest } =
+      require('../../fixtures/generators').createPublicCartPayload_14160()
+    const invalidToken = undefined
+    const url = URL_PRODUCT + '/employee/cart/create'
+    cy.api({
+      method: 'POST',
+      url,
+      body: mockRequest,
+      headers: { Authorization: invalidToken },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if request token is null', () => {
+    const { request: mockRequest } =
+      require('../../fixtures/generators').createPublicCartPayload_14160()
+    const invalidToken = null
+    const url = URL_PRODUCT + '/employee/cart/create'
+    cy.api({
+      method: 'POST',
+      url,
+      body: mockRequest,
+      headers: { Authorization: invalidToken },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 401').to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if channel is empty', () => {
+    const url = URL_PRODUCT + '/employee/cart/create'
+    const invalidChannel = ""
+    const { request: mockRequest } =
+      require('../../fixtures/generators').createPublicCartPayload_14160()
+    cy.api({
+      method: 'POST',
+      url,
+      body: mockRequest,
+      headers: { Authorization: Cypress.env('EMP_TOKEN') ,channel: invalidChannel },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if channel is null', () => {
+    const url = URL_PRODUCT + '/employee/cart/create'
+    const invalidChannel = null
+    const { request: mockRequest } =
+      require('../../fixtures/generators').createPublicCartPayload_14160()
+    cy.api({
+      method: 'POST',
+      url,
+      body: mockRequest,
+      headers: { Authorization: Cypress.env('EMP_TOKEN') ,channel: invalidChannel },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
+
+  it('Should return error if channel is undefined', () => {
+    const url = URL_PRODUCT + '/employee/cart/create'
+    const invalidChannel = undefined
+    const { request: mockRequest } =
+      require('../../fixtures/generators').createPublicCartPayload_14160()
+    cy.api({
+      method: 'POST',
+      url,
+      body: mockRequest,
+      headers: { Authorization: Cypress.env('EMP_TOKEN') ,channel: invalidChannel },
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(401)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body.statusCode, 'Response code should be 401').to.equal(401)
+      expect(body.message, 'Message should be Unauthorized').to.equal(
+        'Unauthorized'
+      )
+    })
+  })
 })
 
 describe('API Create Cart PUBLIC section', function () {
-  it('Should return error make public cart', () => {
+  it('Should return error if name is empty', () => {
     const url = URL_PRODUCT + '/employee/cart/create'
     cy.api({
       method: 'POST',
@@ -182,6 +298,84 @@ describe('API Create Cart PUBLIC section', function () {
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Status code should be 400').to.equal(400)
+      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+    })
+  })
+  
+  it('Should return error if name is undefined', () => {
+    const url = URL_PRODUCT + '/employee/cart/create'
+    const first_name = undefined
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        isGuest: true,
+        firstName: first_name,
+        lastName: '',
+        cardNumber: '',
+        nik: '',
+        familyNumber: '',
+        isFamily: false,
+        customerGroup: '',
+        image: '',
+        isScanner: false,
+        isLapsed: true,
+        isReactivated: true,
+        isIcarusAppUser: true,
+        autoEnroll: true,
+        autoEnrollFrom: 'string'
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Status code should be 400').to.equal(400)
+      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+    })
+  })
+
+  it('Should return error if name is null', () => {
+    const url = URL_PRODUCT + '/employee/cart/create'
+    const first_name = undefined
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        isGuest: true,
+        firstName: null,
+        lastName: '',
+        cardNumber: '',
+        nik: '',
+        familyNumber: '',
+        isFamily: false,
+        customerGroup: '',
+        image: '',
+        isScanner: false,
+        isLapsed: true,
+        isReactivated: true,
+        isIcarusAppUser: true,
+        autoEnroll: true,
+        autoEnrollFrom: 'string'
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status).to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Status code should be 400').to.equal(400)
+      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
     })
   })
 
@@ -281,7 +475,7 @@ describe('API Create Cart PUBLIC section', function () {
 })
 
 describe('API Create Cart MEMBER section', function () {
-  it('Should return error make member cart', () => {
+  it('Should return error if name and cardNumber are empty', () => {
     const url = URL_PRODUCT + '/employee/cart/create'
     cy.api({
       method: 'POST',
@@ -307,6 +501,178 @@ describe('API Create Cart MEMBER section', function () {
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status, 'Response status should be 400').to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Status code should be 400').to.equal(400)
+      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+    })
+  })
+  
+  // berhasil walopun pake card number asal (?)
+  // it('Should return error if cardNumber invalid', () => {
+  //   const card_number = Cypress.env('CARD_NUMBER')
+  //   const invalidCardNumber = '50000238191000000'
+  //   const url_cus =
+  //     URL_USER + '/employee/detail-member?cardNumber=' + card_number
+  //   const url = URL_PRODUCT + '/employee/cart/create'
+
+  //   cy.api({
+  //     method: 'POST',
+  //     url: url_cus,
+  //     headers: Cypress.env('REQUEST_HEADERS')
+  //   }).then((cust_response) => {
+  //     const first_name = cust_response.body.data.firstName
+  //     const last_name = cust_response.body.data.lastName
+  //     const currentTier = cust_response.body.data.currentTier.code
+  //     const currentTierImg = cust_response.body.data.currentTier.image
+
+  //     Cypress.env('FIRST_NAME', first_name)
+  //     Cypress.env('LAST_NAME', last_name)
+  //     Cypress.env('CUST_TIER', currentTier)
+  //     Cypress.env('CUST_IMG', currentTierImg)
+
+  //     cy.api({
+  //       method: 'POST',
+  //       url,
+  //       headers: Cypress.env('REQUEST_HEADERS'),
+  //       body: {
+  //         isGuest: false,
+  //         firstName: Cypress.env('FIRST_NAME'),
+  //         lastName: Cypress.env('LAST_NAME'),
+  //         cardNumber: invalidCardNumber,
+  //         nik: '',
+  //         familyNumber: '',
+  //         isFamily: false,
+  //         customerGroup: Cypress.env('CUST_TIER'),
+  //         image: Cypress.env('CUST_IMG'),
+  //         isScanner: false,
+  //         isLapsed: true,
+  //         isReactivated: true,
+  //         isIcarusAppUser: true,
+  //         autoEnroll: true,
+  //         autoEnrollFrom: 'string'
+  //       }
+  //     })
+  //       .should((response) => {
+  //         expect(response.status, 'Response code should be 201').to.equal(201)
+  //         const data = response.body.data
+  //       })
+  //   })
+  // })
+
+  it('Should return error if cardNumber is null', () => {
+    const card_number = Cypress.env('CARD_NUMBER')
+    const invalidCardNumber = null
+    const url_cus =
+      URL_USER + '/employee/detail-member?cardNumber=' + card_number
+    const url = URL_PRODUCT + '/employee/cart/create'
+
+    cy.api({
+      method: 'POST',
+      url: url_cus,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).then((cust_response) => {
+      const first_name = cust_response.body.data.firstName
+      const last_name = cust_response.body.data.lastName
+      const currentTier = cust_response.body.data.currentTier.code
+      const currentTierImg = cust_response.body.data.currentTier.image
+
+      Cypress.env('FIRST_NAME', first_name)
+      Cypress.env('LAST_NAME', last_name)
+      Cypress.env('CUST_TIER', currentTier)
+      Cypress.env('CUST_IMG', currentTierImg)
+
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        body: {
+          isGuest: false,
+          firstName: Cypress.env('FIRST_NAME'),
+          lastName: Cypress.env('LAST_NAME'),
+          cardNumber: invalidCardNumber,
+          nik: '',
+          familyNumber: '',
+          isFamily: false,
+          customerGroup: Cypress.env('CUST_TIER'),
+          image: Cypress.env('CUST_IMG'),
+          isScanner: false,
+          isLapsed: true,
+          isReactivated: true,
+          isIcarusAppUser: true,
+          autoEnroll: true,
+          autoEnrollFrom: 'string'
+        },
+        failOnStatusCode: false
+      })
+        .should((response) => {
+          expect(response.status, 'Response code should be 400').to.equal(400)
+          const body = response.body
+          expect(body).to.haveOwnProperty('statusCode')
+          expect(body).to.haveOwnProperty('message')
+          expect(body).to.haveOwnProperty('error')
+          expect(body.statusCode, 'Status code should be 400').to.equal(400)
+          expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+        })
+    })
+  })
+
+  it('Should return error if cardNumber is undefined', () => {
+    const card_number = Cypress.env('CARD_NUMBER')
+    const invalidCardNumber = undefined
+    const url_cus =
+      URL_USER + '/employee/detail-member?cardNumber=' + card_number
+    const url = URL_PRODUCT + '/employee/cart/create'
+
+    cy.api({
+      method: 'POST',
+      url: url_cus,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).then((cust_response) => {
+      const first_name = cust_response.body.data.firstName
+      const last_name = cust_response.body.data.lastName
+      const currentTier = cust_response.body.data.currentTier.code
+      const currentTierImg = cust_response.body.data.currentTier.image
+
+      Cypress.env('FIRST_NAME', first_name)
+      Cypress.env('LAST_NAME', last_name)
+      Cypress.env('CUST_TIER', currentTier)
+      Cypress.env('CUST_IMG', currentTierImg)
+
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        body: {
+          isGuest: false,
+          firstName: Cypress.env('FIRST_NAME'),
+          lastName: Cypress.env('LAST_NAME'),
+          cardNumber: invalidCardNumber,
+          nik: '',
+          familyNumber: '',
+          isFamily: false,
+          customerGroup: Cypress.env('CUST_TIER'),
+          image: Cypress.env('CUST_IMG'),
+          isScanner: false,
+          isLapsed: true,
+          isReactivated: true,
+          isIcarusAppUser: true,
+          autoEnroll: true,
+          autoEnrollFrom: 'string'
+        },
+        failOnStatusCode: false
+      })
+        .should((response) => {
+          expect(response.status, 'Response code should be 400').to.equal(400)
+          const body = response.body
+          expect(body).to.haveOwnProperty('statusCode')
+          expect(body).to.haveOwnProperty('message')
+          expect(body).to.haveOwnProperty('error')
+          expect(body.statusCode, 'Status code should be 400').to.equal(400)
+          expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+        })
     })
   })
 
