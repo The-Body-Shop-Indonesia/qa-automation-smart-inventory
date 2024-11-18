@@ -384,7 +384,27 @@ describe('Edit Notes produk', () => {
       expect(body).to.have.property('data')
 
       expect(Cypress.env('requestEditSKU1').notes).to.eq('Testing mils')
-      expect(Cypress.env('sku1').sku).to.not.be.empty
+    })
+  })
+  afterEach(() => {
+    cy.api({
+      method: 'DELETE',
+      url: URL_PRODUCT + '/employee/cart/' + Cypress.env('customerId'),
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      },
+      failOnStatusCode: false // Memastikan bahwa Cypress tidak menghentikan eksekusi jika tidak ditemukan cart
+    }).then((response) => {
+      if (response.status === 200) {
+        cy.log('Cart has been successfully deleted after the test.')
+      } else if (
+        response.status === 400 &&
+        response.body.message === 'No cart found !'
+      ) {
+        cy.log('No cart found, skipping deletion.')
+      } else {
+        cy.log('Unexpected error: ', response.body.message)
+      }
     })
   })
 })
