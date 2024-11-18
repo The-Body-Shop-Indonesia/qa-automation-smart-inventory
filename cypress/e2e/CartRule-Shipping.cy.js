@@ -436,6 +436,17 @@ describe('Customer checkout product', () => {
       headers: Cypress.env('REQUEST_HEADERS_USER')
     }).then((response) => {
       expect(response.status).to.equal(200)
+      // applied cart rule
+      const appliedcartRule = response.body.data.cartRuleApplied
+      const cartRuleId = Cypress.env('CARTRULE_DETAILS')._id
+      const dataRule = []
+      appliedcartRule.forEach((cartRule) => {
+        const id = cartRule._id
+        if (id === cartRuleId) {
+          dataRule.push(id)
+        }
+      })
+      // payment details
       const paymentDetails = response.body.data.paymentDetails
       const subtotal = Cypress.env('totalAmount')
       const shippingFee = Cypress.env('SHIPPING_FEE')
@@ -457,12 +468,1319 @@ describe('Customer checkout product', () => {
         channelArray.includes(omni_trx_type)
       ) {
         expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should applied`
+        ).to.greaterThan(0)
+        expect(
           paymentDetails[3].total,
           `Shipping discount should be ${shippingDiscount}`
         ).to.equal(shippingDiscount)
         var total = subtotal + shippingFee + shippingDiscount
       } else {
         var total = subtotal + shippingFee
+      }
+      expect(paymentDetails[12].total, `Total should be ${total}`).to.equal(
+        total
+      )
+      Cypress.env('paymentAmount', total)
+      expect(
+        response.body.data.paymentAmount,
+        `Payment amount should be ${total}`
+      )
+    })
+  })
+  it('Should able to get payment methods', () => {
+    const url = `${URL_PAYMENT}/payment-method?amount=${Cypress.env('paymentAmount')}`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data.length).to.be.greaterThan(0)
+      const data = response.body.data
+      expect(data[0].code).to.equal('BankTransferVA')
+      const paymentMethodCode = data[0].paymentMethods[0].code
+      if (paymentMethodCode === 'va_bca') {
+        Cypress.env('VA_BCA', data[0].paymentMethods[0])
+      }
+    })
+  })
+  it('Should able to set payment method', () => {
+    const url = `${URL_PRODUCT}/cart/update-payment`
+    const va_bca = Cypress.env('VA_BCA')
+    const payload = {
+      method: va_bca.code,
+      isInstallment: false,
+      token: '',
+      installmentTenor: 0,
+      isOvo: false,
+      ovoNumber: '',
+      ovoRetryCount: 0,
+      bin_number: '',
+      approvalCode: '123321',
+      value: Cypress.env('paymentAmount')
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const paymentMethod = response.body.data.payments
+      expect(paymentMethod.method, `method should ${va_bca.code}`).to.equal(
+        va_bca.code
+      )
+      expect(
+        paymentMethod.isInstallment,
+        `isInstallment should be false`
+      ).to.equal(false)
+      expect(paymentMethod.token, `token should be empty string`).to.equal('')
+      expect(
+        paymentMethod.installmentTenor,
+        `installmentTenor should be 0`
+      ).to.equal(0)
+      expect(paymentMethod.isOvo, `isOvo should be false`).to.equal(false)
+      expect(
+        paymentMethod.ovoNumber,
+        `ovoNumber should be empty string`
+      ).to.equal('')
+      expect(
+        paymentMethod.bin_number,
+        `bin_number should be empty string`
+      ).to.equal('')
+    })
+  })
+  it('Should able to create order', () => {
+    const url = `${URL_PRODUCT}/order/create-v2`
+    const payload = {
+      cart: Cypress.env('CART_ID'),
+      approvalCode: '123321',
+      gwps: [],
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      const orderId = response.body.data._id
+      const orderNumber = response.body.data.orderNumber
+      expect(orderId).to.not.be.empty
+      expect(orderNumber, `Order number should not be empty, ${orderNumber}`).to
+        .not.be.empty
+      Cypress.env('ORDER_ID', orderId)
+      Cypress.env('ORDER_NUMBER', orderNumber)
+    })
+  })
+})
+
+// tambah jika kondisi shipping method tidak ketemu
+describe('Verify shipping discounts if using shipping methods other than SAP', () => {
+  before('Check cart', () => {
+    const url = `${URL_PRODUCT}/cart/my-cart`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const items = response.body.data.items
+      Cypress.env('ITEMS', items.length)
+    })
+  })
+  before('Clear cart', () => {
+    const url = `${URL_PRODUCT}/cart/remove-all-item`
+    const items = Cypress.env('ITEMS')
+    Cypress._.times(items, (i) => {
+      cy.api({
+        method: 'PATCH',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS_USER')
+      }).then((response) => {
+        expect(response.status).to.equal(200)
+      })
+    })
+  })
+
+  it('Add product to cart', () => {
+    const url = `${URL_PRODUCT}/cart/add`
+    const product = Cypress.env('Product_A')
+    const sku = product.sku
+    const price = product.price
+    const name = product.name
+    const qty = 1
+    const payload = {
+      sku: sku,
+      qty: qty,
+      customPrice: 0,
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.statusCode).to.equal(201)
+      const cartId = response.body.data._id
+      Cypress.env('CART_ID', cartId)
+      const items = response.body.data.items
+      expect(items[0].sku, 'SKU should ' + sku).to.equal(sku)
+      expect(items[0].product.name, `Product name should be ${name}`).to.equal(
+        name
+      )
+      expect(
+        items[0].qty,
+        'Quantity of product ' + sku + ' should ' + qty
+      ).to.equal(qty)
+      const productPrice = items[0].product.price
+      expect(productPrice, `Product price should be ${price}`).to.equal(price)
+      Cypress.env(`price_${sku}`, price)
+      Cypress.env('totalAmount', price)
+      Cypress.env('paymentAmount', price)
+    })
+  })
+
+  it('Add other product to cart', () => {
+    const url = `${URL_PRODUCT}/cart/add`
+    const product = Cypress.env('Product_B')
+    const sku = product.sku
+    const price = product.price
+    const name = product.name
+    const qty = 1
+    const payload = {
+      sku: sku,
+      qty: qty,
+      customPrice: 0,
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.statusCode).to.equal(201)
+      const items = response.body.data.items
+      expect(items[1].sku, 'SKU should ' + sku).to.equal(sku)
+      expect(items[1].product.name, `Product name should be ${name}`).to.equal(
+        name
+      )
+      expect(
+        items[1].qty,
+        'Quantity of product ' + sku + ' should ' + qty
+      ).to.equal(qty)
+      const productPrice = items[1].product.price
+      expect(productPrice, `Product price should be ${price}`).to.equal(price)
+      Cypress.env(`price_${sku}`, price)
+      const totalAmount = Cypress.env('totalAmount') + price
+      Cypress.env('totalAmount', totalAmount)
+      Cypress.env('paymentAmount', totalAmount)
+      //sub_total
+      expect(
+        items[1].sub_total,
+        'sub_total of product ' + sku + ' should ' + price
+      ).to.equal(price)
+      expect(
+        response.body.data.totalAmount,
+        'totalAmount should ' + Cypress.env('totalAmount')
+      ).to.equal(Cypress.env('totalAmount'))
+      expect(
+        response.body.data.paymentAmount,
+        'paymentAmount should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+      const paymentDetails = response.body.data.paymentDetails
+      expect(
+        paymentDetails[0].total,
+        'paymentDetails.Subtotal should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+      expect(
+        paymentDetails[12].total,
+        'paymentDetails.Total should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+    })
+  })
+
+  it('Should able to set address', () => {
+    const url = `${URL_PRODUCT}/cart/update-shipping-address`
+    const address = Cypress.env('ADDRESS')
+    const payload = {
+      cityId: address.cityId,
+      city: address.city,
+      postalCode: address.postalCode,
+      district: address.district,
+      regionName: address.regionName,
+      street: address.street,
+      recipientName: address.recipientName,
+      recipientPhone: address.recipientPhone,
+      addressName: address.addressName,
+      pinpointLatLong: address.pinpointLatLong,
+      pinpointAddress: address.pinpointAddress,
+      note: address.note
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(
+        response.body.data.shippingAddress.city,
+        'City should be' + address.city
+      ).to.equal(address.city)
+      expect(
+        response.body.data.shippingAddress.postalCode,
+        'Postal code should be' + address.postalCode
+      ).to.equal(address.postalCode)
+      expect(
+        response.body.data.shippingAddress.district,
+        'District should be' + address.district
+      ).to.equal(address.district)
+      expect(
+        response.body.data.shippingAddress.regionName,
+        'Region name should be' + address.regionName
+      ).to.equal(address.regionName)
+      expect(
+        response.body.data.shippingAddress.street,
+        'Street should be' + address.street
+      ).to.equal(address.street)
+      expect(
+        response.body.data.shippingAddress.recipientName,
+        'Recipient name should be' + address.recipientName
+      ).to.equal(address.recipientName)
+      expect(
+        response.body.data.shippingAddress.recipientPhone,
+        'Recipient phone should be' + address.recipientPhone
+      ).to.equal(address.recipientPhone)
+      expect(
+        response.body.data.shippingAddress.addressName,
+        'Address name should be' + address.addressName
+      ).to.equal(address.addressName)
+      expect(
+        response.body.data.shippingAddress.pinpointLatLong,
+        'Pinpoint lat long should be' + address.pinpointLatLong
+      ).to.equal(address.pinpointLatLong)
+      expect(
+        response.body.data.shippingAddress.pinpointAddress,
+        'Pinpoint address should be' + address.pinpointAddress
+      ).to.equal(address.pinpointAddress)
+      expect(
+        response.body.data.shippingAddress.note,
+        'Note should be' + address.note
+      ).to.equal(address.note)
+    })
+  })
+  it('Should able to get shipping methods', () => {
+    const url = `${URL_PRODUCT}/cart/available-shipping-method`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data.length).to.be.greaterThan(0)
+      const datas = response.body.data
+      datas.forEach((data) => {
+        const code = data.code
+        const title = data.title
+        if (code === 'regular') {
+          const couriers = data.couriers
+          couriers.forEach((courier) => {
+            const courierCode = courier.courierCode
+            if (courierCode === 'jne-regular') {
+              Cypress.env('JNE_REG', courier)
+            }
+          })
+        }
+      })
+    })
+  })
+  it('Should able to set shipping method', () => {
+    const url = `${URL_PRODUCT}/cart/update-shipping-method`
+    const jne_reg = Cypress.env('JNE_REG')
+    const payload = {
+      courierCode: jne_reg.courierCode,
+      courierName: jne_reg.courierName,
+      courierDescription: jne_reg.courierDescription,
+      courierImage: '',
+      weight: jne_reg.weight,
+      price: jne_reg.price,
+      estimate: jne_reg.estimate,
+      status: true,
+      shippingWeight: jne_reg.shippingWeight
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const shippingMethod = response.body.data.shippingMethod
+      expect(
+        shippingMethod.courierCode,
+        `courierCode should ${jne_reg.courierCode}`
+      ).to.equal(jne_reg.courierCode)
+      expect(
+        shippingMethod.courierName,
+        `courierName should ${jne_reg.courierName}`
+      ).to.equal(jne_reg.courierName)
+      expect(
+        shippingMethod.courierDescription,
+        `courierDescription should ${jne_reg.courierDescription}`
+      ).to.equal(jne_reg.courierDescription)
+      expect(
+        shippingMethod.courierImage,
+        `courierImage should ${jne_reg.courierImage}`
+      ).to.equal(jne_reg.courierImage)
+      expect(shippingMethod.weight, `weight should ${jne_reg.weight}`).to.equal(
+        jne_reg.weight
+      )
+      expect(shippingMethod.price, `price should ${jne_reg.price}`).to.equal(
+        jne_reg.price
+      )
+      expect(
+        shippingMethod.estimate,
+        `estimate should ${jne_reg.estimate}`
+      ).to.equal(jne_reg.estimate)
+      expect(shippingMethod.status, `status should be ${true}`).to.equal(true)
+      const shippingFee = jne_reg.weight * jne_reg.price
+      expect(
+        shippingMethod.shippingFee,
+        `shippingFee should be ${shippingFee}`
+      ).to.equal(shippingFee)
+      Cypress.env('SHIPPING_FEE', shippingFee)
+      expect(
+        shippingMethod.shippingWeight,
+        `shippingWeight should ${jne_reg.shippingWeight}`
+      ).to.equal(jne_reg.shippingWeight)
+    })
+  })
+  it('Order summary price breakdown', () => {
+    const url = `${URL_PRODUCT}/cart/my-cart`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      // applied cart rule
+      const appliedcartRule = response.body.data.cartRuleApplied
+      const cartRuleId = Cypress.env('CARTRULE_DETAILS')._id
+      const dataRule = []
+      appliedcartRule.forEach((cartRule) => {
+        const id = cartRule._id
+        if (id === cartRuleId) {
+          dataRule.push(id)
+        }
+      })
+      // payment details
+      const paymentDetails = response.body.data.paymentDetails
+      const subtotal = Cypress.env('totalAmount')
+      const shippingFee = Cypress.env('SHIPPING_FEE')
+      const shippingDiscount = Cypress.env('CARTRULE_VALUE') * -1
+      const shippingMethod = response.body.data.shippingMethod
+      const channelArray = Cypress.env('CARTRULE_CHANNEL_ARRAY')
+      const omni_trx_type = response.body.data.omni_trx_type
+      expect(
+        paymentDetails[0].total,
+        `Subtotal should be ${subtotal}`
+      ).to.equal(subtotal)
+      expect(
+        paymentDetails[1].details[0].value,
+        `Shipping value should be ${shippingFee}`
+      ).to.equal(shippingFee)
+      if (
+        subtotal >= Cypress.env('CARTRULE_SUBTOTAL') &&
+        shippingMethod.courierCode === Cypress.env('CARTRULE_SHIPPING') &&
+        channelArray.includes(omni_trx_type)
+      ) {
+        expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should applied`
+        ).to.greaterThan(0)
+        expect(
+          paymentDetails[3].total,
+          `Shipping discount should be ${shippingDiscount}`
+        ).to.equal(shippingDiscount)
+        var total = subtotal + shippingFee + shippingDiscount
+      } else {
+        expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should not be applied`
+        ).to.equal(0)
+        let shippingDiscount = paymentDetails[3].total
+        if (shippingDiscount === null) {
+          shippingDiscount = 0
+        }
+        var total = subtotal + shippingFee + shippingDiscount
+      }
+      expect(paymentDetails[12].total, `Total should be ${total}`).to.equal(
+        total
+      )
+      Cypress.env('paymentAmount', total)
+      expect(
+        response.body.data.paymentAmount,
+        `Payment amount should be ${total}`
+      )
+    })
+  })
+  it('Should able to get payment methods', () => {
+    const url = `${URL_PAYMENT}/payment-method?amount=${Cypress.env('paymentAmount')}`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data.length).to.be.greaterThan(0)
+      const data = response.body.data
+      expect(data[0].code).to.equal('BankTransferVA')
+      const paymentMethodCode = data[0].paymentMethods[0].code
+      if (paymentMethodCode === 'va_bca') {
+        Cypress.env('VA_BCA', data[0].paymentMethods[0])
+      }
+    })
+  })
+  it('Should able to set payment method', () => {
+    const url = `${URL_PRODUCT}/cart/update-payment`
+    const va_bca = Cypress.env('VA_BCA')
+    const payload = {
+      method: va_bca.code,
+      isInstallment: false,
+      token: '',
+      installmentTenor: 0,
+      isOvo: false,
+      ovoNumber: '',
+      ovoRetryCount: 0,
+      bin_number: '',
+      approvalCode: '123321',
+      value: Cypress.env('paymentAmount')
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const paymentMethod = response.body.data.payments
+      expect(paymentMethod.method, `method should ${va_bca.code}`).to.equal(
+        va_bca.code
+      )
+      expect(
+        paymentMethod.isInstallment,
+        `isInstallment should be false`
+      ).to.equal(false)
+      expect(paymentMethod.token, `token should be empty string`).to.equal('')
+      expect(
+        paymentMethod.installmentTenor,
+        `installmentTenor should be 0`
+      ).to.equal(0)
+      expect(paymentMethod.isOvo, `isOvo should be false`).to.equal(false)
+      expect(
+        paymentMethod.ovoNumber,
+        `ovoNumber should be empty string`
+      ).to.equal('')
+      expect(
+        paymentMethod.bin_number,
+        `bin_number should be empty string`
+      ).to.equal('')
+    })
+  })
+  it('Should able to create order', () => {
+    const url = `${URL_PRODUCT}/order/create-v2`
+    const payload = {
+      cart: Cypress.env('CART_ID'),
+      approvalCode: '123321',
+      gwps: [],
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      const orderId = response.body.data._id
+      const orderNumber = response.body.data.orderNumber
+      expect(orderId).to.not.be.empty
+      expect(orderNumber, `Order number should not be empty, ${orderNumber}`).to
+        .not.be.empty
+      Cypress.env('ORDER_ID', orderId)
+      Cypress.env('ORDER_NUMBER', orderNumber)
+    })
+  })
+})
+
+// tambah jika subtotal kurang dari cart rule condition
+describe('Verify shipping discounts if subtotal less than cart rule condition', () => {
+  before('Check cart', () => {
+    const url = `${URL_PRODUCT}/cart/my-cart`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const items = response.body.data.items
+      Cypress.env('ITEMS', items.length)
+    })
+  })
+  before('Clear cart', () => {
+    const url = `${URL_PRODUCT}/cart/remove-all-item`
+    const items = Cypress.env('ITEMS')
+    Cypress._.times(items, (i) => {
+      cy.api({
+        method: 'PATCH',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS_USER')
+      }).then((response) => {
+        expect(response.status).to.equal(200)
+      })
+    })
+  })
+  before('Set sku product', () => {
+    const sku = '190252242'
+    cy.api({
+      method: 'GET',
+      url: `${URL_PRODUCT}/product/search/${sku}`
+    }).then((response) => {
+      const data = response.body.data
+      Cypress.env('Product_A', data)
+    })
+  })
+
+  it('Add product to cart', () => {
+    const url = `${URL_PRODUCT}/cart/add`
+    const product = Cypress.env('Product_A')
+    const sku = product.sku
+    const price = product.price
+    const name = product.name
+    const qty = 1
+    const payload = {
+      sku: sku,
+      qty: qty,
+      customPrice: 0,
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.statusCode).to.equal(201)
+      const cartId = response.body.data._id
+      Cypress.env('CART_ID', cartId)
+      const items = response.body.data.items
+      expect(items[0].sku, 'SKU should ' + sku).to.equal(sku)
+      expect(items[0].product.name, `Product name should be ${name}`).to.equal(
+        name
+      )
+      expect(
+        items[0].qty,
+        'Quantity of product ' + sku + ' should ' + qty
+      ).to.equal(qty)
+      const productPrice = items[0].product.price
+      expect(productPrice, `Product price should be ${price}`).to.equal(price)
+      Cypress.env(`price_${sku}`, price)
+      Cypress.env('totalAmount', price)
+      Cypress.env('paymentAmount', price)
+      expect(
+        response.body.data.totalAmount,
+        'totalAmount should ' + Cypress.env('totalAmount')
+      ).to.equal(Cypress.env('totalAmount'))
+      expect(
+        response.body.data.paymentAmount,
+        'paymentAmount should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+      const paymentDetails = response.body.data.paymentDetails
+      expect(
+        paymentDetails[0].total,
+        'paymentDetails.Subtotal should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+      expect(
+        paymentDetails[12].total,
+        'paymentDetails.Total should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+    })
+  })
+
+  it('Should able to set address', () => {
+    const url = `${URL_PRODUCT}/cart/update-shipping-address`
+    const address = Cypress.env('ADDRESS')
+    const payload = {
+      cityId: address.cityId,
+      city: address.city,
+      postalCode: address.postalCode,
+      district: address.district,
+      regionName: address.regionName,
+      street: address.street,
+      recipientName: address.recipientName,
+      recipientPhone: address.recipientPhone,
+      addressName: address.addressName,
+      pinpointLatLong: address.pinpointLatLong,
+      pinpointAddress: address.pinpointAddress,
+      note: address.note
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(
+        response.body.data.shippingAddress.city,
+        'City should be' + address.city
+      ).to.equal(address.city)
+      expect(
+        response.body.data.shippingAddress.postalCode,
+        'Postal code should be' + address.postalCode
+      ).to.equal(address.postalCode)
+      expect(
+        response.body.data.shippingAddress.district,
+        'District should be' + address.district
+      ).to.equal(address.district)
+      expect(
+        response.body.data.shippingAddress.regionName,
+        'Region name should be' + address.regionName
+      ).to.equal(address.regionName)
+      expect(
+        response.body.data.shippingAddress.street,
+        'Street should be' + address.street
+      ).to.equal(address.street)
+      expect(
+        response.body.data.shippingAddress.recipientName,
+        'Recipient name should be' + address.recipientName
+      ).to.equal(address.recipientName)
+      expect(
+        response.body.data.shippingAddress.recipientPhone,
+        'Recipient phone should be' + address.recipientPhone
+      ).to.equal(address.recipientPhone)
+      expect(
+        response.body.data.shippingAddress.addressName,
+        'Address name should be' + address.addressName
+      ).to.equal(address.addressName)
+      expect(
+        response.body.data.shippingAddress.pinpointLatLong,
+        'Pinpoint lat long should be' + address.pinpointLatLong
+      ).to.equal(address.pinpointLatLong)
+      expect(
+        response.body.data.shippingAddress.pinpointAddress,
+        'Pinpoint address should be' + address.pinpointAddress
+      ).to.equal(address.pinpointAddress)
+      expect(
+        response.body.data.shippingAddress.note,
+        'Note should be' + address.note
+      ).to.equal(address.note)
+    })
+  })
+  it('Should able to get shipping methods', () => {
+    const url = `${URL_PRODUCT}/cart/available-shipping-method`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data.length).to.be.greaterThan(0)
+      const datas = response.body.data
+      datas.forEach((data) => {
+        const code = data.code
+        const title = data.title
+        if (code === 'regular') {
+          const couriers = data.couriers
+          couriers.forEach((courier) => {
+            const courierCode = courier.courierCode
+            if (courierCode === 'sap-regular') {
+              Cypress.env('SAP_REG', courier)
+            }
+          })
+        }
+      })
+    })
+  })
+  it('Should able to set shipping method', () => {
+    const url = `${URL_PRODUCT}/cart/update-shipping-method`
+    const sap_reg = Cypress.env('SAP_REG')
+    const payload = {
+      courierCode: sap_reg.courierCode,
+      courierName: sap_reg.courierName,
+      courierDescription: sap_reg.courierDescription,
+      courierImage: '',
+      weight: sap_reg.weight,
+      price: sap_reg.price,
+      estimate: sap_reg.estimate,
+      status: true,
+      shippingWeight: sap_reg.shippingWeight
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const shippingMethod = response.body.data.shippingMethod
+      expect(
+        shippingMethod.courierCode,
+        `courierCode should ${sap_reg.courierCode}`
+      ).to.equal(sap_reg.courierCode)
+      expect(
+        shippingMethod.courierName,
+        `courierName should ${sap_reg.courierName}`
+      ).to.equal(sap_reg.courierName)
+      expect(
+        shippingMethod.courierDescription,
+        `courierDescription should ${sap_reg.courierDescription}`
+      ).to.equal(sap_reg.courierDescription)
+      expect(
+        shippingMethod.courierImage,
+        `courierImage should ${sap_reg.courierImage}`
+      ).to.equal(sap_reg.courierImage)
+      expect(shippingMethod.weight, `weight should ${sap_reg.weight}`).to.equal(
+        sap_reg.weight
+      )
+      expect(shippingMethod.price, `price should ${sap_reg.price}`).to.equal(
+        sap_reg.price
+      )
+      expect(
+        shippingMethod.estimate,
+        `estimate should ${sap_reg.estimate}`
+      ).to.equal(sap_reg.estimate)
+      expect(shippingMethod.status, `status should be ${true}`).to.equal(true)
+      const shippingFee = sap_reg.weight * sap_reg.price
+      expect(
+        shippingMethod.shippingFee,
+        `shippingFee should be ${shippingFee}`
+      ).to.equal(shippingFee)
+      Cypress.env('SHIPPING_FEE', shippingFee)
+      expect(
+        shippingMethod.shippingWeight,
+        `shippingWeight should ${sap_reg.shippingWeight}`
+      ).to.equal(sap_reg.shippingWeight)
+    })
+  })
+  it('Order summary price breakdown', () => {
+    const url = `${URL_PRODUCT}/cart/my-cart`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      // applied cart rule
+      const appliedcartRule = response.body.data.cartRuleApplied
+      const cartRuleId = Cypress.env('CARTRULE_DETAILS')._id
+      const dataRule = []
+      appliedcartRule.forEach((cartRule) => {
+        const id = cartRule._id
+        if (id === cartRuleId) {
+          dataRule.push(id)
+        }
+      })
+      // payment details
+      const paymentDetails = response.body.data.paymentDetails
+      const subtotal = Cypress.env('totalAmount')
+      const shippingFee = Cypress.env('SHIPPING_FEE')
+      const shippingDiscount = Cypress.env('CARTRULE_VALUE') * -1
+      const shippingMethod = response.body.data.shippingMethod
+      const channelArray = Cypress.env('CARTRULE_CHANNEL_ARRAY')
+      const omni_trx_type = response.body.data.omni_trx_type
+      expect(
+        paymentDetails[0].total,
+        `Subtotal should be ${subtotal}`
+      ).to.equal(subtotal)
+      expect(
+        paymentDetails[1].details[0].value,
+        `Shipping value should be ${shippingFee}`
+      ).to.equal(shippingFee)
+      if (
+        subtotal >= Cypress.env('CARTRULE_SUBTOTAL') &&
+        shippingMethod.courierCode === Cypress.env('CARTRULE_SHIPPING') &&
+        channelArray.includes(omni_trx_type)
+      ) {
+        expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should applied`
+        ).to.greaterThan(0)
+        expect(
+          paymentDetails[3].total,
+          `Shipping discount should be ${shippingDiscount}`
+        ).to.equal(shippingDiscount)
+        var total = subtotal + shippingFee + shippingDiscount
+      } else {
+        expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should not be applied`
+        ).to.equal(0)
+        let shippingDiscount = paymentDetails[3].total
+        if (shippingDiscount === null) {
+          shippingDiscount = 0
+        }
+        var total = subtotal + shippingFee + shippingDiscount
+      }
+      expect(paymentDetails[12].total, `Total should be ${total}`).to.equal(
+        total
+      )
+      Cypress.env('paymentAmount', total)
+      expect(
+        response.body.data.paymentAmount,
+        `Payment amount should be ${total}`
+      )
+    })
+  })
+  it('Should able to get payment methods', () => {
+    const url = `${URL_PAYMENT}/payment-method?amount=${Cypress.env('paymentAmount')}`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data.length).to.be.greaterThan(0)
+      const data = response.body.data
+      expect(data[0].code).to.equal('BankTransferVA')
+      const paymentMethodCode = data[0].paymentMethods[0].code
+      if (paymentMethodCode === 'va_bca') {
+        Cypress.env('VA_BCA', data[0].paymentMethods[0])
+      }
+    })
+  })
+  it('Should able to set payment method', () => {
+    const url = `${URL_PRODUCT}/cart/update-payment`
+    const va_bca = Cypress.env('VA_BCA')
+    const payload = {
+      method: va_bca.code,
+      isInstallment: false,
+      token: '',
+      installmentTenor: 0,
+      isOvo: false,
+      ovoNumber: '',
+      ovoRetryCount: 0,
+      bin_number: '',
+      approvalCode: '123321',
+      value: Cypress.env('paymentAmount')
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const paymentMethod = response.body.data.payments
+      expect(paymentMethod.method, `method should ${va_bca.code}`).to.equal(
+        va_bca.code
+      )
+      expect(
+        paymentMethod.isInstallment,
+        `isInstallment should be false`
+      ).to.equal(false)
+      expect(paymentMethod.token, `token should be empty string`).to.equal('')
+      expect(
+        paymentMethod.installmentTenor,
+        `installmentTenor should be 0`
+      ).to.equal(0)
+      expect(paymentMethod.isOvo, `isOvo should be false`).to.equal(false)
+      expect(
+        paymentMethod.ovoNumber,
+        `ovoNumber should be empty string`
+      ).to.equal('')
+      expect(
+        paymentMethod.bin_number,
+        `bin_number should be empty string`
+      ).to.equal('')
+    })
+  })
+  it('Should able to create order', () => {
+    const url = `${URL_PRODUCT}/order/create-v2`
+    const payload = {
+      cart: Cypress.env('CART_ID'),
+      approvalCode: '123321',
+      gwps: [],
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      const orderId = response.body.data._id
+      const orderNumber = response.body.data.orderNumber
+      expect(orderId).to.not.be.empty
+      expect(orderNumber, `Order number should not be empty, ${orderNumber}`).to
+        .not.be.empty
+      Cypress.env('ORDER_ID', orderId)
+      Cypress.env('ORDER_NUMBER', orderNumber)
+    })
+  })
+})
+
+// tambah dengan donasi, total value + subtotal cart rule
+// confirm ke aziz
+describe('Verify shipping discounts if subtotal less than cart rule condition and add donation', () => {
+  before('Check cart', () => {
+    const url = `${URL_PRODUCT}/cart/my-cart`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const items = response.body.data.items
+      Cypress.env('ITEMS', items.length)
+    })
+  })
+  before('Clear cart', () => {
+    const url = `${URL_PRODUCT}/cart/remove-all-item`
+    const items = Cypress.env('ITEMS')
+    Cypress._.times(items, (i) => {
+      cy.api({
+        method: 'PATCH',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS_USER')
+      }).then((response) => {
+        expect(response.status).to.equal(200)
+      })
+    })
+  })
+  before('Set sku product', () => {
+    const sku = '190252242'
+    cy.api({
+      method: 'GET',
+      url: `${URL_PRODUCT}/product/search/${sku}`
+    }).then((response) => {
+      const data = response.body.data
+      Cypress.env('Product_A', data)
+    })
+  })
+
+  it('Add product to cart', () => {
+    const url = `${URL_PRODUCT}/cart/add`
+    const product = Cypress.env('Product_A')
+    const sku = product.sku
+    const price = product.price
+    const name = product.name
+    const qty = 1
+    const payload = {
+      sku: sku,
+      qty: qty,
+      customPrice: 0,
+      notes: ''
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.statusCode).to.equal(201)
+      const cartId = response.body.data._id
+      Cypress.env('CART_ID', cartId)
+      const items = response.body.data.items
+      expect(items[0].sku, 'SKU should ' + sku).to.equal(sku)
+      expect(items[0].product.name, `Product name should be ${name}`).to.equal(
+        name
+      )
+      expect(
+        items[0].qty,
+        'Quantity of product ' + sku + ' should ' + qty
+      ).to.equal(qty)
+      const productPrice = items[0].product.price
+      expect(productPrice, `Product price should be ${price}`).to.equal(price)
+      Cypress.env(`price_${sku}`, price)
+      Cypress.env('totalAmount', price)
+      Cypress.env('paymentAmount', price)
+      expect(
+        response.body.data.totalAmount,
+        'totalAmount should ' + Cypress.env('totalAmount')
+      ).to.equal(Cypress.env('totalAmount'))
+      expect(
+        response.body.data.paymentAmount,
+        'paymentAmount should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+      const paymentDetails = response.body.data.paymentDetails
+      expect(
+        paymentDetails[0].total,
+        'paymentDetails.Subtotal should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+      expect(
+        paymentDetails[12].total,
+        'paymentDetails.Total should ' + Cypress.env('paymentAmount')
+      ).to.equal(Cypress.env('paymentAmount'))
+    })
+  })
+
+  it('Should able to set address', () => {
+    const url = `${URL_PRODUCT}/cart/update-shipping-address`
+    const address = Cypress.env('ADDRESS')
+    const payload = {
+      cityId: address.cityId,
+      city: address.city,
+      postalCode: address.postalCode,
+      district: address.district,
+      regionName: address.regionName,
+      street: address.street,
+      recipientName: address.recipientName,
+      recipientPhone: address.recipientPhone,
+      addressName: address.addressName,
+      pinpointLatLong: address.pinpointLatLong,
+      pinpointAddress: address.pinpointAddress,
+      note: address.note
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(
+        response.body.data.shippingAddress.city,
+        'City should be' + address.city
+      ).to.equal(address.city)
+      expect(
+        response.body.data.shippingAddress.postalCode,
+        'Postal code should be' + address.postalCode
+      ).to.equal(address.postalCode)
+      expect(
+        response.body.data.shippingAddress.district,
+        'District should be' + address.district
+      ).to.equal(address.district)
+      expect(
+        response.body.data.shippingAddress.regionName,
+        'Region name should be' + address.regionName
+      ).to.equal(address.regionName)
+      expect(
+        response.body.data.shippingAddress.street,
+        'Street should be' + address.street
+      ).to.equal(address.street)
+      expect(
+        response.body.data.shippingAddress.recipientName,
+        'Recipient name should be' + address.recipientName
+      ).to.equal(address.recipientName)
+      expect(
+        response.body.data.shippingAddress.recipientPhone,
+        'Recipient phone should be' + address.recipientPhone
+      ).to.equal(address.recipientPhone)
+      expect(
+        response.body.data.shippingAddress.addressName,
+        'Address name should be' + address.addressName
+      ).to.equal(address.addressName)
+      expect(
+        response.body.data.shippingAddress.pinpointLatLong,
+        'Pinpoint lat long should be' + address.pinpointLatLong
+      ).to.equal(address.pinpointLatLong)
+      expect(
+        response.body.data.shippingAddress.pinpointAddress,
+        'Pinpoint address should be' + address.pinpointAddress
+      ).to.equal(address.pinpointAddress)
+      expect(
+        response.body.data.shippingAddress.note,
+        'Note should be' + address.note
+      ).to.equal(address.note)
+    })
+  })
+  it('Should able to get shipping methods', () => {
+    const url = `${URL_PRODUCT}/cart/available-shipping-method`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      expect(response.body.statusCode).to.equal(200)
+      expect(response.body.data.length).to.be.greaterThan(0)
+      const datas = response.body.data
+      datas.forEach((data) => {
+        const code = data.code
+        const title = data.title
+        if (code === 'regular') {
+          const couriers = data.couriers
+          couriers.forEach((courier) => {
+            const courierCode = courier.courierCode
+            if (courierCode === 'sap-regular') {
+              Cypress.env('SAP_REG', courier)
+            }
+          })
+        }
+      })
+    })
+  })
+  it('Should able to set shipping method', () => {
+    const url = `${URL_PRODUCT}/cart/update-shipping-method`
+    const sap_reg = Cypress.env('SAP_REG')
+    const payload = {
+      courierCode: sap_reg.courierCode,
+      courierName: sap_reg.courierName,
+      courierDescription: sap_reg.courierDescription,
+      courierImage: '',
+      weight: sap_reg.weight,
+      price: sap_reg.price,
+      estimate: sap_reg.estimate,
+      status: true,
+      shippingWeight: sap_reg.shippingWeight
+    }
+    cy.api({
+      method: 'PATCH',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      const shippingMethod = response.body.data.shippingMethod
+      expect(
+        shippingMethod.courierCode,
+        `courierCode should ${sap_reg.courierCode}`
+      ).to.equal(sap_reg.courierCode)
+      expect(
+        shippingMethod.courierName,
+        `courierName should ${sap_reg.courierName}`
+      ).to.equal(sap_reg.courierName)
+      expect(
+        shippingMethod.courierDescription,
+        `courierDescription should ${sap_reg.courierDescription}`
+      ).to.equal(sap_reg.courierDescription)
+      expect(
+        shippingMethod.courierImage,
+        `courierImage should ${sap_reg.courierImage}`
+      ).to.equal(sap_reg.courierImage)
+      expect(shippingMethod.weight, `weight should ${sap_reg.weight}`).to.equal(
+        sap_reg.weight
+      )
+      expect(shippingMethod.price, `price should ${sap_reg.price}`).to.equal(
+        sap_reg.price
+      )
+      expect(
+        shippingMethod.estimate,
+        `estimate should ${sap_reg.estimate}`
+      ).to.equal(sap_reg.estimate)
+      expect(shippingMethod.status, `status should be ${true}`).to.equal(true)
+      const shippingFee = sap_reg.weight * sap_reg.price
+      expect(
+        shippingMethod.shippingFee,
+        `shippingFee should be ${shippingFee}`
+      ).to.equal(shippingFee)
+      Cypress.env('SHIPPING_FEE', shippingFee)
+      expect(
+        shippingMethod.shippingWeight,
+        `shippingWeight should ${sap_reg.shippingWeight}`
+      ).to.equal(sap_reg.shippingWeight)
+    })
+  })
+  it('Should able to add donation', () => {
+    const url = `${URL_PRODUCT}/cart/donation`
+    const payload = {
+      nominal: 100000
+    }
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER'),
+      body: payload
+    }).then((response) => {
+      expect(response.status).to.equal(201)
+      const itemNonPPN = response.body.data.paymentDetails[11]
+      expect(
+        itemNonPPN.total,
+        `nominal item non PPN should be ${payload.nominal}`
+      ).to.equal(payload.nominal)
+      const donation = response.body.data.donasi
+      expect(donation.product.name, `name should be DONASI`).to.equal('DONASI')
+      expect(
+        donation.sub_total,
+        `subtotal donasi should be ${payload.nominal}`
+      ).to.equal(payload.nominal)
+      expect(
+        donation.customPrice,
+        `customPrice donasi should be ${payload.nominal}`
+      ).to.equal(payload.nominal)
+      // const paymentAmount = Cypress.env('paymentAmount')+payload.nominal
+      Cypress.env('donasi', payload.nominal)
+    })
+  })
+  it('Order summary price breakdown', () => {
+    const url = `${URL_PRODUCT}/cart/my-cart`
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS_USER')
+    }).then((response) => {
+      expect(response.status).to.equal(200)
+      // applied cart rule
+      const appliedcartRule = response.body.data.cartRuleApplied
+      const cartRuleId = Cypress.env('CARTRULE_DETAILS')._id
+      const dataRule = []
+      appliedcartRule.forEach((cartRule) => {
+        const id = cartRule._id
+        if (id === cartRuleId) {
+          dataRule.push(id)
+        }
+      })
+      // payment details
+      const paymentDetails = response.body.data.paymentDetails
+      const subtotal = Cypress.env('totalAmount')
+      const shippingFee = Cypress.env('SHIPPING_FEE')
+      const shippingDiscount = Cypress.env('CARTRULE_VALUE') * -1
+      const shippingMethod = response.body.data.shippingMethod
+      const channelArray = Cypress.env('CARTRULE_CHANNEL_ARRAY')
+      const omni_trx_type = response.body.data.omni_trx_type
+      const donasi = Cypress.env('donasi')
+      expect(
+        paymentDetails[0].total,
+        `Subtotal should be ${subtotal}`
+      ).to.equal(subtotal)
+      expect(
+        paymentDetails[1].details[0].value,
+        `Shipping value should be ${shippingFee}`
+      ).to.equal(shippingFee)
+      if (
+        subtotal >= Cypress.env('CARTRULE_SUBTOTAL') &&
+        shippingMethod.courierCode === Cypress.env('CARTRULE_SHIPPING') &&
+        channelArray.includes(omni_trx_type)
+      ) {
+        expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should applied`
+        ).to.greaterThan(0)
+        expect(
+          paymentDetails[3].total,
+          `Shipping discount should be ${shippingDiscount}`
+        ).to.equal(shippingDiscount)
+        var total = subtotal + shippingFee + shippingDiscount + donasi
+      } else {
+        expect(
+          dataRule.length,
+          `Cart rule ${Cypress.env('CARTRULE_DETAILS').name} should not be applied`
+        ).to.equal(0)
+        let shippingDiscount = paymentDetails[3].total
+        if (shippingDiscount === null) {
+          shippingDiscount = 0
+        }
+        var total = subtotal + shippingFee + shippingDiscount + donasi
       }
       expect(paymentDetails[12].total, `Total should be ${total}`).to.equal(
         total

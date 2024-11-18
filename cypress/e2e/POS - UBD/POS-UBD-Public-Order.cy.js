@@ -627,7 +627,7 @@ describe('Staff create order public customer', function () {
       ovoNumber: '',
       ovoRetryCount: 0,
       bin_number: '',
-      approvalCode: 'AUT123',
+      approvalCode: '',
       value: Cypress.env('paymentAmount')
     }
 
