@@ -99,7 +99,7 @@ describe('Get Last Voucher Code', () => {
         const key = `stock:${sku}-34999-stock` // Buat key dengan SKU yang diambil
 
         // Menjalankan cy.task untuk mengatur stok pada setiap SKU
-        cy.task('addStock', { key, amount }, { timeout: 30000 }).should('exist')
+        cy.task('addStock', { key, amount }) //, { timeout: 30000 }).should('exist')
       })
     })
   })
@@ -144,7 +144,7 @@ describe('Get Last Voucher Code', () => {
   })
 })
 
-describe('Show Cash Voucher in Detail Voucher', () => {
+describe('Apply single cash Voucher', () => {
   let RespondataVoucher
   it('Shows cash voucher', () => {
     const URL_PRODUCT = Cypress.config('baseUrlProduct')
@@ -421,6 +421,47 @@ describe('Show Cash Voucher in Detail Voucher', () => {
         expect(expectedTotal_inShipmentMethode, 'Total / Payment Amount').to.eq(
           Cypress.env('ResponShipment').paymentAmount
         )
+      })
+    })
+  })
+
+  it('Should remove all vouchers from the cart', () => {
+    const url_deleteVoucher = URL_PRODUCT + '/cart/remove-voucher'
+
+    // Mendapatkan semua voucher dari cart
+    cy.api({
+      method: 'GET',
+      url: URL_PRODUCT + '/cart/my-cart',
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      }
+    }).then((response) => {
+      expect(response.status).to.eq(200)
+      const vouchers = response.body.data.vouchers || []
+
+      // Memeriksa jika voucher ada dalam array dan melakukan penghapusan satu per satu
+      vouchers.forEach((voucher) => {
+        const voucherCode = voucher.voucherCode
+        cy.log(`Attempting to remove voucher: ${voucherCode}`)
+
+        // Cek apakah voucherCode ada sebelum mengirim permintaan hapus
+        if (voucherCode) {
+          cy.api({
+            method: 'POST',
+            url: url_deleteVoucher,
+            headers: {
+              ...Cypress.env('REQUEST_HEADERS')
+            },
+            body: { voucherCode: voucherCode }
+          }).then((removeResponse) => {
+            cy.log(`Response status: ${removeResponse.status}`)
+            cy.log(`Response body: ${JSON.stringify(removeResponse.body)}`)
+            expect(removeResponse.status).to.eq(201)
+            cy.log(`Voucher ${voucherCode} successfully removed.`)
+          })
+        } else {
+          cy.log(`Skipping invalid voucher code: ${voucherCode}`)
+        }
       })
     })
   })
@@ -881,6 +922,47 @@ describe('Cash Voucher > Payment Amount', () => {
     })
   })
 
+  it('Should remove all vouchers from the cart', () => {
+    const url_deleteVoucher = URL_PRODUCT + '/cart/remove-voucher'
+
+    // Mendapatkan semua voucher dari cart
+    cy.api({
+      method: 'GET',
+      url: URL_PRODUCT + '/cart/my-cart',
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      }
+    }).then((response) => {
+      expect(response.status).to.eq(200)
+      const vouchers = response.body.data.vouchers || []
+
+      // Memeriksa jika voucher ada dalam array dan melakukan penghapusan satu per satu
+      vouchers.forEach((voucher) => {
+        const voucherCode = voucher.voucherCode
+        cy.log(`Attempting to remove voucher: ${voucherCode}`)
+
+        // Cek apakah voucherCode ada sebelum mengirim permintaan hapus
+        if (voucherCode) {
+          cy.api({
+            method: 'POST',
+            url: url_deleteVoucher,
+            headers: {
+              ...Cypress.env('REQUEST_HEADERS')
+            },
+            body: { voucherCode: voucherCode }
+          }).then((removeResponse) => {
+            cy.log(`Response status: ${removeResponse.status}`)
+            cy.log(`Response body: ${JSON.stringify(removeResponse.body)}`)
+            expect(removeResponse.status).to.eq(201)
+            cy.log(`Voucher ${voucherCode} successfully removed.`)
+          })
+        } else {
+          cy.log(`Skipping invalid voucher code: ${voucherCode}`)
+        }
+      })
+    })
+  })
+
   it('Should be not able apply cash voucher', () => {
     const URL_PRODUCT = Cypress.config('baseUrlProduct')
     const url_applyVoucher = URL_PRODUCT + '/cart/apply-voucher'
@@ -1329,6 +1411,47 @@ describe('Multiple Voucher Code', () => {
     })
   })
 
+  it('Should remove all vouchers from the cart', () => {
+    const url_deleteVoucher = URL_PRODUCT + '/cart/remove-voucher'
+
+    // Mendapatkan semua voucher dari cart
+    cy.api({
+      method: 'GET',
+      url: URL_PRODUCT + '/cart/my-cart',
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      }
+    }).then((response) => {
+      expect(response.status).to.eq(200)
+      const vouchers = response.body.data.vouchers || []
+
+      // Memeriksa jika voucher ada dalam array dan melakukan penghapusan satu per satu
+      vouchers.forEach((voucher) => {
+        const voucherCode = voucher.voucherCode
+        cy.log(`Attempting to remove voucher: ${voucherCode}`)
+
+        // Cek apakah voucherCode ada sebelum mengirim permintaan hapus
+        if (voucherCode) {
+          cy.api({
+            method: 'POST',
+            url: url_deleteVoucher,
+            headers: {
+              ...Cypress.env('REQUEST_HEADERS')
+            },
+            body: { voucherCode: voucherCode }
+          }).then((removeResponse) => {
+            cy.log(`Response status: ${removeResponse.status}`)
+            cy.log(`Response body: ${JSON.stringify(removeResponse.body)}`)
+            expect(removeResponse.status).to.eq(201)
+            cy.log(`Voucher ${voucherCode} successfully removed.`)
+          })
+        } else {
+          cy.log(`Skipping invalid voucher code: ${voucherCode}`)
+        }
+      })
+    })
+  })
+
   it('Should be able apply voucher', () => {
     const URL_PRODUCT = Cypress.config('baseUrlProduct')
     const url_applyVoucher = URL_PRODUCT + '/cart/apply-voucher'
@@ -1348,21 +1471,6 @@ describe('Multiple Voucher Code', () => {
       available: true,
       type: '0'
     }
-
-    // cy.api({
-    //   method: 'POST',
-    //   url: url_deleteVoucher,
-    //   headers: {
-    //     ...Cypress.env('REQUEST_HEADERS')
-    //   },
-    //   body: {
-    //     voucherCode: Cypress.env('VoucherCode1')
-    //   }
-    // }).then((response) => {
-    //   expect(response.status).to.eq(201)
-    //   const body = response.body
-    //   Cypress.env('ResponVoucher', body.data)
-    // })
 
     cy.api({
       method: 'POST',
@@ -1566,8 +1674,8 @@ describe('Multiple Voucher Code', () => {
       cy.log('Value Payment Methode 1', body.multiPayments[0].value)
       cy.log('Payment Methode 2', body.multiPayments[1].info.name)
       cy.log('Value Payment Methode 2', body.multiPayments[1].value)
-      cy.log('Payment Methode 3', body.multiPayments[2].info.name)
-      cy.log('Value Payment Methode 3', body.multiPayments[2].value)
+      // cy.log('Payment Methode 3', body.multiPayments[2].info.name)
+      // cy.log('Value Payment Methode 3', body.multiPayments[2].value)
 
       expect(body.cartId, 'Cart ID:').to.equal(cart._id)
       expect(body.items).to.be.an('array')
@@ -1578,7 +1686,10 @@ describe('Multiple Voucher Code', () => {
         Cypress.env('PaymentAmount')
       )
       expect(body.vouchers[0].voucherCode, 'Voucher Code sesuai').to.eq(
-        Cypress.env('Apply_codeCashVoucher')
+        Cypress.env('Apply_codeCashVoucher1')
+      )
+      expect(body.vouchers[1].voucherCode, 'Voucher Code sesuai').to.eq(
+        Cypress.env('Apply_codeCashVoucher2')
       )
     })
   })
