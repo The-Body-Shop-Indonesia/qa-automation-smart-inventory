@@ -67,6 +67,7 @@ describe('Set cart rule to apply', function () {
   })
 })
 describe('Set sku product to use', function () {
+  // set stok dulu ke redis
   before('Cek Stok untuk Semua SKU', () => {
     // Muat data dari fixture
     cy.fixture('skus').then((data) => {
