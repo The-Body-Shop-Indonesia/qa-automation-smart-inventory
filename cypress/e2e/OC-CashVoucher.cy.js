@@ -1,32 +1,16 @@
 const URL_USER = Cypress.config('baseUrlUser')
 const URL_PRODUCT = Cypress.config('baseUrlProduct')
+
 const voucherProgramCode = 'TESTCASH002'
 Cypress.env('voucherProgramCode', voucherProgramCode)
-const suffixBase = 'TBSI-MILS'
+const suffixBase = 'MSJ-'
+const randomNumber = BigInt(Math.floor(Math.random() * 10000000)).toString()
+Cypress.env('suffix', suffixBase + randomNumber)
+Cypress.env(
+  'VoucherCode',
+  Cypress.env('voucherProgramCode') + '-' + Cypress.env('suffix')
+)
 
-// Definisikan getDynamicVoucherCode di luar hook dan describe
-function getDynamicVoucherCode(voucherProgramCode, suffixBase) {
-  // Dapatkan nomor terakhir dari file JSON di fixtures
-  return cy.readFile('cypress/fixtures/lastVoucherNumber.json').then((data) => {
-    const currentNumber = data.lastVoucherNumber || 1
-    const formattedNumber = String(currentNumber).padStart(2, '0') // Tambahkan '0' di depan jika kurang dari 10
-    Cypress.env('suffix', `${suffixBase}-${formattedNumber}`)
-    const voucherCode = `${Cypress.env('voucherProgramCode')}-${Cypress.env('suffix')}`
-
-    // Simpan voucherCode dan nomor terakhir sebagai environment variable
-    Cypress.env('VoucherCode', voucherCode)
-    Cypress.env('currentNumber', currentNumber)
-
-    // Simpan nomor terbaru ke file JSON untuk iterasi berikutnya
-    return cy
-      .writeFile('cypress/fixtures/lastVoucherNumber.json', {
-        lastVoucherNumber: currentNumber + 1
-      })
-      .then(() => voucherCode)
-  })
-}
-
-let voucherCode
 describe('Get Last Voucher Code', () => {
   before('User Login', () => {
     const url_user = URL_USER + '/otp/validate'
@@ -104,42 +88,34 @@ describe('Get Last Voucher Code', () => {
     })
   })
 
-  let voucherCode
+  // let voucherCode
   it('Generate Voucher Code', () => {
-    // Menghasilkan kode voucher dinamis sebelum semua tes dijalankan
-    getDynamicVoucherCode(voucherProgramCode, suffixBase).then((code) => {
-      voucherCode = code
-      const URL_Generate_VOUCHER =
-        URL_PRODUCT + '/admin/voucher/vms/autogenerate'
-      //Menyimpan kode voucher dengan memanggil API
-      cy.api({
-        method: 'POST',
-        url: URL_Generate_VOUCHER,
-        headers: {
-          ...Cypress.env('REQUEST_HEADERS')
-        },
-        body: {
-          vouchers: [
-            {
-              voucher_program_code: Cypress.env('voucherProgramCode'),
-              card_number: '',
-              voucher_amount: 50000,
-              voucher_value: 50000,
-              code_suffix: Cypress.env('suffix')
-            }
-          ]
-        }
-      }).then((response) => {
-        expect(response.status).to.eq(201)
-        const body = response.body
-        expect(body).to.have.property('statusCode', 201)
+    const URL_Generate_VOUCHER = URL_PRODUCT + '/admin/voucher/vms/autogenerate'
+    cy.api({
+      method: 'POST',
+      url: URL_Generate_VOUCHER,
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      },
+      body: {
+        vouchers: [
+          {
+            voucher_program_code: Cypress.env('voucherProgramCode'),
+            card_number: '',
+            voucher_amount: 50000,
+            voucher_value: 50000,
+            code_suffix: Cypress.env('suffix')
+          }
+        ]
+      }
+    }).then((response) => {
+      expect(response.status).to.eq(201)
+      const body = response.body
+      expect(body).to.have.property('statusCode', 201)
 
-        cy.log('Generated Voucher Code:', Cypress.env('VoucherCode'))
-        cy.log('Generated last Number:', Cypress.env('currentNumber'))
-        cy.log('Sufix', Cypress.env('suffix'))
-        cy.log('Voucher program Code', Cypress.env('voucherProgramCode'))
-        // expect(body).to.have.property('message', 'Voucher saved successfully')
-      })
+      cy.log('Generated Voucher Code:', Cypress.env('VoucherCode'))
+      cy.log('Sufix', Cypress.env('suffix'))
+      cy.log('Voucher program Code', Cypress.env('voucherProgramCode'))
     })
   })
 })
@@ -966,23 +942,6 @@ describe('Cash Voucher > Payment Amount', () => {
   it('Should be not able apply cash voucher', () => {
     const URL_PRODUCT = Cypress.config('baseUrlProduct')
     const url_applyVoucher = URL_PRODUCT + '/cart/apply-voucher'
-    const url_deleteVoucher = URL_PRODUCT + '/cart/remove-voucher'
-
-    // cy.api({
-    //   method: 'POST',
-    //   url: url_deleteVoucher,
-    //   headers: {
-    //     ...Cypress.env('REQUEST_HEADERS')
-    //   },
-    //   body: {
-    //     voucherCode: 'TESTCASH002-QAMILS'
-    //   }
-    // }).then((response) => {
-    //   expect(response.status).to.eq(201)
-    //   const body = response.body
-    //   Cypress.env('ResponVoucher', body.data)
-    //   // Cypress.env('CekVoucher', Cypress.env('ResponVoucher').vouchers)
-    // })
     const requestBodyVoucher = {
       voucherCode: 'TESTCASH002-QAMILS',
       category: 'cash_voucher',
@@ -1010,97 +969,60 @@ describe('Cash Voucher > Payment Amount', () => {
   })
 })
 
-const baseVoucherCodes = {
-  voucherCode1: 'TESTCASH002-QAMils',
-  voucherCode2: 'TESTCASH002-QAMilss' // Perbaiki penulisan tanda kutip
-}
+const suffixBase2 = 'MIL-'
+const randomNumber2 = BigInt(Math.floor(Math.random() * 10000000)).toString()
+Cypress.env('suffix2', suffixBase2 + randomNumber2)
+Cypress.env(
+  'VoucherCode2',
+  Cypress.env('voucherProgramCode') + '-' + Cypress.env('suffix2')
+)
 
-// Definisikan getDynamicVoucherCode di luar hook dan describe
-const voucherProgramCode1 = 'TESTCASH002'
-Cypress.env('voucherProgramCode1', voucherProgramCode1)
-const suffixBase1 = 'TBSI-JMils'
-const suffixBase2 = 'TBSI-JMilss'
+const suffixBase3 = 'MILS-'
+const randomNumber3 = BigInt(Math.floor(Math.random() * 10000000)).toString()
+Cypress.env('suffix3', suffixBase3 + randomNumber3)
+Cypress.env(
+  'VoucherCode3',
+  Cypress.env('voucherProgramCode') + '-' + Cypress.env('suffix3')
+)
 
-// Definisikan getDynamicVoucherCode di luar hook dan describe
-function getDynamicVoucherCode1(voucherProgramCode1, suffixBase1, suffixBase2) {
-  // Dapatkan nomor terakhir dari file JSON di fixtures - voucher1
-  return cy
-    .readFile('cypress/fixtures/multipleCashVoucher.json')
-    .then((data) => {
-      const currentNumber1 = data.lastMultipleVoucherNumber1 || 1
-      const formattedNumber1 = String(currentNumber1).padStart(2, '0') // Tambahkan '0' di depan jika kurang dari 10
-
-      // Voucher 1
-      Cypress.env('suffix1', `${suffixBase1}-${formattedNumber1}`)
-      const voucherCode1 = `${Cypress.env('voucherProgramCode1')}-${Cypress.env('suffix1')}`
-
-      // Voucher 2 (menggunakan nomor dan program yang sama, tapi suffix berbeda)
-      Cypress.env('suffix2', `${suffixBase2}-${formattedNumber1}`)
-      const voucherCode2 = `${Cypress.env('voucherProgramCode1')}-${Cypress.env('suffix2')}`
-
-      // Simpan voucherCode dan nomor terakhir sebagai environment variable
-      Cypress.env('VoucherCode1', voucherCode1)
-      Cypress.env('VoucherCode2', voucherCode2)
-      Cypress.env('currentNumber1', currentNumber1)
-
-      // Simpan nomor terbaru ke file JSON untuk iterasi berikutnya
-      return cy
-        .writeFile('cypress/fixtures/multipleCashVoucher.json', {
-          lastMultipleVoucherNumber1: currentNumber1 + 1
-        })
-        .then(() => ({ voucherCode1, voucherCode2 }))
-    })
-}
-
-let MultiplevoucherCode
 describe('Multiple Voucher Code', () => {
   it('Generate Voucher Codes', () => {
-    // Menghasilkan kode voucher dinamis sebelum semua tes dijalankan
-    getDynamicVoucherCode1(voucherProgramCode1, suffixBase1, suffixBase2).then(
-      ({ voucherCode1, voucherCode2 }) => {
-        MultiplevoucherCode = [voucherCode1, voucherCode2]
-        const URL_Generate_VOUCHER =
-          URL_PRODUCT + '/admin/voucher/vms/autogenerate'
-
-        // Menyimpan kode voucher dengan memanggil API
-        cy.api({
-          method: 'POST',
-          url: URL_Generate_VOUCHER,
-          headers: {
-            ...Cypress.env('REQUEST_HEADERS')
+    const URL_Generate_VOUCHER = URL_PRODUCT + '/admin/voucher/vms/autogenerate'
+    cy.api({
+      method: 'POST',
+      url: URL_Generate_VOUCHER,
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      },
+      body: {
+        vouchers: [
+          {
+            voucher_program_code: Cypress.env('voucherProgramCode'),
+            card_number: '',
+            voucher_amount: 50000,
+            voucher_value: 50000,
+            code_suffix: Cypress.env('suffix2')
           },
-          body: {
-            vouchers: [
-              {
-                voucher_program_code: Cypress.env('voucherProgramCode1'),
-                card_number: '',
-                voucher_amount: 50000,
-                voucher_value: 50000,
-                code_suffix: Cypress.env('suffix1')
-              },
-              {
-                voucher_program_code: Cypress.env('voucherProgramCode1'),
-                card_number: '',
-                voucher_amount: 191000,
-                voucher_value: 191000,
-                code_suffix: Cypress.env('suffix2')
-              }
-            ]
+          {
+            voucher_program_code: Cypress.env('voucherProgramCode'),
+            card_number: '',
+            voucher_amount: 191000,
+            voucher_value: 191000,
+            code_suffix: Cypress.env('suffix3')
           }
-        }).then((response) => {
-          expect(response.status).to.eq(201)
-          const body = response.body
-          expect(body).to.have.property('statusCode', 201)
-
-          cy.log('Generated Voucher Code 1:', Cypress.env('VoucherCode1'))
-          cy.log('Generated Voucher Code 2:', Cypress.env('VoucherCode2'))
-          cy.log('Generated last Number:', Cypress.env('currentNumber1'))
-          cy.log('Suffix 1:', Cypress.env('suffix1'))
-          cy.log('Suffix 2:', Cypress.env('suffix2'))
-          cy.log('Voucher Program Code:', Cypress.env('voucherProgramCode1'))
-        })
+        ]
       }
-    )
+    }).then((response) => {
+      expect(response.status).to.eq(201)
+      const body = response.body
+      expect(body).to.have.property('statusCode', 201)
+
+      cy.log('Generated Voucher Code 1:', Cypress.env('VoucherCode2'))
+      cy.log('Generated Voucher Code 2:', Cypress.env('VoucherCode3'))
+      cy.log('Suffix 1:', Cypress.env('suffix2'))
+      cy.log('Suffix 2:', Cypress.env('suffix3'))
+      cy.log('Voucher Program Code:', Cypress.env('voucherProgramCode'))
+    })
   })
 
   let RespondataVoucher1
@@ -1116,7 +1038,7 @@ describe('Multiple Voucher Code', () => {
       qs: {
         limit: 50,
         sort: '-updatedAt',
-        keywords: Cypress.env('VoucherCode1')
+        keywords: Cypress.env('VoucherCode2')
       }
     }).then((response) => {
       expect(response.status).to.equal(200)
@@ -1158,7 +1080,7 @@ describe('Multiple Voucher Code', () => {
       qs: {
         limit: 50,
         sort: '-updatedAt',
-        keywords: Cypress.env('VoucherCode2')
+        keywords: Cypress.env('VoucherCode3')
       }
     }).then((response) => {
       expect(response.status).to.equal(200)
@@ -1458,14 +1380,14 @@ describe('Multiple Voucher Code', () => {
     const url_deleteVoucher = URL_PRODUCT + '/cart/remove-voucher'
 
     const requestBodyVoucher1 = {
-      voucherCode: Cypress.env('VoucherCode1'),
+      voucherCode: Cypress.env('VoucherCode2'),
       category: 'cash_voucher',
       description: 'TEST CASH VOUCHER 2 AJA',
       available: true,
       type: '0'
     }
     const requestBodyVoucher2 = {
-      voucherCode: Cypress.env('VoucherCode2'),
+      voucherCode: Cypress.env('VoucherCode3'),
       category: 'cash_voucher',
       description: 'TEST CASH VOUCHER 2 AJA',
       available: true,
