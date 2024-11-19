@@ -2,7 +2,7 @@ const URL_USER = Cypress.config('baseUrlUser')
 const URL_PRODUCT = Cypress.config('baseUrlProduct')
 const voucherProgramCode = 'TESTCASH002'
 Cypress.env('voucherProgramCode', voucherProgramCode)
-const suffixBase = 'QA-MILS'
+const suffixBase = 'TBSI-MILS'
 
 // Definisikan getDynamicVoucherCode di luar hook dan describe
 function getDynamicVoucherCode(voucherProgramCode, suffixBase) {
@@ -1018,8 +1018,8 @@ const baseVoucherCodes = {
 // Definisikan getDynamicVoucherCode di luar hook dan describe
 const voucherProgramCode1 = 'TESTCASH002'
 Cypress.env('voucherProgramCode1', voucherProgramCode1)
-const suffixBase1 = 'QA-JMils'
-const suffixBase2 = 'QA-JMilss'
+const suffixBase1 = 'TBSI-JMils'
+const suffixBase2 = 'TBSI-JMilss'
 
 // Definisikan getDynamicVoucherCode di luar hook dan describe
 function getDynamicVoucherCode1(voucherProgramCode1, suffixBase1, suffixBase2) {
