@@ -345,7 +345,7 @@ describe('API Create Cart PUBLIC section', function () {
 
   it('Should return error if name is null', () => {
     const url = URL_PRODUCT + '/employee/cart/create'
-    const first_name = undefined
+    const first_name = null
     cy.api({
       method: 'POST',
       url,
@@ -441,7 +441,13 @@ describe('API Create Cart PUBLIC section', function () {
       expect(data).to.haveOwnProperty('__v')
 
       const customer_id = response.body.data.customer.id
+      const first_name = response.body.data.customer.firstName
+      const cust_group = response.body.data.customer.customerGroup
+      const is_family = response.body.data.customer.isFamily
       Cypress.env('CUSTOMER_PUBLIC_ID', customer_id)
+      Cypress.env('CUSTOMER_NAME', first_name)
+      Cypress.env('CUSTOMER_GROUP', cust_group)
+      Cypress.env('CUSTOMER_IS_FAMILY', is_family)
 
       delete data.user
       delete data.customer.id
@@ -454,6 +460,29 @@ describe('API Create Cart PUBLIC section', function () {
       delete data.updatedAt
       delete data.createdAt
       expect(data).to.deep.equal(mockResponse)
+    })
+  })
+
+  it('Public cart should appeared on cart list', () => {
+    const card_number = Cypress.env('CARD_NUMBER')
+    const url = URL_PRODUCT + '/employee/cart/list/all-v2'
+
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).should((response) => {
+        expect(response.status).to.equal(200)
+        const body = response.body
+        const docs = body.data.docs[0]
+        expect(body.statusCode).to.equal(200)
+        expect(docs.customer_name).to.equal(Cypress.env('CUSTOMER_NAME'))
+        expect(docs.card_number).to.equal('')
+        expect(docs.customer_tier).to.equal(Cypress.env('CUSTOMER_GROUP'))
+        expect(docs.customer_id).to.equal(Cypress.env('CUSTOMER_PUBLIC_ID'))
+        expect(docs.cart_type).to.equal('normal')
+        expect(docs.isFamily).to.equal(Cypress.env('CUSTOMER_IS_FAMILY'))
+        expect(docs.isScanner).to.equal(false)
     })
   })
 
@@ -691,11 +720,13 @@ describe('API Create Cart MEMBER section', function () {
       const last_name = cust_response.body.data.lastName
       const currentTier = cust_response.body.data.currentTier.code
       const currentTierImg = cust_response.body.data.currentTier.image
+      const is_family = cust_response.body.data.isFamily
 
       Cypress.env('FIRST_NAME', first_name)
       Cypress.env('LAST_NAME', last_name)
       Cypress.env('CUST_TIER', currentTier)
       Cypress.env('CUST_IMG', currentTierImg)
+      Cypress.env('IS_FAMILY', is_family)
 
       cy.api({
         method: 'POST',
@@ -708,10 +739,10 @@ describe('API Create Cart MEMBER section', function () {
           cardNumber: card_number,
           nik: '',
           familyNumber: '',
-          isFamily: false,
+          isFamily: Cypress.env('IS_FAMILY'),
           customerGroup: Cypress.env('CUST_TIER'),
           image: Cypress.env('CUST_IMG'),
-          isScanner: false,
+          isScanner: true,
           isLapsed: true,
           isReactivated: true,
           isIcarusAppUser: true,
@@ -795,6 +826,29 @@ describe('API Create Cart MEMBER section', function () {
         .then((response) => {
           Cypress.env('CUST_MEMBER_ID', response.body.data.customer._id)
         })
+    })
+  })
+
+  it('Member cart should appeared on cart list', () => {
+    const card_number = Cypress.env('CARD_NUMBER')
+    const url = URL_PRODUCT + '/employee/cart/list/all-v2'
+
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).should((response) => {
+        expect(response.status).to.equal(200)
+        const body = response.body
+        const docs = body.data.docs[0]
+        expect(body.statusCode).to.equal(200)
+        expect(docs.customer_name).to.equal(Cypress.env('FIRST_NAME'))
+        expect(docs.card_number).to.equal(card_number)
+        expect(docs.customer_tier).to.equal(Cypress.env('CUST_TIER'))
+        expect(docs.customer_id).to.equal(Cypress.env('CUST_MEMBER_ID'))
+        expect(docs.cart_type).to.equal('normal')
+        expect(docs.isFamily).to.equal(Cypress.env('IS_FAMILY'))
+        expect(docs.isScanner).to.equal(true)
     })
   })
 

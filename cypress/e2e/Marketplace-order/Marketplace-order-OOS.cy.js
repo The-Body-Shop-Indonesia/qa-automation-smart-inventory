@@ -213,7 +213,7 @@ describe('Callback create order MP', () => {
     const db_Collection = Cypress.env('DB_COLLECTION_FORSTOKORDER')
     const db_Collection_error = Cypress.env('DB_COLLECTION_FORSTOKERROR')
 
-    cy.wait(30000)
+    //cy.wait(30000)
 
     cy.task('mongodb:findOne', {
       database: db_MP,
