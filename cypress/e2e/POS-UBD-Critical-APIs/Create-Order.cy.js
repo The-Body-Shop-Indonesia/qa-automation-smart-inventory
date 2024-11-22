@@ -821,6 +821,126 @@ describe('Fields test group', () => {
     })
   })
 
+  it(`Should return error 400 if gwp sku is empty`, () => {
+    const cart = Cypress.env('CART')
+    const payload = {
+      cart: cart._id,
+      gwps: [{ sku: '', ruleId: '' }],
+      approvalCode: '12345a',
+      notes: ''
+    }
+    const url = URL_PRODUCT + `/order/create-v2`
+    cy.api({
+      url,
+      method: 'POST',
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: payload,
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, `status should be 400`).to.equal(400)
+      expect(
+        response.body.message[0],
+        `gwps.0.sku should not be empty`
+      ).to.equal('gwps.0.sku should not be empty')
+    })
+  })
+
+  it(`Should return error 400 if ruleId is empty`, () => {
+    const cart = Cypress.env('CART')
+    const payload = {
+      cart: cart._id,
+      gwps: [{ sku: '112890066', ruleId: '' }],
+      approvalCode: '12345a',
+      notes: ''
+    }
+    const url = URL_PRODUCT + `/order/create-v2`
+    cy.api({
+      url,
+      method: 'POST',
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: payload,
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, `status should be 400`).to.equal(400)
+      expect(
+        response.body.message[0],
+        `gwps.0.ruleId should not be empty`
+      ).to.equal('gwps.0.ruleId should not be empty')
+    })
+  })
+
+  it(`Should return error 400 if invalid gwp sku`, () => {
+    const cart = Cypress.env('CART')
+    const payload = {
+      cart: cart._id,
+      gwps: [{ sku: '1128900', ruleId: '664dcc7411ed1e348ec84df5' }],
+      approvalCode: '12345a',
+      notes: ''
+    }
+    const url = URL_PRODUCT + `/order/create-v2`
+    cy.api({
+      url,
+      method: 'POST',
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: payload,
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, `status should be 400`).to.equal(400)
+      expect(
+        response.body.message[0],
+        `gwps.0.ruleId should not be empty`
+      ).to.equal('gwps.0.ruleId should not be empty')
+    })
+  })
+
+  it(`Should return error 400 if invalid ruleId`, () => {
+    const cart = Cypress.env('CART')
+    const payload = {
+      cart: cart._id,
+      gwps: [{ sku: '112890066', ruleId: '1234567890' }],
+      approvalCode: '12345a',
+      notes: ''
+    }
+    const url = URL_PRODUCT + `/order/create-v2`
+    cy.api({
+      url,
+      method: 'POST',
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: payload,
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, `status should be 400`).to.equal(400)
+      expect(
+        response.body.message[0],
+        `gwps.0.ruleId should not be empty`
+      ).to.equal('gwps.0.ruleId should not be empty')
+    })
+  })
+
+  it(`Should return error 400 if gwp sku and ruleId doesn't match`, () => {
+    const cart = Cypress.env('CART')
+    const payload = {
+      cart: cart._id,
+      gwps: [{ sku: '112890066', ruleId: '664dcc7411ed1e348ec84df5' }],
+      approvalCode: '12345a',
+      notes: ''
+    }
+    const url = URL_PRODUCT + `/order/create-v2`
+    cy.api({
+      url,
+      method: 'POST',
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: payload,
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, `status should be 400`).to.equal(400)
+      expect(
+        response.body.message[0],
+        `gwps.0.ruleId should not be empty`
+      ).to.equal('gwps.0.ruleId should not be empty')
+    })
+  })
+
   it(`Should able to create order if approval code is not exist in Tunai payment method`, () => {
     const mockPayload = {
       method: '18',
