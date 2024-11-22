@@ -284,7 +284,7 @@ describe('Pagination Test Group', () => {
     })
 })
 
-describe('Filter Test Group skipcart', () => {
+describe('Skip Normal and Redemption Cart Test Group', () => {
   //employee/cart/list/all-v2?page=1&size=10&skipCart=0&skipRedemption=113
   it('Should be able to show only redemption cart', () => {
     const skip_cart = Cypress.env('TOTAL_DOCS')

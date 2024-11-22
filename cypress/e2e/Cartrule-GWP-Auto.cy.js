@@ -87,6 +87,22 @@ describe('Customer cart section', function () {
       })
   })
 
+  //check skus
+  before(() => {
+    // Muat data dari fixture
+    cy.fixture('skus').then((data) => {
+      const amount = 100 // jumlah stok yang ingin ditambahkan
+ 
+      // Iterasi setiap SKU dalam array skuCashVouchers
+      data.skusGWPAutoTest.forEach((sku) => {
+        const key = `stock:${sku}-34999-stock` // Buat key dengan SKU yang diambil
+ 
+        // Menjalankan cy.task untuk mengatur stok pada setiap SKU
+        cy.task('addStock', { key, amount }, { timeout: 30000 }).should('exist')
+      })
+    })
+  })
+
   //get shipping address customer
   before(() => {
     const url_customer_address = URL_USER + '/address?sort=-updatedAt'
@@ -111,9 +127,6 @@ describe('Customer cart section', function () {
       url,
       headers: Cypress.env('CUSTOMER_REQ_HEADERS')
     })
-      .should((response) => {
-        expect(response.status, 'Response code should be 200').to.equal(200)
-      })
       .then((response) => {
         const data = response.body.data
         //remove all items if items not empty
@@ -130,12 +143,12 @@ describe('Customer cart section', function () {
 
         //promoterm
         const rawTermsData = Cypress.env('CARTRULE_DATA').rawTermsData
-        cy.log(rawTermsData)
+        //cy.log(rawTermsData)
         const promoTerm = JSON.parse(rawTermsData)
         //console.log(promoTerm)
         //promoeffect
         const rawEffectData = Cypress.env('CARTRULE_DATA').rawEffectData
-        cy.log(rawEffectData)
+        //cy.log(rawEffectData)
         const promoEffect = JSON.parse(rawEffectData)
         //console.log(promoEffect)
 

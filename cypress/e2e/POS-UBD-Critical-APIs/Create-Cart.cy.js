@@ -351,7 +351,7 @@ describe('API Create Cart PUBLIC section', function () {
       url,
       body: {
         isGuest: true,
-        firstName: null,
+        firstName: first_name,
         lastName: '',
         cardNumber: '',
         nik: '',
@@ -464,7 +464,6 @@ describe('API Create Cart PUBLIC section', function () {
   })
 
   it('Public cart should appeared on cart list', () => {
-    const card_number = Cypress.env('CARD_NUMBER')
     const url = URL_PRODUCT + '/employee/cart/list/all-v2'
 
     cy.api({
@@ -540,56 +539,55 @@ describe('API Create Cart MEMBER section', function () {
   })
   
   // berhasil walopun pake card number asal (?)
-  // it('Should return error if cardNumber invalid', () => {
-  //   const card_number = Cypress.env('CARD_NUMBER')
-  //   const invalidCardNumber = '50000238191000000'
-  //   const url_cus =
-  //     URL_USER + '/employee/detail-member?cardNumber=' + card_number
-  //   const url = URL_PRODUCT + '/employee/cart/create'
+  it('Should return error if cardNumber invalid', () => {
+    const card_number = Cypress.env('CARD_NUMBER')
+    const invalidCardNumber = '5ABC0238191000000'
+    const url_cus =
+      URL_USER + '/employee/detail-member?cardNumber=' + card_number
+    const url = URL_PRODUCT + '/employee/cart/create'
 
-  //   cy.api({
-  //     method: 'POST',
-  //     url: url_cus,
-  //     headers: Cypress.env('REQUEST_HEADERS')
-  //   }).then((cust_response) => {
-  //     const first_name = cust_response.body.data.firstName
-  //     const last_name = cust_response.body.data.lastName
-  //     const currentTier = cust_response.body.data.currentTier.code
-  //     const currentTierImg = cust_response.body.data.currentTier.image
+    cy.api({
+      method: 'POST',
+      url: url_cus,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).then((cust_response) => {
+      const first_name = cust_response.body.data.firstName
+      const last_name = cust_response.body.data.lastName
+      const currentTier = cust_response.body.data.currentTier.code
+      const currentTierImg = cust_response.body.data.currentTier.image
 
-  //     Cypress.env('FIRST_NAME', first_name)
-  //     Cypress.env('LAST_NAME', last_name)
-  //     Cypress.env('CUST_TIER', currentTier)
-  //     Cypress.env('CUST_IMG', currentTierImg)
+      Cypress.env('FIRST_NAME', first_name)
+      Cypress.env('LAST_NAME', last_name)
+      Cypress.env('CUST_TIER', currentTier)
+      Cypress.env('CUST_IMG', currentTierImg)
 
-  //     cy.api({
-  //       method: 'POST',
-  //       url,
-  //       headers: Cypress.env('REQUEST_HEADERS'),
-  //       body: {
-  //         isGuest: false,
-  //         firstName: Cypress.env('FIRST_NAME'),
-  //         lastName: Cypress.env('LAST_NAME'),
-  //         cardNumber: invalidCardNumber,
-  //         nik: '',
-  //         familyNumber: '',
-  //         isFamily: false,
-  //         customerGroup: Cypress.env('CUST_TIER'),
-  //         image: Cypress.env('CUST_IMG'),
-  //         isScanner: false,
-  //         isLapsed: true,
-  //         isReactivated: true,
-  //         isIcarusAppUser: true,
-  //         autoEnroll: true,
-  //         autoEnrollFrom: 'string'
-  //       }
-  //     })
-  //       .should((response) => {
-  //         expect(response.status, 'Response code should be 201').to.equal(201)
-  //         const data = response.body.data
-  //       })
-  //   })
-  // })
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        body: {
+          isGuest: false,
+          firstName: Cypress.env('FIRST_NAME'),
+          lastName: Cypress.env('LAST_NAME'),
+          cardNumber: invalidCardNumber,
+          nik: '',
+          familyNumber: '',
+          isFamily: false,
+          customerGroup: Cypress.env('CUST_TIER'),
+          image: Cypress.env('CUST_IMG'),
+          isScanner: false,
+          isLapsed: true,
+          isReactivated: true,
+          isIcarusAppUser: true,
+          autoEnroll: true,
+          autoEnrollFrom: 'string'
+        }
+      })
+        .should((response) => {
+          expect(response.status, 'Response code should be 400').to.equal(400)
+        })
+    })
+  })
 
   it('Should return error if cardNumber is null', () => {
     const card_number = Cypress.env('CARD_NUMBER')
