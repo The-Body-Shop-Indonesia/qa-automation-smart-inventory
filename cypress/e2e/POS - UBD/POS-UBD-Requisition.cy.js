@@ -9,8 +9,22 @@ const store_requisition = Cypress.env('STORE_CODE_BXC')
 const sku_damaged = '126350116'
 const ubd_damaged = '2026-06'
 
-describe('Requisition - UBD', function () {
-  it('Login admin', () => {
+describe('Login & Open Shift', function () {
+  before('Cek Stok untuk Semua SKU', () => {
+    // Muat data dari fixture
+    cy.fixture('skus').then((data) => {
+      const amount = 100 // jumlah stok yang ingin ditambahkan
+
+      // Iterasi setiap SKU dalam array skuCashVouchers
+      data.skuRequisition.forEach((sku) => {
+        const key = `stock:${sku}-${Cypress.env('STORE_CODE_BXC')}-stock`
+        // Menjalankan cy.task untuk mengatur stok pada setiap SKU
+        cy.task('addStock', { key, amount }) //, { timeout: 30000 }).should('exist')
+      })
+    })
+  })
+
+  before('Login admin', () => {
     const url = URL_USER + '/admin/login'
     cy.log(Cypress.env('ADMIN_USERNAME'))
     cy.api({
@@ -31,6 +45,76 @@ describe('Requisition - UBD', function () {
         Authorization: 'Bearer ' + tokenAdmin
       })
     })
+  })
+
+  before('Check shift', () => {
+    const url = URL_USER + '/employee/shift'
+    cy.api({
+      method: 'GET',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    })
+      .should((response) => {
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+      })
+      .then((response) => {
+        Cypress.env('RESPONSE_BODY', response.body)
+      })
+  })
+
+  before('Close shift', () => {
+    const body = Cypress.env('RESPONSE_BODY')
+    if (body.statusCode === 200 && body.data.shift.status === 'expired') {
+      const url = URL_USER + '/employee/shift/close'
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        failOnStatusCode: false
+      })
+        .should((response) => {
+          expect(response.status).to.equal(201)
+        })
+        .then((response) => {
+          Cypress.env('RESPONSE_BODY', response.body)
+        })
+    } else if (body.statusCode === 500) {
+      cy.log('Internal Server Error')
+    } else {
+      cy.log('tidak perlu close shift')
+    }
+  })
+
+  before('Open shift', () => {
+    const body = Cypress.env('RESPONSE_BODY')
+    if (body.statusCode === 201) {
+      const url = URL_USER + '/employee/shift/open'
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status).to.equal(201)
+      })
+    } else if (body.statusCode === 400) {
+      const url = URL_USER + '/employee/shift/open'
+      cy.api({
+        method: 'POST',
+        url,
+        headers: Cypress.env('REQUEST_HEADERS'),
+        failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status).to.equal(201)
+      })
+    } else if (body.statusCode === 500) {
+      cy.log('Internal Server Error')
+    } else {
+      cy.log('shift sedang berjalan')
+    }
   })
 
   it('Successfully login Employee [Store Leader]', () => {
@@ -96,7 +180,9 @@ describe('Requisition - UBD', function () {
         })
       })
   })
+})
 
+describe('Requisition - UBD', function () {
   let requestBody
   let postDataRequisition
   let Before_latestStock_Movement
