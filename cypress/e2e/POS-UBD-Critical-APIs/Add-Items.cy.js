@@ -2,10 +2,39 @@ const tokenAdmin = Cypress.env('TOKEN_ADMIN')
 const tokenPOS = Cypress.env('TOKEN_POS')
 const URL_USER = Cypress.config('baseUrlUser')
 const URL_PRODUCT = Cypress.config('baseUrlProduct')
+const url_admin = URL_USER + '/admin/login'
 
 let cartId
 let customerId
 describe('Prepare cart', () => {
+  before('User Login Admin', () => {
+    cy.api({
+      method: 'POST',
+      url: url_admin,
+      body: {
+        username: Cypress.env('ADMIN_USERNAME'),
+        password: Cypress.env('ADMIN_PASSWORD')
+      }
+    })
+      .should((response) => {
+        expect(response.status).to.equal(201)
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+        expect(body).to.haveOwnProperty('data')
+        expect(body.statusCode).to.equal(201)
+        expect(body.message).to.equal('Success')
+        const data = body.data
+        expect(data).to.haveOwnProperty('accessToken')
+      })
+      .then((response) => {
+        const adminToken = response.body.data.accessToken
+        Cypress.env('REQUEST_HEADERS_ADMIN', {
+          Authorization: 'Bearer ' + adminToken
+        })
+      })
+  })
+
   before('User Login POS', () => {
     const url = URL_USER + '/employee/login'
     cy.api({
@@ -142,6 +171,38 @@ describe('Prepare cart', () => {
       customerId = response.body.data.customer._id
       Cypress.env('customerId1', customerId)
     })
+
+    cy.api({
+      method: 'POST',
+      url,
+      headers: Cypress.env('REQUEST_HEADERS'),
+      body: {
+        isGuest: false,
+        firstName: 'Mils',
+        lastName: 'Jamils',
+        cardNumber: '51716799227000317',
+        nik: '',
+        FamilyNumber: '',
+        isFamily: false,
+        customerGroup: 'STARTER',
+        image:
+          'https://media-mobileappsdev.tbsgroup.co.id/mst/benefit/d4f31a39-5dab-4c50-a307-5d24282453ec.jpg',
+        isScanner: true,
+        isLapsed: false,
+        isReactivated: false,
+        isIcarusAppUser: false,
+        autoEnroll: false,
+        autoEnrollFrom: ''
+      }
+    }).should((response) => {
+      expect(response.status).to.equal(201)
+      expect(response.body.data).to.haveOwnProperty('_id')
+      expect(response.body.data.customer).to.haveOwnProperty('_id')
+      cartId = response.body.data._id
+      Cypress.env('cartId1B', cartId)
+      customerId = response.body.data.customer._id
+      Cypress.env('customerId1B', customerId)
+    })
   })
 
   it('Should able to create cart for Multiple product', () => {
@@ -181,7 +242,78 @@ describe('Prepare cart', () => {
 })
 
 describe('Add items Single', () => {
-  it('Should be able to add single products to cart', () => {
+  it('Should be able to add single products to cart with UBD Null', () => {
+    cy.fixture('skus').then((data) => {
+      const sku = data.skuPOS[1]
+      const sku_Name = data.skuPOSName[1]
+      Cypress.env('SKU', { sku: sku, qty: 1, name: sku_Name })
+
+      const AddSKU = {
+        sku: Cypress.env('SKU').sku,
+        qty: Cypress.env('SKU').qty,
+        customPrice: 0,
+        notes: '',
+        requiredUbd: true,
+        ubd: null
+      }
+      cy.api({
+        method: 'POST',
+        url:
+          URL_PRODUCT +
+          '/employee/cart/pos-ubd/' +
+          Cypress.env('customerId1B') +
+          '/item/add',
+        headers: {
+          ...Cypress.env('REQUEST_HEADERS')
+        },
+        body: AddSKU
+      }).then((response) => {
+        expect(response.status).to.eq(201)
+        const items = response.body.data.items
+        const itemss = response.body.data.items[0]
+        Cypress.env('qty', itemss.qty)
+        Cypress.env('product', itemss.product)
+        const ubdDetails = itemss.ubdDetail
+
+        const subtotalDetail = response.body.data.paymentDetails.find(
+          (detail) => detail.label === 'Subtotal'
+        )
+
+        Cypress.env('price', Cypress.env('product').multi_price.price)
+        Cypress.env('SubTotalPaymnetDetail', subtotalDetail.total)
+        Cypress.env('SubTotalProduct', itemss.sub_total)
+
+        ubdDetails.forEach((ubdItem) => {
+          const ubdDate = ubdItem.ubd.slice(0, 7)
+          Cypress.env('ubdDate', ubdDate)
+          Cypress.env('ubdTotal', ubdItem.total)
+
+          expect(items, 'jumlah data Items').to.have.length(1)
+
+          expect(Cypress.env('product')).to.have.property(
+            'sku',
+            Cypress.env('SKU').sku
+          )
+
+          expect(Cypress.env('product')).to.have.property(
+            'name',
+            Cypress.env('SKU').name
+          )
+          expect(AddSKU.qty, 'Qty Produk').to.eq(Cypress.env('qty'))
+          expect(AddSKU.ubd).to.eq(Cypress.env('ubdDate'))
+          expect(Cypress.env('product')).to.have.property('price', 319000)
+          expect(Cypress.env('ubdDate')).to.eq(AddSKU.ubd)
+          expect(Cypress.env('price')).to.eq(Cypress.env('SubTotalProduct'))
+
+          cy.log('Name SKU1:', Cypress.env('SKU').name)
+          cy.log('UBD SKU 1:', Cypress.env('ubdDate'))
+          cy.log('Total UBD SKU-1:', Cypress.env('ubdTotal'))
+        })
+      })
+    })
+  })
+
+  it('Should be able to add single products to cart with UBD Date', () => {
     cy.fixture('skus').then((data) => {
       const sku1 = data.skuPOS[0]
       const sku2 = data.skuPOS[1]
@@ -253,16 +385,46 @@ describe('Add items Single', () => {
       })
     })
   })
+
   afterEach(() => {
     cy.api({
       method: 'DELETE',
       url: URL_PRODUCT + '/employee/cart/' + Cypress.env('customerId1'),
       headers: {
         ...Cypress.env('REQUEST_HEADERS')
-      }
+      },
+      failOnStatusCode: false // Memastikan bahwa Cypress tidak menghentikan eksekusi jika tidak ditemukan cart
     }).then((response) => {
-      expect(response.status).to.eq(200)
-      cy.log('Cart has been successfully deleted after the test.')
+      if (response.status === 200) {
+        cy.log('Cart has been successfully deleted after the test.')
+      } else if (
+        response.status === 400 &&
+        response.body.message === 'No cart found !'
+      ) {
+        cy.log('No cart found, skipping deletion.')
+      } else {
+        cy.log('Unexpected error: ', response.body.message)
+      }
+    })
+
+    cy.api({
+      method: 'DELETE',
+      url: URL_PRODUCT + '/employee/cart/' + Cypress.env('customerId1B'),
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      },
+      failOnStatusCode: false // Memastikan bahwa Cypress tidak menghentikan eksekusi jika tidak ditemukan cart
+    }).then((response) => {
+      if (response.status === 200) {
+        cy.log('Cart has been successfully deleted after the test.')
+      } else if (
+        response.status === 400 &&
+        response.body.message === 'No cart found !'
+      ) {
+        cy.log('No cart found, skipping deletion.')
+      } else {
+        cy.log('Unexpected error: ', response.body.message)
+      }
     })
   })
 })
@@ -520,7 +682,7 @@ describe('Add Multiple Items', () => {
   })
 })
 
-describe('Add invalid items', () => {
+describe('Add - Negatif Test', () => {
   it('Should be unable to add invalid sku to cart', () => {
     Cypress.env('SKU1', { sku: '123456789', qty: 1, name: 'asal' })
     const AddSKU = {
@@ -580,6 +742,37 @@ describe('Add invalid items', () => {
       expect(body).to.have.property('statusCode')
       expect(body).to.have.property('message')
       expect(body.message).to.eq('Product not found.')
+    })
+  })
+
+  it('Should be unable to add wrong format UBD', () => {
+    Cypress.env('SKU1', { sku: '190252185 ', qty: 1, name: 'asal' })
+    const AddSKU = {
+      sku: Cypress.env('SKU1').sku,
+      qty: Cypress.env('SKU1').qty,
+      customPrice: 0,
+      notes: '',
+      requiredUbd: true,
+      ubd: ''
+    }
+    cy.api({
+      method: 'POST',
+      url:
+        URL_PRODUCT +
+        '/employee/cart/pos-ubd/' +
+        Cypress.env('customerId2') +
+        '/item/add',
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS')
+      },
+      failOnStatusCode: false,
+      body: AddSKU
+    }).then((response) => {
+      expect(response.status).to.eq(400)
+      const body = response.body
+      expect(body).to.have.property('statusCode')
+      expect(body).to.have.property('message')
+      expect(body.message[0]).to.eq('ubd must be a Date instance')
     })
   })
 
@@ -644,7 +837,7 @@ describe('Add invalid items', () => {
     })
   })
 
-  it('Should be unable to add if delete field Required ubd', () => {
+  it('Should be able to add if delete field Required ubd', () => {
     const AddSKU = {
       sku: '190238933',
       qty: Cypress.env('SKU1').qty,
@@ -727,6 +920,65 @@ describe('Add invalid items', () => {
       expect(product).to.have.property('sku', AddSKU.sku)
       expect(ubdDate).to.eq(AddSKU.ubd)
       expect(itemss.notes).to.eq(null)
+    })
+  })
+
+  it('Should be unable to add if invalid token', () => {
+    const AddSKU = {
+      sku: '190238933',
+      qty: Cypress.env('SKU1').qty,
+      customPrice: 0,
+      requiredUbd: true,
+      ubd: '2026-02'
+    }
+    cy.api({
+      method: 'POST',
+      url:
+        URL_PRODUCT +
+        '/employee/cart/pos-ubd/' +
+        Cypress.env('customerId2') +
+        '/item/add',
+      headers: {
+        ...Cypress.env('REQUEST_HEADERS_ADMIN')
+      },
+      failOnStatusCode: false,
+      body: AddSKU
+    }).then((response) => {
+      expect(response.status).to.eq(403)
+      const body = response.body
+      expect(body).to.have.property('statusCode')
+      expect(body).to.have.property('message')
+      expect(body.message).to.eq('Forbidden resource')
+      expect(body.error).to.eq('Forbidden')
+    })
+  })
+
+  it('Should be unable to add without token', () => {
+    const AddSKU = {
+      sku: '190238933',
+      qty: Cypress.env('SKU1').qty,
+      customPrice: 0,
+      requiredUbd: true,
+      ubd: '2026-02'
+    }
+    cy.api({
+      method: 'POST',
+      url:
+        URL_PRODUCT +
+        '/employee/cart/pos-ubd/' +
+        Cypress.env('customerId2') +
+        '/item/add',
+      // headers: {
+      //   ...Cypress.env('REQUEST_HEADERS_ADMIN')
+      // },
+      failOnStatusCode: false,
+      body: AddSKU
+    }).then((response) => {
+      expect(response.status).to.eq(401)
+      const body = response.body
+      expect(body).to.have.property('statusCode')
+      expect(body).to.have.property('message')
+      expect(body.message).to.eq('Unauthorized')
     })
   })
 
