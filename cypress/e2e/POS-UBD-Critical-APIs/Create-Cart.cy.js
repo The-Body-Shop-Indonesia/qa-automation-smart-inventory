@@ -203,14 +203,17 @@ describe('General API Test Group Create Cart', function () {
 
   it('Should return error if channel is empty', () => {
     const url = URL_PRODUCT + '/employee/cart/create'
-    const invalidChannel = ""
+    const invalidChannel = ''
     const { request: mockRequest } =
       require('../../fixtures/generators').createPublicCartPayload_14160()
     cy.api({
       method: 'POST',
       url,
       body: mockRequest,
-      headers: { Authorization: Cypress.env('EMP_TOKEN') ,channel: invalidChannel },
+      headers: {
+        Authorization: Cypress.env('EMP_TOKEN'),
+        channel: invalidChannel
+      },
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status).to.equal(401)
@@ -233,7 +236,10 @@ describe('General API Test Group Create Cart', function () {
       method: 'POST',
       url,
       body: mockRequest,
-      headers: { Authorization: Cypress.env('EMP_TOKEN') ,channel: invalidChannel },
+      headers: {
+        Authorization: Cypress.env('EMP_TOKEN'),
+        channel: invalidChannel
+      },
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status).to.equal(401)
@@ -256,7 +262,10 @@ describe('General API Test Group Create Cart', function () {
       method: 'POST',
       url,
       body: mockRequest,
-      headers: { Authorization: Cypress.env('EMP_TOKEN') ,channel: invalidChannel },
+      headers: {
+        Authorization: Cypress.env('EMP_TOKEN'),
+        channel: invalidChannel
+      },
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status).to.equal(401)
@@ -303,10 +312,12 @@ describe('API Create Cart PUBLIC section', function () {
       expect(body).to.haveOwnProperty('message')
       expect(body).to.haveOwnProperty('error')
       expect(body.statusCode, 'Status code should be 400').to.equal(400)
-      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+      expect(body.error, 'Error message should be Bad Request').to.equal(
+        'Bad Request'
+      )
     })
   })
-  
+
   it('Should return error if name is undefined', () => {
     const url = URL_PRODUCT + '/employee/cart/create'
     const first_name = undefined
@@ -339,7 +350,9 @@ describe('API Create Cart PUBLIC section', function () {
       expect(body).to.haveOwnProperty('message')
       expect(body).to.haveOwnProperty('error')
       expect(body.statusCode, 'Status code should be 400').to.equal(400)
-      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+      expect(body.error, 'Error message should be Bad Request').to.equal(
+        'Bad Request'
+      )
     })
   })
 
@@ -375,7 +388,9 @@ describe('API Create Cart PUBLIC section', function () {
       expect(body).to.haveOwnProperty('message')
       expect(body).to.haveOwnProperty('error')
       expect(body.statusCode, 'Status code should be 400').to.equal(400)
-      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+      expect(body.error, 'Error message should be Bad Request').to.equal(
+        'Bad Request'
+      )
     })
   })
 
@@ -471,17 +486,17 @@ describe('API Create Cart PUBLIC section', function () {
       url,
       headers: Cypress.env('REQUEST_HEADERS')
     }).should((response) => {
-        expect(response.status).to.equal(200)
-        const body = response.body
-        const docs = body.data.docs[0]
-        expect(body.statusCode).to.equal(200)
-        expect(docs.customer_name).to.equal(Cypress.env('CUSTOMER_NAME'))
-        expect(docs.card_number).to.equal('')
-        expect(docs.customer_tier).to.equal(Cypress.env('CUSTOMER_GROUP'))
-        expect(docs.customer_id).to.equal(Cypress.env('CUSTOMER_PUBLIC_ID'))
-        expect(docs.cart_type).to.equal('normal')
-        expect(docs.isFamily).to.equal(Cypress.env('CUSTOMER_IS_FAMILY'))
-        expect(docs.isScanner).to.equal(false)
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const docs = body.data.docs[0]
+      expect(body.statusCode).to.equal(200)
+      expect(docs.customer_name).to.equal(Cypress.env('CUSTOMER_NAME'))
+      expect(docs.card_number).to.equal('')
+      expect(docs.customer_tier).to.equal(Cypress.env('CUSTOMER_GROUP'))
+      expect(docs.customer_id).to.equal(Cypress.env('CUSTOMER_PUBLIC_ID'))
+      expect(docs.cart_type).to.equal('normal')
+      expect(docs.isFamily).to.equal(Cypress.env('CUSTOMER_IS_FAMILY'))
+      expect(docs.isScanner).to.equal(false)
     })
   })
 
@@ -534,10 +549,12 @@ describe('API Create Cart MEMBER section', function () {
       expect(body).to.haveOwnProperty('message')
       expect(body).to.haveOwnProperty('error')
       expect(body.statusCode, 'Status code should be 400').to.equal(400)
-      expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
+      expect(body.error, 'Error message should be Bad Request').to.equal(
+        'Bad Request'
+      )
     })
   })
-  
+
   // berhasil walopun pake card number asal (?)
   it('Should return error if cardNumber invalid', () => {
     const card_number = Cypress.env('CARD_NUMBER')
@@ -582,10 +599,9 @@ describe('API Create Cart MEMBER section', function () {
           autoEnroll: true,
           autoEnrollFrom: 'string'
         }
+      }).should((response) => {
+        expect(response.status, 'Response code should be 400').to.equal(400)
       })
-        .should((response) => {
-          expect(response.status, 'Response code should be 400').to.equal(400)
-        })
     })
   })
 
@@ -633,16 +649,17 @@ describe('API Create Cart MEMBER section', function () {
           autoEnrollFrom: 'string'
         },
         failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status, 'Response code should be 400').to.equal(400)
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+        expect(body).to.haveOwnProperty('error')
+        expect(body.statusCode, 'Status code should be 400').to.equal(400)
+        expect(body.error, 'Error message should be Bad Request').to.equal(
+          'Bad Request'
+        )
       })
-        .should((response) => {
-          expect(response.status, 'Response code should be 400').to.equal(400)
-          const body = response.body
-          expect(body).to.haveOwnProperty('statusCode')
-          expect(body).to.haveOwnProperty('message')
-          expect(body).to.haveOwnProperty('error')
-          expect(body.statusCode, 'Status code should be 400').to.equal(400)
-          expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
-        })
     })
   })
 
@@ -690,16 +707,17 @@ describe('API Create Cart MEMBER section', function () {
           autoEnrollFrom: 'string'
         },
         failOnStatusCode: false
+      }).should((response) => {
+        expect(response.status, 'Response code should be 400').to.equal(400)
+        const body = response.body
+        expect(body).to.haveOwnProperty('statusCode')
+        expect(body).to.haveOwnProperty('message')
+        expect(body).to.haveOwnProperty('error')
+        expect(body.statusCode, 'Status code should be 400').to.equal(400)
+        expect(body.error, 'Error message should be Bad Request').to.equal(
+          'Bad Request'
+        )
       })
-        .should((response) => {
-          expect(response.status, 'Response code should be 400').to.equal(400)
-          const body = response.body
-          expect(body).to.haveOwnProperty('statusCode')
-          expect(body).to.haveOwnProperty('message')
-          expect(body).to.haveOwnProperty('error')
-          expect(body.statusCode, 'Status code should be 400').to.equal(400)
-          expect(body.error, 'Error message should be Bad Request').to.equal('Bad Request')
-        })
     })
   })
 
@@ -836,17 +854,17 @@ describe('API Create Cart MEMBER section', function () {
       url,
       headers: Cypress.env('REQUEST_HEADERS')
     }).should((response) => {
-        expect(response.status).to.equal(200)
-        const body = response.body
-        const docs = body.data.docs[0]
-        expect(body.statusCode).to.equal(200)
-        expect(docs.customer_name).to.equal(Cypress.env('FIRST_NAME'))
-        expect(docs.card_number).to.equal(card_number)
-        expect(docs.customer_tier).to.equal(Cypress.env('CUST_TIER'))
-        expect(docs.customer_id).to.equal(Cypress.env('CUST_MEMBER_ID'))
-        expect(docs.cart_type).to.equal('normal')
-        expect(docs.isFamily).to.equal(Cypress.env('IS_FAMILY'))
-        expect(docs.isScanner).to.equal(true)
+      expect(response.status).to.equal(200)
+      const body = response.body
+      const docs = body.data.docs[0]
+      expect(body.statusCode).to.equal(200)
+      expect(docs.customer_name).to.equal(Cypress.env('FIRST_NAME'))
+      expect(docs.card_number).to.equal(card_number)
+      expect(docs.customer_tier).to.equal(Cypress.env('CUST_TIER'))
+      expect(docs.customer_id).to.equal(Cypress.env('CUST_MEMBER_ID'))
+      expect(docs.cart_type).to.equal('normal')
+      expect(docs.isFamily).to.equal(Cypress.env('IS_FAMILY'))
+      expect(docs.isScanner).to.equal(true)
     })
   })
 

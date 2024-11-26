@@ -239,7 +239,10 @@ describe('General API Test Assign Staff to cart', function () {
       body: {
         nik: nik_employee
       },
-      headers: { Authorization: Cypress.env('EMP_TOKEN'), channel:  invalidChannel},
+      headers: {
+        Authorization: Cypress.env('EMP_TOKEN'),
+        channel: invalidChannel
+      },
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status, 'Response status should be 401').to.equal(401)
@@ -259,7 +262,10 @@ describe('General API Test Assign Staff to cart', function () {
       body: {
         nik: nik_employee
       },
-      headers: { Authorization: Cypress.env('EMP_TOKEN'), channel:  invalidChannel},
+      headers: {
+        Authorization: Cypress.env('EMP_TOKEN'),
+        channel: invalidChannel
+      },
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status, 'Response status should be 401').to.equal(401)
@@ -279,7 +285,10 @@ describe('General API Test Assign Staff to cart', function () {
       body: {
         nik: nik_employee
       },
-      headers: { Authorization: Cypress.env('EMP_TOKEN'), channel:  invalidChannel},
+      headers: {
+        Authorization: Cypress.env('EMP_TOKEN'),
+        channel: invalidChannel
+      },
       failOnStatusCode: false
     }).should((response) => {
       expect(response.status, 'Response status should be 401').to.equal(401)
@@ -401,117 +410,133 @@ describe('API Test Group Assign Staff to cart', function () {
   })
 
   //karena crosstore employee
-    it('Should return error if NIK is from another store (Cross Store Employee)', () => {
-      ///employee/nik/{nik}
-      const nik_emp_artos = Cypress.env('EMP_NIK')
-      const url_emp = URL_USER + `/employee/nik/${nik_emp_artos}`
+  it('Should return error if NIK is from another store (Cross Store Employee)', () => {
+    ///employee/nik/{nik}
+    const nik_emp_artos = Cypress.env('EMP_NIK')
+    const url_emp = URL_USER + `/employee/nik/${nik_emp_artos}`
+    cy.api({
+      method: 'GET',
+      url: url_emp,
+      headers: Cypress.env('REQUEST_HEADERS')
+    }).then((response) => {
+      const data = response.body.data
+      Cypress.env('OTHER_EMP', data)
+
+      const cust_id = Cypress.env('CUSTOMER_ID')
+      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
       cy.api({
-        method: 'GET',
-        url: url_emp,
+        method: 'POST',
+        url,
+        body: {
+          nik: nik_emp_artos
+        },
         headers: Cypress.env('REQUEST_HEADERS')
-      }).then((response) => {
-        const data = response.body.data
-        Cypress.env('OTHER_EMP', data)
-        
-        const cust_id = Cypress.env('CUSTOMER_ID')
-        const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
-        cy.api({
-          method: 'POST',
-          url,
-          body: {
-            nik: nik_emp_artos
-          },
-          headers: Cypress.env('REQUEST_HEADERS')
-        }).should((response) => {
-          expect(response.status, 'Response status should be 201').to.equal(201)
-          const body = response.body
-          const assign_emp = body.data.assignTo
-          expect(body).to.haveOwnProperty('statusCode')
-          expect(body).to.haveOwnProperty('message')
-          expect(assign_emp).to.haveOwnProperty('originStoreCode')
-          expect(assign_emp).to.haveOwnProperty('originStoreName')
-          expect(assign_emp).to.haveOwnProperty('isCrossStoreEmployee')
-          expect(body.statusCode, 'Response code should be 201').to.equal(201)
-          expect(assign_emp.nik, `NIK employee should be ${nik_emp_artos}`).to.equal(nik_emp_artos)
-          expect(assign_emp.name, `Name employee should be ${Cypress.env('OTHER_EMP').name}`).to.equal(Cypress.env('OTHER_EMP').name)
-          expect(assign_emp.isCrossStoreEmployee, 'Cross Store Employee should be TRUE').to.equal(true)
-          expect(assign_emp.originStoreCode, `Origin Store Code should be ${Cypress.env('OTHER_EMP').storeCode}`).to.equal(Cypress.env('OTHER_EMP').storeCode)
-          expect(assign_emp.originStoreName, `Origin Store Name should be ${Cypress.env('OTHER_EMP').storeName}`).to.equal(Cypress.env('OTHER_EMP').storeName)
-        })
-      })
-    })
-
-      it('Should return error if NIK is empty', () => {
-      const cust_id = Cypress.env('CUSTOMER_ID')
-      const invalidNIK = ''
-      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
-      cy.api({
-        method: 'POST',
-        url,
-        body: {
-          nik: invalidNIK
-        },
-        headers: Cypress.env('REQUEST_HEADERS'),
-        failOnStatusCode: false
       }).should((response) => {
-        expect(response.status, 'Response status should be 400').to.equal(400)
+        expect(response.status, 'Response status should be 201').to.equal(201)
         const body = response.body
+        const assign_emp = body.data.assignTo
         expect(body).to.haveOwnProperty('statusCode')
         expect(body).to.haveOwnProperty('message')
-        expect(body).to.haveOwnProperty('error')
-        expect(body.statusCode, 'Response code should be 400').to.equal(400)
-        expect(body.message[0], 'Message should be nik should not be empty').to.equal(
-          'nik should not be empty'
-        )
-        expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
+        expect(assign_emp).to.haveOwnProperty('originStoreCode')
+        expect(assign_emp).to.haveOwnProperty('originStoreName')
+        expect(assign_emp).to.haveOwnProperty('isCrossStoreEmployee')
+        expect(body.statusCode, 'Response code should be 201').to.equal(201)
+        expect(
+          assign_emp.nik,
+          `NIK employee should be ${nik_emp_artos}`
+        ).to.equal(nik_emp_artos)
+        expect(
+          assign_emp.name,
+          `Name employee should be ${Cypress.env('OTHER_EMP').name}`
+        ).to.equal(Cypress.env('OTHER_EMP').name)
+        expect(
+          assign_emp.isCrossStoreEmployee,
+          'Cross Store Employee should be TRUE'
+        ).to.equal(true)
+        expect(
+          assign_emp.originStoreCode,
+          `Origin Store Code should be ${Cypress.env('OTHER_EMP').storeCode}`
+        ).to.equal(Cypress.env('OTHER_EMP').storeCode)
+        expect(
+          assign_emp.originStoreName,
+          `Origin Store Name should be ${Cypress.env('OTHER_EMP').storeName}`
+        ).to.equal(Cypress.env('OTHER_EMP').storeName)
       })
     })
+  })
 
-    it('Should return error if NIK is undefined', () => {
-      const cust_id = Cypress.env('CUSTOMER_ID')
-      const invalidNIK = undefined
-      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
-      cy.api({
-        method: 'POST',
-        url,
-        body: {
-          nik: invalidNIK
-        },
-        headers: Cypress.env('REQUEST_HEADERS'),
-        failOnStatusCode: false
-      }).should((response) => {
-        expect(response.status, 'Response status should be 400').to.equal(400)
-        const body = response.body
-        expect(body).to.haveOwnProperty('statusCode')
-        expect(body).to.haveOwnProperty('message')
-        expect(body).to.haveOwnProperty('error')
-        expect(body.statusCode, 'Response code should be 400').to.equal(400)
-        expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
-      })
+  it('Should return error if NIK is empty', () => {
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const invalidNIK = ''
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: invalidNIK
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 400').to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Response code should be 400').to.equal(400)
+      expect(
+        body.message[0],
+        'Message should be nik should not be empty'
+      ).to.equal('nik should not be empty')
+      expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
     })
+  })
 
-    it('Should return error if NIK is null', () => {
-      const cust_id = Cypress.env('CUSTOMER_ID')
-      const invalidNIK = null
-      const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
-      cy.api({
-        method: 'POST',
-        url,
-        body: {
-          nik: invalidNIK
-        },
-        headers: Cypress.env('REQUEST_HEADERS'),
-        failOnStatusCode: false
-      }).should((response) => {
-        expect(response.status, 'Response status should be 400').to.equal(400)
-        const body = response.body
-        expect(body).to.haveOwnProperty('statusCode')
-        expect(body).to.haveOwnProperty('message')
-        expect(body).to.haveOwnProperty('error')
-        expect(body.statusCode, 'Response code should be 400').to.equal(400)
-        expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
-      })
+  it('Should return error if NIK is undefined', () => {
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const invalidNIK = undefined
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: invalidNIK
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 400').to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Response code should be 400').to.equal(400)
+      expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
     })
+  })
+
+  it('Should return error if NIK is null', () => {
+    const cust_id = Cypress.env('CUSTOMER_ID')
+    const invalidNIK = null
+    const url = URL_PRODUCT + `/employee/cart/${cust_id}/assign-to`
+    cy.api({
+      method: 'POST',
+      url,
+      body: {
+        nik: invalidNIK
+      },
+      headers: Cypress.env('REQUEST_HEADERS'),
+      failOnStatusCode: false
+    }).should((response) => {
+      expect(response.status, 'Response status should be 400').to.equal(400)
+      const body = response.body
+      expect(body).to.haveOwnProperty('statusCode')
+      expect(body).to.haveOwnProperty('message')
+      expect(body).to.haveOwnProperty('error')
+      expect(body.statusCode, 'Response code should be 400').to.equal(400)
+      expect(body.error, 'Error should be Bad Request').to.equal('Bad Request')
+    })
+  })
 
   it('Should be able to access the API with valid token', () => {
     const cust_id = Cypress.env('CUSTOMER_ID')
@@ -530,8 +555,13 @@ describe('API Test Group Assign Staff to cart', function () {
       expect(body).to.haveOwnProperty('statusCode')
       expect(body).to.haveOwnProperty('message')
       expect(body.statusCode, 'Response code should be 201').to.equal(201)
-      expect(assign_emp.nik, `NIK employee should be ${nik_employee}`).to.equal(nik_employee)
-      expect(assign_emp.isCrossStoreEmployee, 'isCrossStoreEmployee should be FALSE').to.equal(false)
+      expect(assign_emp.nik, `NIK employee should be ${nik_employee}`).to.equal(
+        nik_employee
+      )
+      expect(
+        assign_emp.isCrossStoreEmployee,
+        'isCrossStoreEmployee should be FALSE'
+      ).to.equal(false)
     })
   })
 

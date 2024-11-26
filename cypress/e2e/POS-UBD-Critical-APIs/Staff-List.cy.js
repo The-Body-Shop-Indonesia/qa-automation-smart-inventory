@@ -170,19 +170,22 @@ describe('API Test Group Staff List', function () {
       //   `All data has storeName ${Cypress.env('STORE_NAME')}`
       // ).to.deep.equal(true)
       //difilter dulu
-      const isMutationTrue = data.filter(item => item.isMutation === true);
-      const isMutationFalse = data.filter(item => item.isMutation === false);
+      const isMutationTrue = data.filter((item) => item.isMutation === true)
+      const isMutationFalse = data.filter((item) => item.isMutation === false)
       console.log(isMutationTrue)
       expect(
         Cypress._.every(isMutationFalse, ['storeCode', store_code]),
         `If isMutation is FALSE, all data has storeCode ${store_code}`
       ).to.equal(true)
       expect(
-        Cypress._.every(isMutationFalse, ['storeName', Cypress.env('STORE_NAME')]),
+        Cypress._.every(isMutationFalse, [
+          'storeName',
+          Cypress.env('STORE_NAME')
+        ]),
         `If isMutation is FALSE, all data has storeName ${Cypress.env('STORE_NAME')}`
       ).to.equal(true)
 
-      if(isMutationTrue.length > 0) {
+      if (isMutationTrue.length > 0) {
         expect(
           Cypress._.every(isMutationTrue, ['searchBy', nik_employee]),
           `If isMutation is TRUE, all data has searchBy ${nik_employee}`
