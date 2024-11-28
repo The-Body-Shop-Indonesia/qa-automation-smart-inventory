@@ -169,6 +169,7 @@ exports.createCartPayload_14216 = () => {
       freeProductOptionsSelected: [],
       dealsId: '',
       itemOrders: [],
+      rewards: null,
       // _id: '6719d44557e46bf7dbea3787',
       // createdAt: '2024-10-24T04:59:49.606Z',
       // updatedAt: '2024-10-24T04:59:49.606Z',
