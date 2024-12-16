@@ -17,6 +17,7 @@
     "cypress-plugin-api": "^2.11.2",
     "dotenv": "^16.4.5",
     "faker": "^6.6.6",
+    "ioredis": "^5.4.1",
     "redis": "^4.7.0"
   },
   "devDependencies": {

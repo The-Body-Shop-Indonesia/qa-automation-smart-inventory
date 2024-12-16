@@ -85,11 +85,11 @@ describe('Callback create order MP', () => {
     // Muat data dari fixture
     cy.fixture('skus').then((data) => {
       const amount = 100 // jumlah stok yang ingin ditambahkan
- 
+
       // Iterasi setiap SKU dalam array skuCashVouchers
       data.skusMP.forEach((sku) => {
         const key = `stock:${sku}-34999-stock` // Buat key dengan SKU yang diambil
- 
+
         // Menjalankan cy.task untuk mengatur stok pada setiap SKU
         cy.task('addStock', { key, amount }, { timeout: 30000 }).should('exist')
       })

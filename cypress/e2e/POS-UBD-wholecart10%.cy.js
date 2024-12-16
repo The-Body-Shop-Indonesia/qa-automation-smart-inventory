@@ -20,6 +20,7 @@ let paymentDetailTotal
 let ResponseDataTiersCartRule
 let paymentDetailSubtotal
 let DetailPromoCart
+
 describe('Staff create order', function () {
   it('Successfully login Employee', () => {
     const url = URL_USER + '/employee/login'

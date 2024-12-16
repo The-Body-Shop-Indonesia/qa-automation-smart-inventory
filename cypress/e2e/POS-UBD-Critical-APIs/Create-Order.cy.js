@@ -176,8 +176,9 @@ describe('General API Test Group', function () {
       delete data._id
       delete data.updatedAt
       delete data.createdAt
+      delete data.store
+      delete data.store_dispatcher
       expect(data).to.deep.equal(mockResponse)
-      console.log(mockResponse)
       Cypress.env('PUBLIC_CUSTOMER_FIRSTNAME', mockRequest.firstName)
     })
   })

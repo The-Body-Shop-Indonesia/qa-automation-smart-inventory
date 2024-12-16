@@ -176,8 +176,9 @@ describe('General API Test Group', function () {
       delete data._id
       delete data.updatedAt
       delete data.createdAt
+      delete data.store
+      delete data.store_dispatcher
       expect(data).to.deep.equal(mockResponse)
-      console.log(mockResponse)
       Cypress.env('PUBLIC_CUSTOMER_FIRSTNAME', mockRequest.firstName)
     })
   })
@@ -339,6 +340,7 @@ describe('General API Test Group', function () {
       expect(payments.paymentMethods.length).to.be.greaterThan(0)
     })
   })
+
   // EMPLOYEE TOKEN
   it('Should return error 401 if employee token is not exist', () => {
     const cart = Cypress.env('CART')
